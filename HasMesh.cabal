@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0726d4a3fa05cb22d31601e051a2e619a641c2a76c7b847fae44231465db4787
+-- hash: d08f34531830a8069b0241a0360356837e228d24e7b9d5ff46861db17638b85a
 
 name:           HasMesh
 version:        0.1.0.0
@@ -40,6 +40,7 @@ library
   build-depends:
       HUnit >=1.6.0.0
     , base >=4.11 && <10
+    , hashable >=1.3
     , rio >=0.1.12.0
   default-language: Haskell2010
 
@@ -54,6 +55,7 @@ executable HasMesh-exe
       HUnit >=1.6.0.0
     , HasMesh
     , base >=4.11 && <10
+    , hashable >=1.3
     , optparse-simple
     , rio >=0.1.12.0
   default-language: Haskell2010
@@ -72,6 +74,7 @@ test-suite HasMesh-test
       HUnit >=1.6.0.0
     , HasMesh
     , base >=4.11 && <10
+    , hashable >=1.3
     , hspec
     , rio >=0.1.12.0
   default-language: Haskell2010

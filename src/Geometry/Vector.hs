@@ -7,7 +7,7 @@ Supply a basic 3D geometrical vertex.
 Supply a GPoint type that will add an Id to it.
 Add additional functionality for creating and tracking Ids and vectors.
 -}
-module Geometry.Vector(Vertex(..)) where
+module Geometry.Vector(Vertex(), newVertex,) where
 
 
 import Import
@@ -15,30 +15,40 @@ import Run
 import RIO.Process
 import qualified Paths_HasMesh
 
+import qualified Data.Hashable as H
 
-{- | ------------------------- Vertex------------------------------
-Vertexs in 3D geometry.
+
+
+
+{- | 
+Vertex in 3D geometry.
+Has no constructor as the axis values need to be truncated to 2 decimal places for equality and hashing purposes.
 -}
 data Vertex =  Vertex { _xAxis :: Double, _yAxis :: Double, _zAxis :: Double }
            
-              deriving (Show, Typeable, Data)
+              deriving (Show, Typeable, Data, Eq)
 
-
-{- | ---------------       instance of equal ---------------
-In order to avoid double rounding errors and  trig errors which cause
-the same point, and thus CornerPoints, to be != due to tiny differences,
-give it a range of < .01, and still allow the points to be equal.
-All the type restrictions are to get it to compile.
+{- |
+Task:
+Create a new Vertex where all 3 axis have been truncated to 2 decimal places.
 -}
-axisEqual :: (Eq a, Num a, Ord a, Fractional a) => a -> a -> Bool
-axisEqual  a b
-  
-  | (abs (a - b)) <= 0.011 = True
-  | otherwise      = False
+newVertex :: Double -> Double -> Double -> Vertex
+newVertex x y z =
+  let
+    truncate2 :: Double -> Double
+    truncate2  val =
+      let
+        t = 100 --which is 10^precision
+      in
+        (fromIntegral(floor(val*t)))/t
+  in
+    Vertex (truncate2 x) (truncate2 y) (truncate2 z)
 
 
-instance Eq Vertex where
-    Vertex x y z == Vertex xa ya za
-      |  (axisEqual x xa) && (axisEqual y ya)  && (axisEqual z za) = True 
-      | otherwise = False
-    
+instance H.Hashable Vertex where
+    hashWithSalt s (Vertex x y z) =
+        s `H.hashWithSalt`
+        x `H.hashWithSalt`
+        y `H.hashWithSalt` z
+    hash vertex =
+      1 `H.hashWithSalt` vertex
