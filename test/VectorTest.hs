@@ -8,12 +8,13 @@ import qualified RIO.Map as Map
 
 import Test.HUnit
 import qualified Geometry.Vector as V
+import qualified Geometry.ID as ID
 import qualified Data.Hashable as H
 --import qualified Data.Var.IO as Io import Data.IORef
 import qualified Data.IORef as IOref
 
 runTests = do
-  
+-- ============================= Eq ==========================================
  let
   testEq1 = TestCase $ assertEqual
    "Vectors are equal"
@@ -70,7 +71,7 @@ runTests = do
       ((V.newVertex 0 0 0) == (V.newVertex 0 0 0.01))
  runTestTT testEq8
 
- -- =================== hashable =====================
+ -- ===================================== hashable ================================
  let
    testHashing1 = TestCase $ assertEqual
      "Vector 0 0 0 is hashed"
@@ -100,21 +101,21 @@ runTests = do
  runTestTT testHashing4
 
 
- -- ========================== mapable =============================
+ -- =========================================== mapable ===============================================
  let
    testMapping1 = TestCase $ assertEqual
      "Stick a Vector into a map"
-      (Map.fromList [(H.hash $ V.newVertex 1 2 3 , 1)])
+      (Map.fromList [(H.hash $ V.newVertex 1 2 3 , (ID.PointId 1))])
       (let
           map = Map.empty
           vertex = V.newVertex 1 2 3
           hashed = H.hash vertex
        in
-         Map.insert hashed 1 map
+         Map.insert hashed (ID.PointId 1) map
          
       )
  runTestTT testMapping1
-
+ 
 
  -- ============================== use a map inside an IORef ==============================
  --Just get a map into an IORef.
@@ -126,11 +127,11 @@ runTests = do
   hashed2 = H.hash vertex2
   testMapping2 = TestCase 
    (do
-      ioref <- IOref.newIORef $ Map.insert hashed 1 map
+      ioref <- IOref.newIORef $ Map.insert hashed (ID.PointId 1) map
       x <- IOref.readIORef ioref
-      IOref.writeIORef ioref (Map.insert hashed2 2 x)
+      IOref.writeIORef ioref (Map.insert hashed2 (ID.PointId 2) x)
       y <- IOref.readIORef ioref
-      assertEqual "put a map into a IOVar" (Map.fromList [(H.hash $ V.newVertex 1 2 3 , 1), (H.hash $ V.newVertex 1 22 3 , 2)]) y 
+      assertEqual "put a map into a IOVar" (Map.fromList [(H.hash $ V.newVertex 1 2 3 , (ID.PointId 1)), (H.hash $ V.newVertex 1 22 3 , (ID.PointId 2))]) y 
    )
  runTestTT testMapping2
 
@@ -154,35 +155,35 @@ runTests = do
   
   testMapping3 = TestCase
    (do
-      ioref <- IOref.newIORef $ Map.insert hashed 1 map
+      ioref <- IOref.newIORef $ Map.insert hashed (ID.PointId 1) map
       x <- IOref.readIORef ioref
-      IOref.writeIORef ioref (Map.insert hashed2 2 x)
+      IOref.writeIORef ioref (Map.insert hashed2 (ID.PointId 2) x)
       --removed hashed2 from the map in separate function.
       modifier ioref
       y <- IOref.readIORef ioref
       
       --notice that hashed2 is no longer in the map.
-      assertEqual "Modify a IOVar from another fx" (Map.fromList [(hashed,1)]) y 
+      assertEqual "Modify a IOVar from another fx" (Map.fromList [(hashed,(ID.PointId 1))]) y 
    )
  runTestTT testMapping3
 
  -- =================================== pull the id's from a lazy list ===================
     
- --get/set Vertex ID from an IORef
+ --Modify the IORef PointId supply from another function, and show that the changes are persisted in calling fx. 
  let
-  testGetVertexId1 = TestCase
+  testGetVertexId2 = TestCase
    (do
       let
         getSetVectorId ref = do
          currId <- IOref.readIORef ref
-         IOref.writeIORef ref (currId + 1)
+         IOref.writeIORef ref (ID.incr currId )
          return (currId)
-      ioref <- IOref.newIORef 1
+      ioref <- IOref.newIORef $ ID.PointId 1
       id1 <- getSetVectorId ioref
       id2 <- getSetVectorId ioref
       
       --notice that the IORef vertex id was changed in getSetVectorId.
-      assertEqual "get the vector id from an ioref" 2 id2 
+      assertEqual "get the vector id from an ioref" (ID.PointId 2) id2 
    )
- runTestTT testGetVertexId1
+ runTestTT testGetVertexId2
 

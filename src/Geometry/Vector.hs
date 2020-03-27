@@ -16,6 +16,7 @@ import RIO.Process
 import qualified Paths_HasMesh
 
 import qualified Data.Hashable as H
+import qualified Geometry.ID as ID
 
 
 
@@ -38,17 +39,20 @@ newVertex x y z =
     truncate2 :: Double -> Double
     truncate2  val =
       let
-        t = 100 --which is 10^precision
+        t = 100 --which is 10^precision. If want to be 1/1000 it would be 10^3. 
       in
         (fromIntegral(floor(val*t)))/t
   in
     Vertex (truncate2 x) (truncate2 y) (truncate2 z)
 
 
+-- | Creates a key for the vertex map that stores the gmsh PointId. Is based on the hash of x y z values.
 instance H.Hashable Vertex where
+    -- | Perhaps this should be hidden, and always just use 'hash'
     hashWithSalt s (Vertex x y z) =
         s `H.hashWithSalt`
         x `H.hashWithSalt`
         y `H.hashWithSalt` z
     hash vertex =
       1 `H.hashWithSalt` vertex
+
