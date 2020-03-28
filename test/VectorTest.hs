@@ -10,7 +10,6 @@ import Test.HUnit
 import qualified Geometry.Vector as V
 import qualified Geometry.ID as ID
 import qualified Data.Hashable as H
---import qualified Data.Var.IO as Io import Data.IORef
 import qualified Data.IORef as IOref
 
 runTests = do
