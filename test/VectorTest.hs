@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module VectorTest(runTests) where
-
+import RIO
 import qualified RIO.Text as T
 import qualified RIO.Map as Map
 
@@ -10,7 +10,6 @@ import Test.HUnit
 import qualified Geometry.Vector as V
 import qualified Geometry.ID as ID
 import qualified Data.Hashable as H
-import qualified Data.IORef as IOref
 
 runTests = do
 -- ============================= Eq ==========================================
@@ -126,10 +125,10 @@ runTests = do
   hashed2 = H.hash vertex2
   testMapping2 = TestCase 
    (do
-      ioref <- IOref.newIORef $ Map.insert hashed (ID.PointId 1) map
-      x <- IOref.readIORef ioref
-      IOref.writeIORef ioref (Map.insert hashed2 (ID.PointId 2) x)
-      y <- IOref.readIORef ioref
+      ioref <- newIORef $ Map.insert hashed (ID.PointId 1) map
+      x <- readIORef ioref
+      writeIORef ioref (Map.insert hashed2 (ID.PointId 2) x)
+      y <- readIORef ioref
       assertEqual "put a map into a IOVar" (Map.fromList [(H.hash $ V.newVertex 1 2 3 , (ID.PointId 1)), (H.hash $ V.newVertex 1 22 3 , (ID.PointId 2))]) y 
    )
  runTestTT testMapping2
@@ -147,19 +146,19 @@ runTests = do
     let
       vertex = V.newVertex 1 2 33
       hashed = H.hash vertex
-    x <- IOref.readIORef ref
-    IOref.writeIORef ref (Map.delete hashed2 x)
+    x <- readIORef ref
+    writeIORef ref (Map.delete hashed2 x)
     --P.putStrLn "hell"
     return ()
   
   testMapping3 = TestCase
    (do
-      ioref <- IOref.newIORef $ Map.insert hashed (ID.PointId 1) map
-      x <- IOref.readIORef ioref
-      IOref.writeIORef ioref (Map.insert hashed2 (ID.PointId 2) x)
+      ioref <- newIORef $ Map.insert hashed (ID.PointId 1) map
+      x <- readIORef ioref
+      writeIORef ioref (Map.insert hashed2 (ID.PointId 2) x)
       --removed hashed2 from the map in separate function.
       modifier ioref
-      y <- IOref.readIORef ioref
+      y <- readIORef ioref
       
       --notice that hashed2 is no longer in the map.
       assertEqual "Modify a IOVar from another fx" (Map.fromList [(hashed,(ID.PointId 1))]) y 
@@ -174,10 +173,10 @@ runTests = do
    (do
       let
         getSetVectorId ref = do
-         currId <- IOref.readIORef ref
-         IOref.writeIORef ref (ID.incr currId )
+         currId <- readIORef ref
+         writeIORef ref (ID.incr currId )
          return (currId)
-      ioref <- IOref.newIORef $ ID.PointId 1
+      ioref <- newIORef $ ID.PointId 1
       id1 <- getSetVectorId ioref
       id2 <- getSetVectorId ioref
       
