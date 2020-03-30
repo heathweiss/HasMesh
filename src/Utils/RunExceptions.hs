@@ -27,7 +27,7 @@ runEitherIO location (Left msg) = do
   throwIO $ Hex.GeneralException $ location <> msg
 -}
 
-runEitherIO :: T.Text -> Either Hex.HaMeshException a -> IO (a)
+runEitherIO :: T.Text -> Either Hex.HasMeshException a -> IO (a)
 runEitherIO _ (Right a) = return a
 runEitherIO location (Left(Hex.ZeroLengthName msg)) = do
   throwIO $ Hex.ZeroLengthName $ location <> ": " <> msg
@@ -46,7 +46,7 @@ runEitherRIO _ (Right a) = return a
 runEitherRIO location (Left msg) = do
   throwIO $ Hex.GeneralException $ location <> msg 
 -}
-runEitherRIO :: (FW.HasDesignName env,Enviro.HasPointId env) => T.Text -> Either Hex.HaMeshException a -> RIO env (a)
+runEitherRIO :: (FW.HasDesignName env,Enviro.HasPointId env) => T.Text -> Either Hex.HasMeshException a -> RIO env (a)
 runEitherRIO _ (Right a) = return a
 runEitherRIO location (Left(Hex.ZeroLengthName msg)) = do
   throwIO $ Hex.ZeroLengthName $ location <> ": " <> msg 

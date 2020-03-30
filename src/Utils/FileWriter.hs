@@ -27,7 +27,7 @@ newDesignName designName =
    True -> throwIO $ Hex.ZeroLengthName "Zero length designName"
    False -> pure $ DesignName designName
 -}
-newDesignName  :: Text -> Either Hex.HaMeshException DesignName
+newDesignName  :: Text -> Either Hex.HasMeshException DesignName
 newDesignName designName =
  case T.length designName == 0 of
    --True -> throwIO $ Hex.ZeroLengthName "Zero length designName"
