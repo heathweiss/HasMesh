@@ -36,15 +36,4 @@ loadEnvironment = do
   validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view FW.designNameL env_
   return $ env_ 
 
-{-
-loadEnvironment :: IO (Enviro.Environment)
-loadEnvironment = do
-  loaded <- Enviro.loadLoader
-  ioref <- newIORef $ ID.PointId 1 
-  
-  let
-    env_ = Enviro.toEnvironment loaded ioref
-  validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view FW.designNameL env_
-  
-  return $ env_ 
--}
+
