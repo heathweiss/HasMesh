@@ -10,6 +10,8 @@ import Test.HUnit
 import qualified Geometry.Vector as V
 import qualified Geometry.ID as ID
 import qualified Data.Hashable as H
+import qualified Utils.EnvironmentLoader as EnvLdr
+import qualified Utils.Environment as Enviro
 
 runTests = do
 -- ============================= Eq ==========================================
@@ -169,7 +171,7 @@ runTests = do
     
  --Modify the IORef PointId supply from another function, and show that the changes are persisted in calling fx. 
  let
-  testGetVertexId2 = TestCase
+  testGetVertexId1 = TestCase
    (do
       let
         getSetVectorId ref = do
@@ -183,5 +185,26 @@ runTests = do
       --notice that the IORef vertex id was changed in getSetVectorId.
       assertEqual "get the vector id from an ioref" (ID.PointId 2) id2 
    )
+ runTestTT testGetVertexId1
+
+
+ --Load an environment in IO, and increment the PointId from within a RIO monad.
+ let
+  testGetVertexId2 = TestCase
+   (do
+      let
+        workInRIO :: (Enviro.HasPointId env) => RIO env (ID.PointId)
+        workInRIO = do
+          pointIdRef <- view Enviro.env_pointIdL
+          currId <- readIORef pointIdRef
+          writeIORef pointIdRef (ID.incr currId )
+          finalId <- readIORef pointIdRef
+          return (finalId)
+      
+      env <- EnvLdr.loadEnvironment
+      result <- runRIO env workInRIO 
+      assertEqual "get the vector id from an ioref" (ID.PointId 2) result 
+   )
  runTestTT testGetVertexId2
 
+ 
