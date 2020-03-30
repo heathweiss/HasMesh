@@ -5,7 +5,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 {- |
-import qualified Environment as Enviro
+import qualified Utils.Environment as Enviro
 -}
 module Utils.Environment(Environment(..),  HasPointId(..), loadLoader, toEnvironment,) where
 
@@ -67,3 +67,5 @@ class HasPointId env where
 
 instance HasPointId Environment where
   env_pointIdL = lens env_pointId (\x y -> x {env_pointId = y}) 
+
+
