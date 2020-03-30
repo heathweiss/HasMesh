@@ -4,6 +4,14 @@
 {-# LANGUAGE ConstrainedClassMethods #-}
 {-# LANGUAGE DeriveGeneric #-}
 
+
+{- |
+import qualified Utils.EnvironmentLoader as EnvLdr
+
+Loads the 'Utils.Environment.Environment' from Environment.yaml. Reads the designName and reloads
+it using ''Utils.FileWriter.newDesignName' to ensure it is valid. If it is not valid, an 'Utils.Exceptions.HaMeshException' is thrown.
+This would happen if the Environment.yaml file has in invalid designName.
+-}
 module Utils.EnvironmentLoader(loadEnvironment) where
 
 import RIO
@@ -26,5 +34,17 @@ loadEnvironment = do
   let
     env_ = Enviro.toEnvironment loaded ioref
   validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view FW.designNameL env_
+  return $ env_ 
+
+{-
+loadEnvironment :: IO (Enviro.Environment)
+loadEnvironment = do
+  loaded <- Enviro.loadLoader
+  ioref <- newIORef $ ID.PointId 1 
+  
+  let
+    env_ = Enviro.toEnvironment loaded ioref
+  validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view FW.designNameL env_
   
   return $ env_ 
+-}
