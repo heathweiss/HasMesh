@@ -20,12 +20,6 @@ import qualified Utils.Environment as Enviro
 Create a new 'DesignName'
 Throws an IO ('ZeroLengthName') exception if zero length, and so has to be used in the IO monad, which is where Env will usually be loaded.
 Should look at using Control.Monad.Catch.MonadThrow as per M. Snoyman suggestion. See https://www.fpcomplete.com/blog/2017/07/the-rio-monad
-
-newDesignName  :: Text -> IO (DesignName)
-newDesignName designName =
- case T.length designName == 0 of
-   True -> throwIO $ Hex.ZeroLengthName "Zero length designName"
-   False -> pure $ DesignName designName
 -}
 newDesignName  :: Text -> Either Hex.HasMeshException DesignName
 newDesignName designName =
