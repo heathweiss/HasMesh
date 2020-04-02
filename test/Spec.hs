@@ -1,7 +1,9 @@
 --{-# OPTIONS_GHC -F -pgmF hspec-discover #-}
-import qualified VectorTest as Vector
-
+import qualified VertexTest as VertexTest
+import qualified FileWriterTest as FileWriterTest
+import ScriptingTest as ScriptingTest
 
 main = do
-  Vector.runTests
-  
+  VertexTest.runTests
+  FileWriterTest.runTests
+  ScriptingTest.runTests

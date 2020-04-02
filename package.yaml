@@ -26,6 +26,8 @@ dependencies:
 - hashable >= 1.3
 - yaml >=0.11.3
 - aeson >=1.4.7
+- string-interpolate
+
 
 
 ghc-options:
