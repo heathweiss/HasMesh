@@ -3,7 +3,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 
 {- | Supply functionality for Ids such as 'Geometry.PointId' and -}
-module Geometry.ID(Increment(..), PointId(..)) where
+module Gmsh.ID(Increment(..), PointId(..)) where
 
 import Import
 import Run

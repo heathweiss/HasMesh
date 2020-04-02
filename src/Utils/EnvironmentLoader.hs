@@ -16,20 +16,20 @@ module Utils.EnvironmentLoader(loadEnvironment) where
 
 import RIO
 import qualified RIO.Text as T
---import qualified Data.IORef as IOref
+
 
 import qualified Utils.Exceptions as Hex
 import qualified Utils.RunExceptions as HexR
 import qualified Utils.Environment as Enviro
 import qualified Utils.FileWriter as FW
-import qualified Geometry.ID as ID
+import qualified Gmsh.Gmsh as Gmsh
 
 
 -- | Load the global RIO 'Environment'
 loadEnvironment :: IO (Enviro.Environment)
 loadEnvironment = do
   loaded <- Enviro.loadLoader
-  ioref <- newIORef $ ID.PointId 1 
+  ioref <- newIORef $ Gmsh.PointId 1 
   
   let
     env_ = Enviro.toEnvironment loaded ioref

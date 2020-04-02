@@ -8,6 +8,7 @@ import Test.HUnit
 import qualified Scripting.Scripting as Script
 import qualified RIO.Text as T
 import qualified Geometry.Geometry as Geo
+import qualified Gmsh.Gmsh as Gmsh
 
 runTests = do
  putStrLn $ "=============== Scripting Tests ====================="
@@ -32,7 +33,7 @@ runTests = do
   testPoint1 = TestCase $ assertEqual
    "output a point"
    ("Point(1) = {1.0,2.0,3.0,lc};")
-   (Script.point (Geo.newVertex 1 2 3) (Geo.PointId 1))
+   (Script.point (Geo.newVertex 1 2 3) (Gmsh.PointId 1))
  runTestTT testPoint1
 
 

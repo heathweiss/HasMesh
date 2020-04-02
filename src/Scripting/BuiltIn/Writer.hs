@@ -12,8 +12,11 @@ module Scripting.BuiltIn.Writer(separator, point, comment, lc, newLC1, newLC2, n
 import RIO
 import qualified RIO.ByteString as B
 import qualified RIO.Text as T
-import qualified Geometry.Geometry as Geo
 import Data.String.Interpolate ( i )
+
+import qualified Geometry.Geometry as Geo
+import qualified Gmsh.Gmsh as Gmsh
+
 
 -- | Output a separator to help format the .geo file into sections.
 separator :: B.ByteString
@@ -25,8 +28,8 @@ comment text =
   [i|\n//#{text}|] :: B.ByteString
 
 -- | Output a gmsh point.
-point :: Geo.Vertex -> Geo.PointId -> B.ByteString
-point (Geo.Vertex' x y z) (Geo.PointId id) =
+point :: Geo.Vertex -> Gmsh.PointId -> B.ByteString
+point (Geo.Vertex' x y z) (Gmsh.PointId id) =
   [i|Point(#{id}) = {#{x},#{y},#{z},lc};|] :: B.ByteString
 
 

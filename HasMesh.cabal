@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 62f57a4b0e63d93ba831b31d3d4fb2e8ffdc51bc4f7ed7d6ac2b2fae475b1625
+-- hash: b3fa27488250b55129e44d677037d57b64bcdaa84e5effb48e0cc7bf99b2ef56
 
 name:           HasMesh
 version:        0.1.0.0
@@ -28,13 +28,13 @@ source-repository head
 library
   exposed-modules:
       Geometry.Geometry
-      Geometry.ID
       Geometry.Vertex
+      Gmsh.Gmsh
+      Gmsh.ID
       Import
       Run
       Scripting.BuiltIn.Writer
       Scripting.Scripting
-      Testing
       Types
       Util
       Utils.Environment

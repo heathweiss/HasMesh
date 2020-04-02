@@ -17,9 +17,9 @@ import Data.Aeson
 import RIO
 import qualified Prelude as P
 import qualified RIO.Text as T
---import qualified Data.IORef as IOref
 
-import qualified Geometry.ID as ID
+import qualified Gmsh.Gmsh as Gmsh
+--import qualified Geometry.ID as ID
 --
 
 
@@ -47,7 +47,7 @@ loadLoader = do
 -- | Environment to the RIO monad, which is used throughout HasMesh.
 data Environment = 
   Env { env_designName :: !Text, -- ^ The 'DesignName'. Used to build the path to the saved file.
-        env_pointId :: !(IORef ID.PointId) -- ^ The supply for 'Geometry.ID.PointID'
+        env_pointId :: !(IORef Gmsh.PointId) -- ^ The supply for 'Geometry.Gmsh.PointID'
         
       } 
 
@@ -57,12 +57,12 @@ instance Show Environment where
 
 --convert a Loader to an Environment.
 --Needs to load in an IORef from an IO monad, so must be called from IO
-toEnvironment :: Loader -> IORef ID.PointId -> Environment
+toEnvironment :: Loader -> IORef Gmsh.PointId -> Environment
 toEnvironment (Loader designName ) ioref =
   Env designName ioref  
 
 class HasPointId env where
-  env_pointIdL :: Lens' env (IORef ID.PointId) -- ^ Supply of 'ID.PointId'
+  env_pointIdL :: Lens' env (IORef Gmsh.PointId) -- ^ Supply of 'Gmsh.PointId'
 
 
 instance HasPointId Environment where

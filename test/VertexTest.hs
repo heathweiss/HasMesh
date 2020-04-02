@@ -5,11 +5,11 @@ module VertexTest(runTests) where
 import RIO
 import qualified RIO.Text as T
 import qualified RIO.Map as Map
-
-import Test.HUnit
-import qualified Geometry.Vertex as V
-import qualified Geometry.ID as ID
 import qualified Data.Hashable as H
+import Test.HUnit
+
+import qualified Geometry.Vertex as V
+import qualified Gmsh.Gmsh as Gmsh
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Utils.Environment as Enviro
 
@@ -106,13 +106,13 @@ runTests = do
  let
    testMapping1 = TestCase $ assertEqual
      "Stick a Vector into a map"
-      (Map.fromList [(H.hash $ V.newVertex 1 2 3 , (ID.PointId 1))])
+      (Map.fromList [(H.hash $ V.newVertex 1 2 3 , (Gmsh.PointId 1))])
       (let
           map = Map.empty
           vertex = V.newVertex 1 2 3
           hashed = H.hash vertex
        in
-         Map.insert hashed (ID.PointId 1) map
+         Map.insert hashed (Gmsh.PointId 1) map
          
       )
  runTestTT testMapping1
@@ -128,11 +128,11 @@ runTests = do
   hashed2 = H.hash vertex2
   testMapping2 = TestCase 
    (do
-      ioref <- newIORef $ Map.insert hashed (ID.PointId 1) map
+      ioref <- newIORef $ Map.insert hashed (Gmsh.PointId 1) map
       x <- readIORef ioref
-      writeIORef ioref (Map.insert hashed2 (ID.PointId 2) x)
+      writeIORef ioref (Map.insert hashed2 (Gmsh.PointId 2) x)
       y <- readIORef ioref
-      assertEqual "put a map into a IOVar" (Map.fromList [(H.hash $ V.newVertex 1 2 3 , (ID.PointId 1)), (H.hash $ V.newVertex 1 22 3 , (ID.PointId 2))]) y 
+      assertEqual "put a map into a IOVar" (Map.fromList [(H.hash $ V.newVertex 1 2 3 , (Gmsh.PointId 1)), (H.hash $ V.newVertex 1 22 3 , (Gmsh.PointId 2))]) y 
    )
  runTestTT testMapping2
 
@@ -156,19 +156,19 @@ runTests = do
   
   testMapping3 = TestCase
    (do
-      ioref <- newIORef $ Map.insert hashed (ID.PointId 1) map
+      ioref <- newIORef $ Map.insert hashed (Gmsh.PointId 1) map
       x <- readIORef ioref
-      writeIORef ioref (Map.insert hashed2 (ID.PointId 2) x)
+      writeIORef ioref (Map.insert hashed2 (Gmsh.PointId 2) x)
       --removed hashed2 from the map in separate function.
       modifier ioref
       y <- readIORef ioref
       
       --notice that hashed2 is no longer in the map.
-      assertEqual "Modify a IOVar from another fx" (Map.fromList [(hashed,(ID.PointId 1))]) y 
+      assertEqual "Modify a IOVar from another fx" (Map.fromList [(hashed,(Gmsh.PointId 1))]) y 
    )
  runTestTT testMapping3
 
- -- =================================== pull the id's from an IORef using ID.incr ===================
+ -- =================================== pull the id's from an IORef using Gmsh.incr ===================
     
  --Overwrite the IORef PointId supply from another function, and show that the changes are persisted in calling fx.
  --Tried to do this with modifyIORef' but would not compile due to occures cx.
@@ -178,14 +178,14 @@ runTests = do
       let
         getSetVectorId ref = do
          currId <- readIORef ref
-         writeIORef ref (ID.incr currId )
+         writeIORef ref (Gmsh.incr currId )
          return (currId)
-      ioref <- newIORef $ ID.PointId 1
+      ioref <- newIORef $ Gmsh.PointId 1
       id1 <- getSetVectorId ioref
       id2 <- getSetVectorId ioref
       
       --notice that the IORef vertex id was changed in getSetVectorId.
-      assertEqual "get the vector id from an ioref" (ID.PointId 2) id2 
+      assertEqual "get the vector id from an ioref" (Gmsh.PointId 2) id2 
    )
  runTestTT testGetVertexId1
  
@@ -195,17 +195,17 @@ runTests = do
   testGetVertexId2 = TestCase
    (do
       let
-        workInRIO :: (Enviro.HasPointId env) => RIO env (ID.PointId)
+        workInRIO :: (Enviro.HasPointId env) => RIO env (Gmsh.PointId)
         workInRIO = do
           pointIdRef <- view Enviro.env_pointIdL
           currId <- readIORef pointIdRef
-          writeIORef pointIdRef (ID.incr currId )
+          writeIORef pointIdRef (Gmsh.incr currId )
           finalId <- readIORef pointIdRef
           return (finalId)
       
       env <- EnvLdr.loadEnvironment
       result <- runRIO env workInRIO 
-      assertEqual "get the vector id from an ioref" (ID.PointId 2) result 
+      assertEqual "get the vector id from an ioref" (Gmsh.PointId 2) result 
    )
  runTestTT testGetVertexId2
 
