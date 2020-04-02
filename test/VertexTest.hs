@@ -1,17 +1,18 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module VectorTest(runTests) where
+module VertexTest(runTests) where
 import RIO
 import qualified RIO.Text as T
 import qualified RIO.Map as Map
 
 import Test.HUnit
-import qualified Geometry.Vector as V
+import qualified Geometry.Vertex as V
 import qualified Geometry.ID as ID
 import qualified Data.Hashable as H
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Utils.Environment as Enviro
+
 
 runTests = do
 -- ============================= Eq ==========================================
@@ -167,9 +168,10 @@ runTests = do
    )
  runTestTT testMapping3
 
- -- =================================== pull the id's from a lazy list ===================
+ -- =================================== pull the id's from an IORef using ID.incr ===================
     
- --Modify the IORef PointId supply from another function, and show that the changes are persisted in calling fx. 
+ --Overwrite the IORef PointId supply from another function, and show that the changes are persisted in calling fx.
+ --Tried to do this with modifyIORef' but would not compile due to occures cx.
  let
   testGetVertexId1 = TestCase
    (do
@@ -186,7 +188,7 @@ runTests = do
       assertEqual "get the vector id from an ioref" (ID.PointId 2) id2 
    )
  runTestTT testGetVertexId1
-
+ 
 
  --Load an environment in IO, and increment the PointId from within a RIO monad.
  let

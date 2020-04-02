@@ -1,13 +1,13 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoImplicitPrelude #-}
-
+{-# LANGUAGE PatternSynonyms #-}
 {- |
 Supply a basic 3D geometrical vertex.
 Supply a GPoint type that will add an Id to it.
 Add additional functionality for creating and tracking Ids and vectors.
 -}
-module Geometry.Vector(Vertex(), newVertex,) where
+module Geometry.Vertex(Vertex(), pattern Vertex',  newVertex) where
 
 
 import Import
@@ -17,7 +17,7 @@ import qualified Paths_HasMesh
 import qualified Data.Hashable as H
 import qualified Geometry.ID as ID
 
-
+pattern Vertex' x y z <- Vertex x y z
 
 
 {- | 
