@@ -8,6 +8,7 @@ import qualified RIO.Text as T
 import Test.HUnit
 
 runTests = do
+ putStrLn $ "=============== FileWriter Tests ====================="  
 -- ============================= Play with handles ==========================================
  let
   testHandles1 = TestCase 
