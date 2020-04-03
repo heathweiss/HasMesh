@@ -15,7 +15,7 @@ import Run
 import RIO.Process
 import qualified Paths_HasMesh
 import qualified Data.Hashable as H
-import qualified Gmsh.Gmsh as Gmsh
+--import qualified Gmsh.Gmsh as Gmsh
 
 pattern Vertex' x y z <- Vertex x y z
 
