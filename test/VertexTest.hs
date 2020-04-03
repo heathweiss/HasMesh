@@ -1,20 +1,25 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module VertexTest(runTests) where
 import RIO
 import qualified RIO.Text as T
 import qualified RIO.Map as Map
 import qualified Data.Hashable as H
+import qualified Prelude as P
 import Test.HUnit
 
 import qualified Geometry.Vertex as V
 import qualified Gmsh.Gmsh as Gmsh
+import qualified Geometry.Geometry as Geo
+import qualified Gmsh.IDFx as IDFx  
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Utils.Environment as Enviro
 
 
 runTests = do
+ P.putStrLn $ "=============== Scripting Tests ====================="  
 -- ============================= Eq ==========================================
  let
   testEq1 = TestCase $ assertEqual
@@ -195,9 +200,9 @@ runTests = do
   testGetVertexId2 = TestCase
    (do
       let
-        workInRIO :: (Enviro.HasPointId env) => RIO env (Gmsh.PointId)
+        workInRIO :: (Enviro.HasPointIdSupply env) => RIO env (Gmsh.PointId)
         workInRIO = do
-          pointIdRef <- view Enviro.env_pointIdL
+          pointIdRef <- view Enviro.env_pointIdSupplyL
           currId <- readIORef pointIdRef
           writeIORef pointIdRef (Gmsh.incr currId )
           finalId <- readIORef pointIdRef
@@ -209,4 +214,58 @@ runTests = do
    )
  runTestTT testGetVertexId2
 
- 
+
+--Load an environment in IO, then call IDFx.toPoint to get the PointId for a vertex.
+ let
+  testGetVertexIdsUsingRIO = TestCase
+   (do
+      
+      
+      env <- EnvLdr.loadTestEnvironment
+      result <- runRIO env $ IDFx.toPoint $ Geo.newVertex  1 2 3
+      assertEqual "get the vector id from an ioref" (Gmsh.PointId 1) result 
+   )
+ runTestTT testGetVertexIdsUsingRIO
+
+
+--Load an environment in IO, then call IDFx.toPoint to get the PointId for a 2nd vertex.
+ let
+  testGetVertexIdsUsingRIO2 = TestCase
+   (do
+      
+      
+      env <- EnvLdr.loadTestEnvironment
+      result1 <- runRIO env $ IDFx.toPoint $ Geo.newVertex  1 2 3
+      result <- runRIO env $ IDFx.toPoint $ Geo.newVertex  4 5 6
+      assertEqual "get the vector id from an ioref" (Gmsh.PointId 2) result 
+   )
+ runTestTT testGetVertexIdsUsingRIO2
+
+
+--Load an environment in IO, then insert 2 identical Vertexs to see that it was only inserted once.
+ let
+  testGetVertexIdsUsingRIO3 = TestCase
+   (do
+      
+      
+      env <- EnvLdr.loadTestEnvironment
+      result1 <- runRIO env $ IDFx.toPoint $ Geo.newVertex  1 2 3
+      result <- runRIO env $ IDFx.toPoint $ Geo.newVertex  1 2 3
+      assertEqual "get the vector id from an ioref" (Gmsh.PointId 1) result 
+   )
+ runTestTT testGetVertexIdsUsingRIO3
+
+
+--Load an environment in IO, then insert 2 Vertexs that are in an array
+ let
+  testGetVertexIdsUsingRIO3 = TestCase
+   (do
+      
+      
+      env <- EnvLdr.loadTestEnvironment
+      let
+        vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6]
+      points <- runRIO env $ IDFx.toPoints vertexs
+      assertEqual "get the vector id from an ioref" [Gmsh.PointId 1] points -- result 
+   )
+ runTestTT testGetVertexIdsUsingRIO3
