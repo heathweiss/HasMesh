@@ -7,13 +7,13 @@
 {- |
 import qualified Utils.Environment as Enviro
 -}
-module Utils.Environment(Environment(..),  HasPointIdSupply(..), HasPointIdMap(..), loadLoader, toEnvironment,) where
+module Utils.Environment(Environment(..),  HasPointIdSupply(..), HasPointIdMap(..), HasGeoFileHandle(..), loadLoader, toEnvironment,) where
 
 import qualified RIO.ByteString as B
 import qualified Data.Yaml as Y
 import GHC.Generics
 import Data.Aeson
-
+--import qualified System.IO as SIO
 import RIO
 import qualified Prelude as P
 import qualified RIO.Text as T
@@ -48,18 +48,27 @@ loadLoader = do
 data Environment = 
   Env { env_designName :: !Text, -- ^ The 'DesignName'. Used to build the path to the saved file.
         env_pointIdSupply :: !(IORef Gmsh.PointId), -- ^ The supply for 'Geometry.Gmsh.PointID'
-        env_pointIdMap :: !(IORef (Map Int Gmsh.PointId)) -- ^ The map containing the 'Gmsh.GPointId's associated with each 'Geometry.Vertex.Vertex'. The key is a hash of the Vertex. todo: Wrap vertex in an ADT?
+        env_pointIdMap :: !(IORef (Map Int Gmsh.PointId)), -- ^ The map containing the 'Gmsh.GPointId's associated with each 'Geometry.Vertex.Vertex'. The key is a hash of the Vertex. todo: Wrap vertex in an ADT?
+        env_geoFileHandle :: !(IORef Handle) -- ^ Handle for writing gmsh script to the design file. Set to stdout for default value.
       } 
 
 -- | Show the Environment for testing. Can't show the IORef.
 instance Show Environment where
-  show (Env designName _ _) = show designName
+  show (Env designName _ _ _) = show designName
 
 --convert a Loader to an Environment.
 --Needs to load in an IORef from an IO monad, so must be called from IO
-toEnvironment :: Loader -> IORef Gmsh.PointId -> IORef (Map Int Gmsh.PointId) -> Environment
-toEnvironment (Loader designName ) iorefPointIdSupply iorefPoints =
-  Env designName iorefPointIdSupply iorefPoints 
+toEnvironment :: Loader -> IORef Gmsh.PointId -> IORef (Map Int Gmsh.PointId) -> IORef Handle -> Environment
+toEnvironment (Loader designName ) iorefPointIdSupply iorefPoints iorefDesignFileHandle =
+  Env designName iorefPointIdSupply iorefPoints iorefDesignFileHandle
+
+class HasGeoFileHandle env where
+  env_geoFileHandleL :: Lens' env (IORef Handle) -- ^ The Handle to the .geo design file.
+
+
+instance HasGeoFileHandle Environment where
+  env_geoFileHandleL = lens env_geoFileHandle (\x y -> x {env_geoFileHandle = y})
+
 
 class HasPointIdMap env where
   env_pointIdMapL :: Lens' env (IORef (Map Int Gmsh.PointId)) -- ^ The map of 'Gmsh.PointId's associated with each 'Geometry.Vertex.Vertex'

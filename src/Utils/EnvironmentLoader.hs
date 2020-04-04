@@ -31,9 +31,9 @@ loadEnvironment = do
   loaded <- Enviro.loadLoader
   iorefPointIdSupply <- newIORef $ Gmsh.PointId 1
   iorefPoints <- newIORef $ Map.fromList []
-  
+  iorefDesignFileHandle <- newIORef stdout
   let
-    env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints
+    env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle
   validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view FW.designNameL env_
   return $ env_ 
 
@@ -44,10 +44,9 @@ loadTestEnvironment = do
   loaded <- Enviro.loadLoader
   iorefPointIdSupply <- newIORef $ Gmsh.PointId 1
   iorefPoints <- newIORef $ Map.fromList []
-  
+  iorefDesignFileHandle <- newIORef stdout
   let
-    env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints
-  --validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view FW.designNameL env_
+    env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle
   return $ env_ {Enviro.env_designName = "testDesignName"} 
 
 
