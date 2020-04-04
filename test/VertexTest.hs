@@ -9,6 +9,7 @@ import qualified RIO.Map as Map
 import qualified Data.Hashable as H
 import qualified Prelude as P
 import Test.HUnit
+import qualified System.IO as SIO
 
 import qualified Geometry.Vertex as V
 import qualified Gmsh.Gmsh as Gmsh
@@ -16,6 +17,7 @@ import qualified Geometry.Geometry as Geo
 import qualified Gmsh.IDFx as IDFx  
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Utils.Environment as Enviro
+import qualified Scripting.Scripting as Script
 
 
 runTests = do
@@ -266,6 +268,20 @@ runTests = do
       let
         vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6]
       points <- runRIO env $ IDFx.toPoints vertexs
-      assertEqual "get the vector id from an ioref" [Gmsh.PointId 1] points -- result 
+      assertEqual "get the vector id from an ioref" [Gmsh.PointId 1, Gmsh.PointId 2] points -- result 
    )
  runTestTT testGetVertexIdsUsingRIO3
+
+
+-- =========================================== get PointId and write to handle ===========================
+ let
+  -- Show that a Handle can be set to stdout, for test purposes, so gmsh script are not written to a file.
+  testGetVertexIdsUsingRIOAndHandle = TestCase
+   (do
+      let
+        -- set handle to stdout, which is set to open when a program is run.
+        h = SIO.stdout
+      isOpen <- SIO.hIsOpen h
+      assertEqual "try redirecting a Handle" True (isOpen)-- False
+   )
+ runTestTT testGetVertexIdsUsingRIOAndHandle
