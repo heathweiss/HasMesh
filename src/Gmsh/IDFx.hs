@@ -38,7 +38,7 @@ toPoint vertex = do
       currPointId <- readIORef poIntIdSupplyioref
       geoFileHandleIORef <- view Enviro.env_geoFileHandleL
       geoFileHandle <- readIORef geoFileHandleIORef
-      B.hPut geoFileHandle $ Script.point vertex currPointId
+      B.hPut geoFileHandle $ Script.writePoint vertex currPointId
       writeIORef pointMapIORef $ Map.insert hashedVertex currPointId pointMap
       writeIORef poIntIdSupplyioref (ID.incr currPointId )
       return currPointId
