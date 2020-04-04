@@ -25,6 +25,24 @@ import qualified Scripting.Scripting as Script
 --
 -- Should this be exported, or kept internal for use with the 'toPoints', which hanlles a ['Geo.Vertex']
 -- toDo: need add a handle to 'Enviro.Environment' so that a new point will be written to file.
+toPoint :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => Geo.Vertex -> RIO env (ID.Id Int)
+toPoint vertex = do
+  pointMapIORef <- view Enviro.env_pointIdMapL
+  pointMap <- readIORef pointMapIORef
+  let
+    hashedVertex = H.hash vertex
+  case Map.lookup hashedVertex pointMap of
+    Just val -> return val
+    Nothing -> do
+      poIntIdSupplyioref <- view Enviro.env_pointIdSupplyL
+      currPointId <- readIORef poIntIdSupplyioref
+      geoFileHandleIORef <- view Enviro.env_geoFileHandleL
+      geoFileHandle <- readIORef geoFileHandleIORef
+      B.hPut geoFileHandle $ Script.writePoint vertex currPointId
+      writeIORef pointMapIORef $ Map.insert hashedVertex currPointId pointMap
+      writeIORef poIntIdSupplyioref (ID.incr currPointId )
+      return currPointId
+{-
 toPoint :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => Geo.Vertex -> RIO env ID.PointId
 toPoint vertex = do
   pointMapIORef <- view Enviro.env_pointIdMapL
@@ -42,7 +60,7 @@ toPoint vertex = do
       writeIORef pointMapIORef $ Map.insert hashedVertex currPointId pointMap
       writeIORef poIntIdSupplyioref (ID.incr currPointId )
       return currPointId
-
+-}
 
 -- | Process a ['Geo.Vertex'] into a ['ID.PointId']. Print any new 'ID.PointId' to .geo file.
 --
@@ -50,6 +68,21 @@ toPoint vertex = do
 --
 -- toDo: -- toDo: need add a handle to 'Enviro.Environment' so that a new point will be written to file.
 -- Then add the printing to 'toPoint'
+toPoints :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => [Geo.Vertex] -> RIO env [(ID.Id Int)]
+toPoints [] = return []
+toPoints vertexs = do
+  let
+    toPoints' :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => [Geo.Vertex] -> [(ID.Id Int)] -> RIO env [(ID.Id Int)]
+    toPoints' [] workingPoints = do
+      return $ reverse workingPoints
+    toPoints' (v:vs) workingPoints = do
+      env <- ask
+      pointId <- runRIO env $ toPoint v
+      toPoints' vs (pointId:workingPoints)
+  env <- ask
+  runRIO env $ toPoints' vertexs []
+ 
+{-
 toPoints :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => [Geo.Vertex] -> RIO env [ID.PointId]
 toPoints [] = return []
 toPoints vertexs = do
@@ -63,4 +96,5 @@ toPoints vertexs = do
       toPoints' vs (pointId:workingPoints)
   env <- ask
   runRIO env $ toPoints' vertexs []
- 
+
+-}

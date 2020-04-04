@@ -202,6 +202,24 @@ runTests = do
   testGetVertexId2 = TestCase
    (do
       let
+        workInRIO :: (Enviro.HasPointIdSupply env) => RIO env (Gmsh.Id Int)
+        workInRIO = do
+          pointIdRef <- view Enviro.env_pointIdSupplyL
+          currId <- readIORef pointIdRef
+          writeIORef pointIdRef (Gmsh.incr currId )
+          finalId <- readIORef pointIdRef
+          return (finalId)
+      
+      env <- EnvLdr.loadEnvironment
+      result <- runRIO env workInRIO 
+      assertEqual "get the vector id from an ioref" (Gmsh.PointId 2) result 
+   )
+ runTestTT testGetVertexId2
+{-
+ let
+  testGetVertexId2 = TestCase
+   (do
+      let
         workInRIO :: (Enviro.HasPointIdSupply env) => RIO env (Gmsh.PointId)
         workInRIO = do
           pointIdRef <- view Enviro.env_pointIdSupplyL
@@ -215,7 +233,7 @@ runTests = do
       assertEqual "get the vector id from an ioref" (Gmsh.PointId 2) result 
    )
  runTestTT testGetVertexId2
-
+-}
 
 --Load an environment in IO, then call IDFx.toPoint to get the PointId for a vertex.
  let

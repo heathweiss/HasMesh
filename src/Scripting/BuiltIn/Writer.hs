@@ -2,6 +2,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE GADTs #-}
 {- |
 Generate Gmsh scripts, such as writing Points, Lines, Curves and comments.
 
@@ -28,9 +29,14 @@ writeComment text =
   [i|\n//#{text}|] :: B.ByteString
 
 -- | Output a gmsh point.
+writePoint :: Geo.Vertex -> Gmsh.Id Int -> B.ByteString
+writePoint (Geo.Vertex' x y z) (Gmsh.PointId id) =
+  [i|Point(#{id}) = {#{x},#{y},#{z},lc};|] :: B.ByteString
+{-before GADT
 writePoint :: Geo.Vertex -> Gmsh.PointId -> B.ByteString
 writePoint (Geo.Vertex' x y z) (Gmsh.PointId id) =
   [i|Point(#{id}) = {#{x},#{y},#{z},lc};|] :: B.ByteString
+-}
 
 -- | Write the lc var that Gmsh tutorials use to set the mesh size near a 'Geometry.Vertex'.
 -- This .geo variable is the 4th parameter to all Points in Gmsh script. Eg: Point(1) = {0, 0, 0, lc};

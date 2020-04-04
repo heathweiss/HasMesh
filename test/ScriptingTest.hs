@@ -40,21 +40,21 @@ runTests = do
 -- ============================= lc tests ==========================================
  let
   testLc1 = TestCase $ assertEqual
-   "output an lc1"
+   "output an 1c1"
    ("lc = 1e-1;")
    (Script.writeLC1)
  runTestTT testLc1
 
  let
   testLc2 = TestCase $ assertEqual
-   "output an lc2"
+   "output an 2c2"
    ("lc = 1e-2;")
    (Script.writeLC2)
  runTestTT testLc2
 
  let
   testLc3 = TestCase $ assertEqual
-   "output an lc3"
+   "output an 1e-3"
    ("lc = 1e-3;")
    (Script.writeLC3)
  runTestTT testLc3
