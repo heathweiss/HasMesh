@@ -32,14 +32,16 @@ point :: Geo.Vertex -> Gmsh.PointId -> B.ByteString
 point (Geo.Vertex' x y z) (Gmsh.PointId id) =
   [i|Point(#{id}) = {#{x},#{y},#{z},lc};|] :: B.ByteString
 
-
+-- | The mesh size as used by Gmsh when a Point is written.
 data LC = LC1 {lc1 :: B.ByteString}
         | LC2 {lc2 :: B.ByteString}
         | LC3 {lc3 :: B.ByteString}
 
--- | The mesh size. 
+-- | 1e-1 
 newLC1 =  LC1 "1e-1"
+-- | 1e-2
 newLC2 =  LC2 "1e-2"
+-- | 1e-3
 newLC3 =  LC2 "1e-3"
 
 
