@@ -5,7 +5,8 @@ module ScriptingTest(runTests) where
 
 import RIO
 import Test.HUnit
-import qualified Scripting.Scripting as Script
+import qualified Gmsh.ToScript.BuiltIn as ScrB
+import qualified Gmsh.ToScript.Common as SCom
 import qualified RIO.Text as T
 import qualified Geometry.Geometry as Geo
 import qualified Gmsh.Gmsh as Gmsh
@@ -17,14 +18,14 @@ runTests = do
   testSeparator = TestCase $ assertEqual
    "output a separator"
    ("///////////////////////////////////////////////////////////////")
-   (Script.writeSeparator)
+   (SCom.writeSeparator)
  runTestTT testSeparator
 
  let
   testComment = TestCase $ assertEqual
    "output a comment"
    ("\n//my comment")
-   (Script.writeComment "my comment")
+   (SCom.writeComment "my comment")
  runTestTT testComment
 
 -- ============================= Vertex tests ==========================================
@@ -32,8 +33,8 @@ runTests = do
  let
   testPoint1 = TestCase $ assertEqual
    "output a point"
-   ("Point(1) = {1.0,2.0,3.0,lc};")
-   (Script.writePoint (Geo.newVertex 1 2 3) (Gmsh.PointId 1))
+   ("\nPoint(1) = {1.0,2.0,3.0,lc};")
+   (ScrB.writePoint (Geo.newVertex 1 2 3) (Gmsh.PointId 1))
  runTestTT testPoint1
 
 
@@ -42,19 +43,19 @@ runTests = do
   testLc1 = TestCase $ assertEqual
    "output an 1c1"
    ("lc = 1e-1;")
-   (Script.writeLC1)
+   (ScrB.writeLC1)
  runTestTT testLc1
 
  let
   testLc2 = TestCase $ assertEqual
    "output an 2c2"
    ("lc = 1e-2;")
-   (Script.writeLC2)
+   (ScrB.writeLC2)
  runTestTT testLc2
 
  let
   testLc3 = TestCase $ assertEqual
    "output an 1e-3"
    ("lc = 1e-3;")
-   (Script.writeLC3)
+   (ScrB.writeLC3)
  runTestTT testLc3

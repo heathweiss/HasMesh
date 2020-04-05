@@ -13,7 +13,7 @@ import qualified Utils.Environment as Enviro
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Geometry.Geometry as Geo
 import qualified Gmsh.IDFx as IDFx
-import qualified Scripting.Scripting as Script
+import qualified Gmsh.ToScript.BuiltIn as ScrB
 
 t1 :: IO ()
 t1 = do
@@ -24,7 +24,7 @@ t1 = do
           env <- ask
           geoFileHandleIORef <- view Enviro.env_geoFileHandleL
           geoFileHandle <- readIORef geoFileHandleIORef
-          B.hPut geoFileHandle $ Script.writeLC1
+          B.hPut geoFileHandle $ ScrB.writeLC1
 
           let
             vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6]

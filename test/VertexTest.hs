@@ -17,11 +17,10 @@ import qualified Geometry.Geometry as Geo
 import qualified Gmsh.IDFx as IDFx  
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Utils.Environment as Enviro
-import qualified Scripting.Scripting as Script
 
 
 runTests = do
- P.putStrLn $ "=============== Scripting Tests ====================="  
+ P.putStrLn $ "=============== VertexTest ====================="  
 -- ============================= Eq ==========================================
  let
   testEq1 = TestCase $ assertEqual

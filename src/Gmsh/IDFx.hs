@@ -18,7 +18,8 @@ import qualified RIO.ByteString as B
 import qualified Utils.Environment as Enviro
 import qualified Geometry.Geometry as Geo
 import qualified Gmsh.ID as ID
-import qualified Scripting.Scripting as Script
+--import qualified Scripting.Scripting as Script
+import qualified Gmsh.ToScript.BuiltIn as ScrB
 
 
 -- | Get the 'ID.PointId' for a 'Geometry.Vertex.Vertex'
@@ -38,7 +39,7 @@ toPoint vertex = do
       currPointId <- readIORef poIntIdSupplyioref
       geoFileHandleIORef <- view Enviro.env_geoFileHandleL
       geoFileHandle <- readIORef geoFileHandleIORef
-      B.hPut geoFileHandle $ Script.writePoint vertex currPointId
+      B.hPut geoFileHandle $ ScrB.writePoint vertex currPointId
       writeIORef pointMapIORef $ Map.insert hashedVertex currPointId pointMap
       writeIORef poIntIdSupplyioref (ID.incr currPointId )
       return currPointId
