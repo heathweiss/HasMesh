@@ -34,7 +34,7 @@ loadEnvironment = do
   iorefDesignFileHandle <- newIORef stdout
   let
     env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle
-  validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view FW.designNameL env_
+  validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view Enviro.designNameL env_
   return $ env_ 
 
 
