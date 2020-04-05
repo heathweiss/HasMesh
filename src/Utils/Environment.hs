@@ -7,7 +7,7 @@
 {- |
 import qualified Utils.Environment as Enviro
 -}
-module Utils.Environment(Environment(..),  HasPointIdSupply(..), HasPointIdMap(..), HasGeoFileHandle(..), loadLoader, toEnvironment,) where
+module Utils.Environment(Environment(..),  HasPointIdSupply(..), HasPointIdMap(..), HasGeoFileHandle(..), HasDesignName(..), loadLoader, toEnvironment,) where
 
 import qualified RIO.ByteString as B
 import qualified Data.Yaml as Y
@@ -95,12 +95,15 @@ instance HasPointIdMap Environment where
 
 class HasPointIdSupply env where
   env_pointIdSupplyL :: Lens' env (IORef (Gmsh.Id Int)) -- ^ Supply of 'Gmsh.PointId'
-{-
+{-Version prior to GADT.
 class HasPointIdSupply env where
   env_pointIdSupplyL :: Lens' env (IORef Gmsh.PointId) -- ^ Supply of 'Gmsh.PointId'
 -}
-
 instance HasPointIdSupply Environment where
   env_pointIdSupplyL = lens env_pointIdSupply (\x y -> x {env_pointIdSupply = y}) 
 
+class HasDesignName env where
+  designNameL :: Lens' env T.Text -- ^ 'DesignName'
 
+instance HasDesignName Environment where
+  designNameL = lens env_designName (\x y -> x {env_designName = y})
