@@ -14,7 +14,7 @@ import qualified System.IO as SIO
 import qualified Geometry.Vertex as V
 import qualified Gmsh.Gmsh as Gmsh
 import qualified Geometry.Geometry as Geo
-import qualified Gmsh.IDFx as IDFx  
+import qualified Gmsh.Point as Pts  
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Utils.Environment as Enviro
 
@@ -234,28 +234,28 @@ runTests = do
  runTestTT testGetVertexId2
 -}
 
---Load an environment in IO, then call IDFx.toPoint to get the PointId for a vertex.
+--Load an environment in IO, then call Pts.toPoint to get the PointId for a vertex.
  let
   testGetVertexIdsUsingRIO = TestCase
    (do
       
       
       env <- EnvLdr.loadTestEnvironment
-      result <- runRIO env $ IDFx.toPoint $ Geo.newVertex  1 2 3
+      result <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
       assertEqual "get the vector id from an ioref" (Gmsh.PointId 1) result 
    )
  runTestTT testGetVertexIdsUsingRIO
 
 
---Load an environment in IO, then call IDFx.toPoint to get the PointId for a 2nd vertex.
+--Load an environment in IO, then call Pts.toPoint to get the PointId for a 2nd vertex.
  let
   testGetVertexIdsUsingRIO2 = TestCase
    (do
       
       
       env <- EnvLdr.loadTestEnvironment
-      result1 <- runRIO env $ IDFx.toPoint $ Geo.newVertex  1 2 3
-      result <- runRIO env $ IDFx.toPoint $ Geo.newVertex  4 5 6
+      result1 <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
+      result <- runRIO env $ Pts.toPoint $ Geo.newVertex  4 5 6
       assertEqual "get the vector id from an ioref" (Gmsh.PointId 2) result 
    )
  runTestTT testGetVertexIdsUsingRIO2
@@ -268,8 +268,8 @@ runTests = do
       
       
       env <- EnvLdr.loadTestEnvironment
-      result1 <- runRIO env $ IDFx.toPoint $ Geo.newVertex  1 2 3
-      result <- runRIO env $ IDFx.toPoint $ Geo.newVertex  1 2 3
+      result1 <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
+      result <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
       assertEqual "get the vector id from an ioref" (Gmsh.PointId 1) result 
    )
  runTestTT testGetVertexIdsUsingRIO3
@@ -284,7 +284,7 @@ runTests = do
       env <- EnvLdr.loadTestEnvironment
       let
         vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6]
-      points <- runRIO env $ IDFx.toPoints vertexs
+      points <- runRIO env $ Pts.toPoints vertexs
       assertEqual "get the vector id from an ioref" [Gmsh.PointId 1, Gmsh.PointId 2] points -- result 
    )
  runTestTT testGetVertexIdsUsingRIO3

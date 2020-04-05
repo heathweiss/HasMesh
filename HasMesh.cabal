@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c49ab8b4e2f55f17d33029d99c32cd79d06f4673dd8cd939a4018376cefa6723
+-- hash: b6fc6840ef356118df296fb2656683f9a5e84b80ae9fca0ea0959fff8c66ed45
 
 name:           HasMesh
 version:        0.1.0.0
@@ -31,7 +31,7 @@ library
       Geometry.Vertex
       Gmsh.Gmsh
       Gmsh.ID
-      Gmsh.IDFx
+      Gmsh.Point
       Gmsh.ToScript.BuiltIn
       Gmsh.ToScript.Common
       Import

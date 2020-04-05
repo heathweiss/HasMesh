@@ -12,7 +12,7 @@ import qualified Utils.RunExceptions as HexR
 import qualified Utils.Environment as Enviro
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Geometry.Geometry as Geo
-import qualified Gmsh.IDFx as IDFx
+import qualified Gmsh.Point as Pnt
 import qualified Gmsh.ToScript.BuiltIn as ScrB
 
 t1 :: IO ()
@@ -28,7 +28,7 @@ t1 = do
 
           let
             vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6]
-          points <- runRIO env $ IDFx.toPoints vertexs
+          points <- runRIO env $ Pnt.toPoints vertexs
           return ()
       env <- EnvLdr.loadEnvironment
       designName <-  HexR.runEitherIO "designName" $ FW.newDesignName "t1"
