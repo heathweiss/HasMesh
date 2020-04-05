@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: eb1ae3c0415901f07f6780ad8c113d4ed5ee56d81e0f74699dff933ae5a39cb2
+-- hash: 8d1a9070628c0377c7b472043c159a4a5c0e58aae19a2cbdb347a301807bf079
 
 name:           HasMesh
 version:        0.1.0.0
@@ -36,6 +36,7 @@ library
       Run
       Scripting.BuiltIn.Writer
       Scripting.Scripting
+      Tutorial.T1
       Types
       Util
       Utils.Environment
