@@ -31,7 +31,7 @@ writeComment text =
 -- | Output a gmsh point.
 writePoint :: Geo.Vertex -> Gmsh.Id Int -> B.ByteString
 writePoint (Geo.Vertex' x y z) (Gmsh.PointId id) =
-  [i|Point(#{id}) = {#{x},#{y},#{z},lc};|] :: B.ByteString
+  [i|\nPoint(#{id}) = {#{x},#{y},#{z},lc};|] :: B.ByteString
 {-before GADT
 writePoint :: Geo.Vertex -> Gmsh.PointId -> B.ByteString
 writePoint (Geo.Vertex' x y z) (Gmsh.PointId id) =
