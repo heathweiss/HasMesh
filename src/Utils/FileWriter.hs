@@ -9,7 +9,7 @@ Supply functionality for dealing with design files, as in file name, file paths.
 
 import qualified Utils.FileWriter as FW
 -}
-module Utils.FileWriter(newDesignName, HasDesignName(..), DesignName(..)) where
+module Utils.FileWriter(DesignName(..), newDesignName, designFilePath) where
 
 import RIO
 import qualified RIO.Text as T
@@ -24,21 +24,15 @@ Should look at using Control.Monad.Catch.MonadThrow as per M. Snoyman suggestion
 newDesignName  :: Text -> Either Hex.HasMeshException DesignName
 newDesignName designName =
  case T.length designName == 0 of
-   --True -> throwIO $ Hex.ZeroLengthName "Zero length designName"
    True -> Left $ Hex.ZeroLengthName "Zero length designName"
    False -> pure $ DesignName designName
+
 
 -- | Name of the 3D design, used to build filepath for saving a design .geo file.
 data DesignName = DesignName {validDesignName :: Text}
 
-
-
-class HasDesignName env where
-  designNameL :: Lens' env T.Text -- ^ 'DesignName'
-
-
-instance HasDesignName Enviro.Environment where
-  designNameL = lens Enviro.env_designName (\x y -> x {Enviro.env_designName = y})
-----------------------------------------------------------------------------------------------------------
-
+designFilePath :: DesignName ->  FilePath
+designFilePath ( DesignName designName) = 
+  T.unpack $ "src/Data/GeoFiles/" <> designName <> ".geo"
+  
 
