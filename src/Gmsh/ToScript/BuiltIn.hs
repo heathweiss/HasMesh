@@ -21,10 +21,15 @@ import qualified Geometry.Geometry as Geo
 import qualified Gmsh.ID as ID
 
 -- | Output a gmsh point.
+writePoint :: Geo.Vertex -> ID.Id ID.PointInt -> B.ByteString
+writePoint (Geo.Vertex' x y z) (ID.PointId (ID.PointInt id)) =
+  [i|\nPoint(#{id}) = {#{x},#{y},#{z},lc};|] :: B.ByteString
+{-
 writePoint :: Geo.Vertex -> ID.Id Int -> B.ByteString
 writePoint (Geo.Vertex' x y z) (ID.PointId id) =
   [i|\nPoint(#{id}) = {#{x},#{y},#{z},lc};|] :: B.ByteString
-{-before GADT
+
+before GADT
 writePoint :: Geo.Vertex -> Gmsh.PointId -> B.ByteString
 writePoint (Geo.Vertex' x y z) (Gmsh.PointId id) =
   [i|Point(#{id}) = {#{x},#{y},#{z},lc};|] :: B.ByteString

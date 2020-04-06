@@ -47,11 +47,21 @@ loadLoader = do
 -- | Environment to the RIO monad, which is used throughout HasMesh.
 data Environment = 
   Env { env_designName :: !Text, -- ^ The 'DesignName'. Used to build the path to the saved file.
-        env_pointIdSupply :: !(IORef (ID.Id Int)), -- ^ The supply for 'Geometry.Gmsh.PointID'
-        env_pointIdMap :: !(IORef (Map Int (ID.Id Int))), -- ^ The map containing the 'Gmsh.GPointId's associated with each 'Geometry.Vertex.Vertex'. The key is a hash of the Vertex. todo: Wrap vertex in an ADT?
+        --env_pointIdSupply :: !(IORef (ID.Id Int)), -- ^ The supply for 'Geometry.Gmsh.PointID'
+        env_pointIdSupply :: !(IORef (ID.Id ID.PointInt)), -- ^ The supply for 'Geometry.Gmsh.PointID'
+        --env_pointIdMap :: !(IORef (Map Int (ID.Id Int))), -- ^ The map containing the 'Gmsh.GPointId's associated with each 'Geometry.Vertex.Vertex'. The key is a hash of the Vertex. todo: Wrap vertex in an ADT?
+        env_pointIdMap :: !(IORef (Map Int (ID.Id ID.PointInt))), -- ^ The map containing the 'Gmsh.GPointId's associated with each 'Geometry.Vertex.Vertex'. The key is a hash of the Vertex. todo: Wrap vertex in an ADT?
         env_geoFileHandle :: !(IORef Handle) -- ^ Handle for writing gmsh script to the design file. Set to stdout for default value.
       } 
 {-
+The pre PointInt version
+data Environment = 
+  Env { env_designName :: !Text, -- ^ The 'DesignName'. Used to build the path to the saved file.
+        env_pointIdSupply :: !(IORef (ID.Id Int)), -- ^ The supply for 'Geometry.Gmsh.PointID'
+        env_pointIdMap :: !(IORef (Map Int (ID.Id Int))), -- ^ The map containing the 'Gmsh.GPointId's associated with each 'Geometry.Vertex.Vertex'. The key is a hash of the Vertex. todo: Wrap vertex in an ADT?
+        env_geoFileHandle :: !(IORef Handle) -- ^ Handle for writing gmsh script to the design file. Set to stdout for default value.
+      }
+-- the pre GADT version
 data Environment = 
   Env { env_designName :: !Text, -- ^ The 'DesignName'. Used to build the path to the saved file.
         env_pointIdSupply :: !(IORef Gmsh.PointId), -- ^ The supply for 'Geometry.Gmsh.PointID'
@@ -65,10 +75,16 @@ instance Show Environment where
 
 --convert a Loader to an Environment.
 --Needs to load in an IORef from an IO monad, so must be called from IO
-toEnvironment :: Loader -> IORef (ID.Id Int) -> IORef (Map Int (ID.Id Int)) -> IORef Handle -> Environment
+toEnvironment :: Loader -> IORef (ID.Id ID.PointInt) -> IORef (Map Int (ID.Id ID.PointInt)) -> IORef Handle -> Environment
 toEnvironment (Loader designName ) iorefPointIdSupply iorefPoints iorefDesignFileHandle =
   Env designName iorefPointIdSupply iorefPoints iorefDesignFileHandle
 {-
+version before ID.PointInt
+toEnvironment :: Loader -> IORef (ID.Id Int) -> IORef (Map Int (ID.Id Int)) -> IORef Handle -> Environment
+toEnvironment (Loader designName ) iorefPointIdSupply iorefPoints iorefDesignFileHandle =
+  Env designName iorefPointIdSupply iorefPoints iorefDesignFileHandle
+
+Verson before GADT?
 toEnvironment :: Loader -> IORef Gmsh.PointId -> IORef (Map Int Gmsh.PointId) -> IORef Handle -> Environment
 toEnvironment (Loader designName ) iorefPointIdSupply iorefPoints iorefDesignFileHandle =
   Env designName iorefPointIdSupply iorefPoints iorefDesignFileHandle
@@ -83,18 +99,28 @@ instance HasGeoFileHandle Environment where
 
 
 class HasPointIdMap env where
-  env_pointIdMapL :: Lens' env (IORef (Map Int (ID.Id Int))) -- ^ The map of 'Gmsh.PointId's associated with each 'Geometry.Vertex.Vertex'
+  env_pointIdMapL :: Lens' env (IORef (Map Int (ID.Id ID.PointInt))) -- ^ The map of 'Gmsh.PointId's associated with each 'Geometry.Vertex.Vertex'
 {-
+--version before ID.PointInt
+class HasPointIdMap env where
+  env_pointIdMapL :: Lens' env (IORef (Map Int (ID.Id Int))) -- ^ The map of 'Gmsh.PointId's associated with each 'Geometry.Vertex.Vertex'
+
+version before GADT
 class HasPointIdMap env where
   env_pointIdMapL :: Lens' env (IORef (Map Int Gmsh.PointId)) -- ^ The map of 'Gmsh.PointId's associated with each 'Geometry.Vertex.Vertex'
 -}
 
 instance HasPointIdMap Environment where
   env_pointIdMapL = lens env_pointIdMap (\x y -> x {env_pointIdMap = y})
+{-
+version before ID.PointInt
+instance HasPointIdMap Environment where
+  env_pointIdMapL = lens env_pointIdMap (\x y -> x {env_pointIdMap = y})
 
+-}
 
 class HasPointIdSupply env where
-  env_pointIdSupplyL :: Lens' env (IORef (ID.Id Int)) -- ^ Supply of 'Gmsh.PointId'
+  env_pointIdSupplyL :: Lens' env (IORef (ID.Id ID.PointInt)) -- ^ Supply of 'Gmsh.PointId'
 {-Version prior to GADT.
 class HasPointIdSupply env where
   env_pointIdSupplyL :: Lens' env (IORef Gmsh.PointId) -- ^ Supply of 'Gmsh.PointId'

@@ -29,6 +29,19 @@ import qualified Gmsh.Gmsh as Gmsh
 loadEnvironment :: IO (Enviro.Environment)
 loadEnvironment = do
   loaded <- Enviro.loadLoader
+  --iorefPointIdSupply <- newIORef $ Gmsh.PointId 1
+  iorefPointIdSupply <- newIORef $ Gmsh.newPointId  1
+  iorefPoints <- newIORef $ Map.fromList []
+  iorefDesignFileHandle <- newIORef stdout
+  let
+    env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle
+  validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view Enviro.designNameL env_
+  return $ env_ 
+{-
+-- | Load the global RIO 'Environment'
+loadEnvironment :: IO (Enviro.Environment)
+loadEnvironment = do
+  loaded <- Enviro.loadLoader
   iorefPointIdSupply <- newIORef $ Gmsh.PointId 1
   iorefPoints <- newIORef $ Map.fromList []
   iorefDesignFileHandle <- newIORef stdout
@@ -36,9 +49,20 @@ loadEnvironment = do
     env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle
   validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view Enviro.designNameL env_
   return $ env_ 
-
+-}
 
 -- | Load the global RIO 'Environment', and set values to default values that wil not change. For testing.
+loadTestEnvironment :: IO (Enviro.Environment)
+loadTestEnvironment = do
+  loaded <- Enviro.loadLoader
+  iorefPointIdSupply <- newIORef $ Gmsh.PointId $ Gmsh.PointInt 1
+  iorefPoints <- newIORef $ Map.fromList []
+  iorefDesignFileHandle <- newIORef stdout
+  let
+    env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle
+  return $ env_ {Enviro.env_designName = "testDesignName"} 
+
+{-
 loadTestEnvironment :: IO (Enviro.Environment)
 loadTestEnvironment = do
   loaded <- Enviro.loadLoader
@@ -48,5 +72,4 @@ loadTestEnvironment = do
   let
     env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle
   return $ env_ {Enviro.env_designName = "testDesignName"} 
-
-
+-}
