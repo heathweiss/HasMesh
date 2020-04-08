@@ -33,11 +33,39 @@ loadEnvironment = do
   iorefPointIdSupply <- newIORef $ Gmsh.newPointId  1
   iorefPoints <- newIORef $ Map.fromList []
   iorefDesignFileHandle <- newIORef stdout
+  iorefLineIdSupply <- newIORef $ Gmsh.newLineId  1
+  let
+    env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply
+  validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view Enviro.designNameL env_
+  return $ env_ 
+{-
+before removing ID.Id
+loadEnvironment :: IO (Enviro.Environment)
+loadEnvironment = do
+  loaded <- Enviro.loadLoader
+  --iorefPointIdSupply <- newIORef $ Gmsh.PointId 1
+  iorefPointIdSupply <- newIORef $ Gmsh.newPointId  1
+  iorefPoints <- newIORef $ Map.fromList []
+  iorefDesignFileHandle <- newIORef stdout
+  iorefLineIdSupply <- newIORef $ Gmsh.newLineId  1
+  let
+    env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply
+  validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view Enviro.designNameL env_
+  return $ env_ 
+
+before LineId
+loadEnvironment :: IO (Enviro.Environment)
+loadEnvironment = do
+  loaded <- Enviro.loadLoader
+  --iorefPointIdSupply <- newIORef $ Gmsh.PointId 1
+  iorefPointIdSupply <- newIORef $ Gmsh.newPointId  1
+  iorefPoints <- newIORef $ Map.fromList []
+  iorefDesignFileHandle <- newIORef stdout
   let
     env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle
   validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view Enviro.designNameL env_
   return $ env_ 
-{-
+
 -- | Load the global RIO 'Environment'
 loadEnvironment :: IO (Enviro.Environment)
 loadEnvironment = do
@@ -58,11 +86,24 @@ loadTestEnvironment = do
   iorefPointIdSupply <- newIORef $ Gmsh.PointId $ Gmsh.PointInt 1
   iorefPoints <- newIORef $ Map.fromList []
   iorefDesignFileHandle <- newIORef stdout
+  iorefLineIdSupply <- newIORef $ Gmsh.newLineId  1
+  let
+    env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply
+  return $ env_ {Enviro.env_designName = "testDesignName"} 
+
+{-
+before LineId
+loadTestEnvironment :: IO (Enviro.Environment)
+loadTestEnvironment = do
+  loaded <- Enviro.loadLoader
+  iorefPointIdSupply <- newIORef $ Gmsh.PointId $ Gmsh.PointInt 1
+  iorefPoints <- newIORef $ Map.fromList []
+  iorefDesignFileHandle <- newIORef stdout
   let
     env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle
   return $ env_ {Enviro.env_designName = "testDesignName"} 
 
-{-
+
 loadTestEnvironment :: IO (Enviro.Environment)
 loadTestEnvironment = do
   loaded <- Enviro.loadLoader
