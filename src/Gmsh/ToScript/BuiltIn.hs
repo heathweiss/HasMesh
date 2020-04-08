@@ -10,7 +10,7 @@ import qualified Gmsh.ToScript.BuiltIn as ScrB
 or as part of the Gmsh import module
 import qualified Gmsh.Gmsh as Gmsh
 -}
-module Gmsh.ToScript.BuiltIn(writePoint, writeLC1, writeLC2, writeLC3) where
+module Gmsh.ToScript.BuiltIn(writePoint, writeLine, writeLC1, writeLC2, writeLC3) where
 
 import RIO
 import qualified RIO.ByteString as B
@@ -35,7 +35,7 @@ writePoint (Geo.Vertex' x y z) (Gmsh.PointId id) =
   [i|Point(#{id}) = {#{x},#{y},#{z},lc};|] :: B.ByteString
 -}
 
-  -- | Write the lc var that Gmsh tutorials use to set the mesh size near a 'Geometry.Vertex'.
+-- | Write the lc var that Gmsh tutorials use to set the mesh size near a 'Geometry.Vertex'.
 -- This .geo variable is the 4th parameter to all Points in Gmsh script. Eg: Point(1) = {0, 0, 0, lc};
 -- Needs to be output at the start of the .geo file.
 writeLC1 :: B.ByteString
@@ -44,3 +44,9 @@ writeLC2 :: B.ByteString
 writeLC2 = "lc = 1e-2;"
 writeLC3 :: B.ByteString
 writeLC3 = "lc = 1e-3;"
+
+
+writeLine :: ID.Id ID.LineInt -> ID.Id ID.PointInt -> ID.Id ID.PointInt -> B.ByteString
+writeLine (ID.LineId (ID.LineInt lineId)) (ID.PointId (ID.PointInt pointId1)) (ID.PointId (ID.PointInt pointId2)) =
+  [i|\nLine(#{lineId}) = {#{pointId1},#{pointId2}};|] :: B.ByteString
+
