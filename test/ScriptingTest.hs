@@ -34,7 +34,8 @@ runTests = do
   testPoint1 = TestCase $ assertEqual
    "output a point"
    ("\nPoint(1) = {1.0,2.0,3.0,lc};")
-   (ScrB.writePoint (Geo.newVertex 1 2 3) (Gmsh.PointId 1))
+   --(ScrB.writePoint (Geo.newVertex 1 2 3) (Gmsh.PointId 1))
+   (ScrB.writePoint (Geo.newVertex 1 2 3) (Gmsh.PointId $ Gmsh.PointInt 1))
  runTestTT testPoint1
 
 
@@ -59,3 +60,13 @@ runTests = do
    ("lc = 1e-3;")
    (ScrB.writeLC3)
  runTestTT testLc3
+
+
+-- ============================ LINE tests =============================================
+
+ let
+  testLine = TestCase $ assertEqual
+   "write a line"
+   ("\nLine(5) = {1,11};")
+   (ScrB.writeLine (Gmsh.LineId $ Gmsh.LineInt 5) (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 11) )
+ runTestTT testLine

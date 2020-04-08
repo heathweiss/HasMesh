@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b6fc6840ef356118df296fb2656683f9a5e84b80ae9fca0ea0959fff8c66ed45
+-- hash: cc2b34d2cf97b86e68a8cb073a8924c422a969c2fa583da3d5aef7e9846b490e
 
 name:           HasMesh
 version:        0.1.0.0
@@ -31,6 +31,7 @@ library
       Geometry.Vertex
       Gmsh.Gmsh
       Gmsh.ID
+      Gmsh.Line
       Gmsh.Point
       Gmsh.ToScript.BuiltIn
       Gmsh.ToScript.Common
@@ -43,6 +44,7 @@ library
       Utils.EnvironmentLoader
       Utils.Exceptions
       Utils.FileWriter
+      Utils.List
       Utils.RunExceptions
   other-modules:
       Paths_HasMesh
@@ -83,6 +85,7 @@ test-suite HasMesh-test
   main-is: Spec.hs
   other-modules:
       FileWriterTest
+      LineTest
       ScriptingTest
       UtilSpec
       VertexTest
