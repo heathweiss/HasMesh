@@ -20,9 +20,8 @@ t1 = do
       let
         createDesign :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env, Enviro.HasDesignName env) => RIO env ()
         createDesign = do
-          --badName <- HexR.runEitherRIO "badName" $ FW.newDesignName ""
           env <- ask
-          geoFileHandleIORef <- view Enviro.env_geoFileHandleL
+          geoFileHandleIORef <- view Enviro.geoFileHandleL
           geoFileHandle <- readIORef geoFileHandleIORef
           B.hPut geoFileHandle $ ScrB.writeLC1
 
@@ -32,7 +31,6 @@ t1 = do
           return ()
       env <- EnvLdr.loadEnvironment
       designName <-  HexR.runEitherIO "designName" $ FW.newDesignName "t1"
-      --filePath <-  runRIO (env{Enviro.env_designName = designName}) FW.designFilePath
       
       handle_ <- SIO.openFile (FW.designFilePath designName) WriteMode
       handleRef <- newIORef handle_
