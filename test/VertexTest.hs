@@ -17,6 +17,7 @@ import qualified Geometry.Geometry as Geo
 import qualified Gmsh.Point as Pts  
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Utils.Environment as Enviro
+import qualified Utils.List as L
 
 
 runTests = do
@@ -255,7 +256,7 @@ runTests = do
    )
  runTestTT testGetVertexIdsUsingRIO3
 
-
+{- 
 --Load an environment in IO, then insert 2 Vertexs that are in an array
  let
   testGetVertexIdsUsingRIO3 = TestCase
@@ -269,6 +270,23 @@ runTests = do
       assertEqual "get the vector id from an ioref" [Gmsh.PointId $ Gmsh.PointInt 1, Gmsh.PointId $ Gmsh.PointInt 2] points -- result 
    )
  runTestTT testGetVertexIdsUsingRIO3
+-}
+
+
+--Load an environment in IO, then create 3 lines from 3 Vertexs that are in an array, using Pts.toPointsT
+ let
+  testGetVertexIdsUsingRIO3T = TestCase
+   (do
+      
+      
+      env <- EnvLdr.loadTestEnvironment
+      let
+        vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6]
+      points <- runRIO env $ Pts.toPoints vertexs
+      --assertEqual "get the vector id from an ioref" [Gmsh.PointId $ Gmsh.PointInt 1, Gmsh.PointId $ Gmsh.PointInt 2] points -- result
+      assertEqual "get the vector id from an ioref" (Right $ L.Cons (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 2) []  L.Nil) points -- result 
+   )
+ runTestTT testGetVertexIdsUsingRIO3T
 
 
 -- =========================================== get PointId and write to handle ===========================

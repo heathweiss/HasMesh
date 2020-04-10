@@ -19,6 +19,9 @@ import qualified Gmsh.Point as Pts
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Utils.Environment as Enviro
 import qualified Gmsh.Line as Line
+import qualified Gmsh.Point as Pnt
+import qualified Utils.List as L
+import qualified Utils.RunExceptions as HexR
 
 runTests = do
  P.putStrLn $ "=============== LineTest ====================="  
@@ -39,7 +42,7 @@ runTests = do
    --(Gmsh.evalLineId (Gmsh.incr $ Gmsh.LineId $ Gmsh.newLineId 1) )
  runTestTT testIncrLineId
 
--- ======================================== use with Env ================================
+-- ======================================== create and increment Line Id's: use with Env ================================
 --Load an environment in IO, and increment the LineId from within a RIO monad.
 --This is the inner working of the Gmsh.getLineId fx.
  let
@@ -72,11 +75,10 @@ runTests = do
    )
  runTestTT testGetAndIncrLineIdFromEnv2
 
-
+-- ============================ create Lines from [Vertex] ===================================
 -- create 2 vertex, get their gmsh ids, then create a new line from those ids.
-
  let
-  testGetAndIncrLineIdFromEnv3 = TestCase
+  testCreateLineFromVertexs = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
       
@@ -86,15 +88,40 @@ runTests = do
       --runSimpleApp $ logInfo $ displayShow lineId
       assertEqual "create line from 2 point ids" (Gmsh.LineId $ Gmsh.LineInt 1) lineId
    )
- runTestTT testGetAndIncrLineIdFromEnv3
+ runTestTT testCreateLineFromVertexs
 
--- why isn't the Line script printing to stdout, even though the points print.
+
+-- create 2 vertex, get their gmsh ids, then create a new line from those ids as a [id].
+-- Note that there are 3 lines from only 3 vertex. This is because it closes the loop by creating a line from the last vertex back to the head vertex.
+ let
+  testCreateLineFromVertexs2 = TestCase
+   (do
+      env <- EnvLdr.loadTestEnvironment
+      {-
+      point1 <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
+      point2 <- runRIO env $ Pts.toPoint $ Geo.newVertex  4 5 6
+      point3 <- runRIO env $ Pts.toPoint $ Geo.newVertex  4.7 4.8 4.9-}
+      let vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6, Geo.newVertex  7 8 9]
+      eitherPoints <- runRIO env $ Pnt.toPoints vertexs
+      points <- HexR.runEitherIO "points" eitherPoints
+      --lineId <- runRIO env $ Line.createLinesFromPoints $ L.Cons point1 point2 [point3] L.Nil
+      lineIds <- runRIO env $ Line.createLinesFromPoints points
+      assertEqual "create line from 2 point ids" ([Gmsh.LineId $ Gmsh.LineInt 1, Gmsh.LineId $ Gmsh.LineInt 2, Gmsh.LineId $ Gmsh.LineInt 3]) lineIds
+   )
+ runTestTT testCreateLineFromVertexs2
 
 {-
-=============== LineTest =====================
-Cases: 1  Tried: 1  Errors: 0  Failures: 0
-Cases: 1  Tried: 1  Errors: 0  Failures: 0
-Cases: 1  Tried: 1  Errors: 0  Failures: 0
-Cases: 1  Tried: 1  Errors: 0  Failures: 0
+ let
+  testCreateLineFromVertexs2 = TestCase
+   (do
+      env <- EnvLdr.loadTestEnvironment
+      
+      point1 <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
+      point2 <- runRIO env $ Pts.toPoint $ Geo.newVertex  4 5 6
+      point3 <- runRIO env $ Pts.toPoint $ Geo.newVertex  4.7 4.8 4.9
+      lineId <- runRIO env $ Line.createLinesFromPoints $ L.Cons point1 point2 [point3] L.Nil
+      assertEqual "create line from 2 point ids" ([Gmsh.LineId $ Gmsh.LineInt 1, Gmsh.LineId $ Gmsh.LineInt 2, Gmsh.LineId $ Gmsh.LineInt 3]) lineId
+   )
+ runTestTT testCreateLineFromVertexs2
 
 -}
