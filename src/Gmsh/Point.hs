@@ -5,11 +5,12 @@
 {-# LANGUAGE PatternSynonyms #-}
 
 
+
 {- | Supply functions to support the  'Gmsh.ID.PointId' ADT and associated classes.
 
 import qualified Gmsh.Point as Pnt  
 -}
-module Gmsh.Point(toPoint, toPoints) where
+module Gmsh.Point(toPoint, {-toPoints,-} toPoints, PointIdList()) where
 
 import RIO
 import qualified Data.Hashable as H
@@ -21,6 +22,8 @@ import qualified Geometry.Geometry as Geo
 import qualified Gmsh.ID as ID
 --import qualified Scripting.Scripting as Script
 import qualified Gmsh.ToScript.BuiltIn as ScrB
+import qualified Utils.List as L
+import qualified Utils.Exceptions as Hex 
 
 
 -- | Associate a 'Geometry.Vertex.Vertex' with a 'ID.PointId', which is the Id used by Gmsh in scripting.
@@ -44,10 +47,59 @@ toPoint vertex = do
       writeIORef poIntIdSupplyioref (ID.incr currPointId )
       return currPointId
 
+
+-- | Process a ['Geo.Vertex'] into a 'PointIdList'. Print any new 'ID.PointId' to .geo file.
+-- The [PointIdList] will have at least 3 lines to form a closed polygon such as triangle, square, or irregular shape. The 2nd vertex of the last line will be == 1st vertex of 1st line, to form a closed loop.
+--
+-- Side effects: Makes changes to the PointId supply and 'Geometry.Vertex.Vertex' map IORefs in 'Enviro.Environment'
+-- Returns a Left 'Hex.SafeList3MinError' exception is the vertex list length < 3, as a [ID.Id ID.PointInt] must have at least 3 Vertex to form a closed polygon such as triangle, square, or irregular shape.
+--
+-- toDo: Should the idea of a list of lines being closed be repesented/enforece with a type such as Closed {closedList :: [a]}
+-- For now, will simpley return a closed list, without any type or enforcement.
+toPoints :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env, Enviro.HasLineIdSupply env) => [Geo.Vertex] -> RIO env (Either Hex.HasMeshException PointIdList)
+toPoints [] = return $ Left $ Hex.SafeList3MinError "length == 0"
+toPoints (x:[]) = return $ Left $ Hex.SafeList3MinError "length == 1"
+toPoints (x:y:[]) = return $ Left $ Hex.SafeList3MinError "length == 2"
+toPoints (x:y:ys) = do
+  let
+    toointIdList :: [ID.Id ID.PointInt] -> PointIdList
+    toointIdList vertex =
+      let
+        decode :: [ID.Id ID.PointInt] -> PointIdList
+        decode (x':y':ys) = L.Cons x' y' ys  L.Nil
+      in
+        decode $ reverse vertex
+    toPoints' :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => Geo.Vertex -> [Geo.Vertex] -> [ID.Id ID.PointInt] -> RIO env (Either Hex.HasMeshException PointIdList)
+    toPoints' initVertex (x:[]) workingPoints = do
+      --runSimpleApp $ logInfo $ displayShow "in toPoints'"
+      env <- ask
+      xPointId <- runRIO env $ toPoint x
+      case x == initVertex of
+        True -> do
+          --runSimpleApp $ logInfo "True"
+          return $ Right $ toointIdList (xPointId:workingPoints)
+        False -> do
+          --runSimpleApp $ logInfo "False"
+          initId <- runRIO env $ toPoint initVertex
+          return $ Right $ toointIdList (initId:xPointId:workingPoints) 
+    toPoints' initVertex (v:vs) workingPoints = do
+      env <- ask
+      pointId <- runRIO env $ toPoint v
+      toPoints' initVertex vs (pointId:workingPoints)
+  env <- ask
+  runRIO env $ toPoints' x (x:y:ys) []
+
+-- | A 'Utils.List.SafeList3' containing [ID.Id ID.PointInt] for containing a min length of 3 list of Gmsh point Ids.
+type PointIdList = L.SafeList3 (ID.Id ID.PointInt) L.NonEmptyID
+
+{-
+This is the version of toPoints before it was put in a SafeList3 and before closing the loop.
+Should keep it around till make sure the new version is flexible enough?
+
 -- | Process a ['Geo.Vertex'] into a ['ID.PointId']. Print any new 'ID.PointId' to .geo file.
 --
 -- Side effects: Makes changes to the PointId supply and vertex map IORefs in 'Enviro.Environment'
---
+-- Will be replaced by toPointsT which works with PointIDList
 toPoints :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => [Geo.Vertex] -> RIO env [(ID.Id ID.PointInt)]
 toPoints [] = return []
 toPoints vertexs = do
@@ -61,6 +113,7 @@ toPoints vertexs = do
       toPoints' vs (pointId:workingPoints)
   env <- ask
   runRIO env $ toPoints' vertexs []
- 
+-}
+
 
 
