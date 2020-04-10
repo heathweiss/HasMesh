@@ -6,10 +6,12 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {- | Supply functions to support the  'Gmsh.ID.LineId' ADT and associated classes.
 
+"Points" in this module refers to 'Gmsh.Id ID.PointInt', which is the Gmsh Id associated with a 'Geometry.Vertex'
+
 import qualified Gmsh.Line as Line
 or import via Gmsh.Gmsh
 -}
-module Gmsh.Line(getLineId, createLineFromPoints) where
+module Gmsh.Line(getLineId, createLineFromPoints, createLinesFromPoints) where
 
 import RIO
 import qualified RIO.Map as Map
@@ -19,6 +21,8 @@ import qualified Geometry.Geometry as Geo
 import qualified Gmsh.ID as ID
 import qualified Gmsh.ToScript.BuiltIn as ScrB
 import qualified Utils.Environment as Enviro
+import qualified Utils.List as L
+import qualified Gmsh.Point as Pnt  
 
 -- | Combination of a 'ID.Id ID.LineInt' and the 2 associated 'ID.Id ID.PointInt'
 -- For now. Stick to using just the line id, as can see no point in combining them with the point ids.
@@ -47,8 +51,35 @@ createLineFromPoints (pointId1) (pointId2) = do
   return (lineId)
 
 -- | Create a ['ID.Id ID.LineInt'] from a ['ID.Id ID.PointInt']
--- The ['ID.Id ID.PointInt'] must have at least 2 items, or no line can be generated. Should this be an error.
--- Can I control this with GADT's to give a compile time gaurantee that it has a length of 2.
+-- The ['ID.Id ID.PointInt'] must have at least 2 items, or no line can be generated. Uses an input of 'Pnt.PointIdList' to enforce min length of 2.
+createLinesFromPoints :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env) => Pnt.PointIdList -> RIO env [ID.Id ID.LineInt]
+createLinesFromPoints (L.Cons x y ys _) = do
+--createLinesFromPoints _ = do
+  let
+    createLinesFromPoints' :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env) => [ID.Id ID.PointInt] -> [ID.Id ID.LineInt] -> RIO env ([ID.Id ID.LineInt])
+    createLinesFromPoints' (x':x'':[]) workingList = do
+      env <- ask
+      lastLine <- runRIO env $ createLineFromPoints x' x''
+      return $ reverse $ (lastLine:workingList)
+    createLinesFromPoints' (x':x'':xs) workingList = do
+      env <- ask
+      currLine <- runRIO env $ createLineFromPoints x' x''
+      createLinesFromPoints' (x'':xs) (currLine:workingList)
+  env <- ask 
+  runRIO env $ createLinesFromPoints' (x:y:ys) []
+  --return _
 
 
+{-
+createLinesFromPoints :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env) => Pnt.PointIdList -> RIO env [ID.Id ID.LineInt]
+--createLinesFromPoints (L.Cons x y ys _) = do
+createLinesFromPoints _ = do
+  let
+    createLinesFromPoints' :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env) => [ID.Id ID.PointInt] -> [ID.Id ID.LineInt] -> RIO env [ID.Id ID.LineInt]
+    createLinesFromPoints' (x:x':[]) workingList = do
+      reverse workingLIst
+  in
+    env <- ask 
+    runRIO env $ createLinesFromPoints' (x:y:ys) []
 
+-}
