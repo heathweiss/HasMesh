@@ -10,7 +10,7 @@
 
 import qualified Gmsh.Point as Pnt  
 -}
-module Gmsh.Point(toPoint, {-toPoints,-} toPoints, PointIdList()) where
+module Gmsh.Point({-toPoint -} toPoints, PointIdList()) where
 
 import RIO
 import qualified Data.Hashable as H
@@ -26,7 +26,7 @@ import qualified Utils.List as L
 import qualified Utils.Exceptions as Hex 
 
 
--- | Associate a 'Geometry.Vertex.Vertex' with a 'ID.PointId', which is the Id used by Gmsh in scripting.
+-- Associate a 'Geometry.Vertex.Vertex' with a 'ID.PointId', which is the Id used by Gmsh in scripting.
 -- If the vertex already has an Id, just return the Id, otherwise create a new Id, and write it to a .geo file via the env handle.
 
 toPoint :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => Geo.Vertex -> RIO env (ID.Id ID.PointInt)
@@ -93,26 +93,63 @@ toPoints (x:y:ys) = do
 type PointIdList = L.SafeList3 (ID.Id ID.PointInt) L.NonEmptyID
 
 {-
-This is the version of toPoints before it was put in a SafeList3 and before closing the loop.
-Should keep it around till make sure the new version is flexible enough?
+-------------------------------- Internal tests for non-exported functions ---------------------------
+runTests = do
+-- create 2 vertex, get their gmsh ids, then create a new line from those ids.
+ let
+  testCreateLineFromVertexs = TestCase
+   (do
+      env <- EnvLdr.loadTestEnvironment
+      
+      point1 <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
+      point2 <- runRIO env $ Pts.toPoint $ Geo.newVertex  4 5 6
+      lineId <- runRIO env $ Line.createLineFromPoints point1 point2
+      --runSimpleApp $ logInfo $ displayShow lineId
+      assertEqual "create line from 2 point ids" (Gmsh.LineId $ Gmsh.LineInt 1) lineId
+   )
+ runTestTT testCreateLineFromVertexs
 
--- | Process a ['Geo.Vertex'] into a ['ID.PointId']. Print any new 'ID.PointId' to .geo file.
---
--- Side effects: Makes changes to the PointId supply and vertex map IORefs in 'Enviro.Environment'
--- Will be replaced by toPointsT which works with PointIDList
-toPoints :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => [Geo.Vertex] -> RIO env [(ID.Id ID.PointInt)]
-toPoints [] = return []
-toPoints vertexs = do
-  let
-    toPoints' :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => [Geo.Vertex] -> [ID.Id ID.PointInt] -> RIO env [(ID.Id ID.PointInt)]
-    toPoints' [] workingPoints = do
-      return $ reverse workingPoints
-    toPoints' (v:vs) workingPoints = do
-      env <- ask
-      pointId <- runRIO env $ toPoint v
-      toPoints' vs (pointId:workingPoints)
-  env <- ask
-  runRIO env $ toPoints' vertexs []
+--Load an environment in IO, then call Pts.toPoint to get the PointId for a vertex.
+ let
+  testGetVertexIdsUsingRIO = TestCase
+   (do
+      
+      
+      env <- EnvLdr.loadTestEnvironment
+      result <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
+      assertEqual "get the vector id from an ioref" (Gmsh.PointId $ Gmsh.PointInt 1) result 
+   )
+ runTestTT testGetVertexIdsUsingRIO
+
+
+--Load an environment in IO, then call Pts.toPoint to get the PointId for a 2nd vertex.
+ let
+  testGetVertexIdsUsingRIO2 = TestCase
+   (do
+      
+      
+      env <- EnvLdr.loadTestEnvironment
+      result1 <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
+      result <- runRIO env $ Pts.toPoint $ Geo.newVertex  4 5 6
+      assertEqual "get the vector id from an ioref" (Gmsh.PointId $ Gmsh.PointInt 2) result 
+   )
+ runTestTT testGetVertexIdsUsingRIO2
+
+
+--Load an environment in IO, then insert 2 identical Vertexs to see that it was only inserted once.
+ let
+  testGetVertexIdsUsingRIO3 = TestCase
+   (do
+      
+      
+      env <- EnvLdr.loadTestEnvironment
+      result1 <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
+      result <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
+      assertEqual "get the vector id from an ioref" (Gmsh.PointId $ Gmsh.PointInt 1) result 
+   )
+ runTestTT testGetVertexIdsUsingRIO3
+
+
 -}
 
 

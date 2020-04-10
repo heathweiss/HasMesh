@@ -23,6 +23,8 @@ pattern Vertex' x y z <- Vertex x y z
 {- | 
 Vertex in 3D geometry.
 Has no constructor as the axis values need to be truncated to 2 decimal places for equality and hashing purposes.
+
+To create a Gmsh Id for a Vertex, in the form of a 'Gmsh.ID' 'Gmsh.PointInt', use 'Gmsh.Point.toPoints'.
 -}
 data Vertex =  Vertex { _xAxis :: Double, _yAxis :: Double, _zAxis :: Double }
            

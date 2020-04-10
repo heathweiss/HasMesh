@@ -40,7 +40,7 @@ t1 = do
                        ]
           eitherPoints <- runRIO env $ Pnt.toPoints vertexs
           points <- HexR.runEitherRIO "points" eitherPoints
-          _ <- runRIO env $ Line.createLinesFromPoints points -- $ L.Cons point1 point2 [point3] L.Nil
+          _ <- runRIO env $ Line.createLinesFromPoints points 
           return ()
       env <- EnvLdr.loadEnvironment
       designName <-  HexR.runEitherIO "designName" $ FW.newDesignName "t1"

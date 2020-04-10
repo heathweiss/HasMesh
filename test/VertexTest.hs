@@ -216,45 +216,6 @@ runTests = do
    )
  runTestTT testGetVertexId2
 
---Load an environment in IO, then call Pts.toPoint to get the PointId for a vertex.
- let
-  testGetVertexIdsUsingRIO = TestCase
-   (do
-      
-      
-      env <- EnvLdr.loadTestEnvironment
-      result <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
-      assertEqual "get the vector id from an ioref" (Gmsh.PointId $ Gmsh.PointInt 1) result 
-   )
- runTestTT testGetVertexIdsUsingRIO
-
-
---Load an environment in IO, then call Pts.toPoint to get the PointId for a 2nd vertex.
- let
-  testGetVertexIdsUsingRIO2 = TestCase
-   (do
-      
-      
-      env <- EnvLdr.loadTestEnvironment
-      result1 <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
-      result <- runRIO env $ Pts.toPoint $ Geo.newVertex  4 5 6
-      assertEqual "get the vector id from an ioref" (Gmsh.PointId $ Gmsh.PointInt 2) result 
-   )
- runTestTT testGetVertexIdsUsingRIO2
-
-
---Load an environment in IO, then insert 2 identical Vertexs to see that it was only inserted once.
- let
-  testGetVertexIdsUsingRIO3 = TestCase
-   (do
-      
-      
-      env <- EnvLdr.loadTestEnvironment
-      result1 <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
-      result <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
-      assertEqual "get the vector id from an ioref" (Gmsh.PointId $ Gmsh.PointInt 1) result 
-   )
- runTestTT testGetVertexIdsUsingRIO3
 
 {- 
 --Load an environment in IO, then insert 2 Vertexs that are in an array

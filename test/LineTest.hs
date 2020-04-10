@@ -76,19 +76,7 @@ runTests = do
  runTestTT testGetAndIncrLineIdFromEnv2
 
 -- ============================ create Lines from [Vertex] ===================================
--- create 2 vertex, get their gmsh ids, then create a new line from those ids.
- let
-  testCreateLineFromVertexs = TestCase
-   (do
-      env <- EnvLdr.loadTestEnvironment
-      
-      point1 <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
-      point2 <- runRIO env $ Pts.toPoint $ Geo.newVertex  4 5 6
-      lineId <- runRIO env $ Line.createLineFromPoints point1 point2
-      --runSimpleApp $ logInfo $ displayShow lineId
-      assertEqual "create line from 2 point ids" (Gmsh.LineId $ Gmsh.LineInt 1) lineId
-   )
- runTestTT testCreateLineFromVertexs
+
 
 
 -- create 2 vertex, get their gmsh ids, then create a new line from those ids as a [id].

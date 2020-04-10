@@ -22,7 +22,7 @@ deriving instance Show (NonEmptyID)
 --
 -- Known Uses:
 --
--- A ['Gmsh.ID Gmsh.LineId'], which is the type used for building Gmsh lines from a ['Geometry.Vertex.Vertex'].
+-- A ['Gmsh.ID' 'Gmsh.LineId'], which is the type used for building Gmsh lines from a ['Geometry.Vertex.Vertex'].
 -- There must be at least 3 lines in order to create a closed polygon. This requires a ['Geometry.Vertex.Vertex'] of at least 3 items.
 --
 -- Eg: 3 'Geometry.Vertex.Vertex' will create a triangle, while 4 would create a square.
@@ -39,11 +39,11 @@ data SafeList3 a b where
 
 -- Provide show instance of 'SafeList3' for testing.
 instance Show (SafeList3 (ID.Id ID.PointInt) NonEmptyID) where
- show ((Cons x y ys _)) = "Cons x: " ++ show x ++ " y: " ++ show y ++ " ys: " ++ show ys
+ show ((Cons x y ys _)) = "Cons x: " ++ show x ++ " y: " ++ show y ++ " ys: " ++ show ys -- ^ Required for testing.
  
 -- Provide show instance of 'SafeList3' for testing.
 instance Eq (SafeList3 (ID.Id ID.PointInt) NonEmptyID) where
-  ((Cons x y ys _)) == ((Cons x' y' ys' _)) = (x == x') && (y == y') && (ys == ys')
+  ((Cons x y ys _)) == ((Cons x' y' ys' _)) = (x == x') && (y == y') && (ys == ys') -- ^ Required for testing.
 
 -- | Get the head of a 'SafeList3'
 safeHead3 :: SafeList3 a NonEmptyID -> a
