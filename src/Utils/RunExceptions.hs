@@ -35,10 +35,10 @@ runEitherIO location (Left(Hex.ZeroLengthName msg)) = do
 -- On Left: throws an InvestPassThru exception with the Left msg appended to a location of where in the fucntion it happened.
 -- The `catch' 'InvestPassThru' at the end of the function, will append the module and function name.
 runEitherRIO :: T.Text -> Either Hex.HasMeshException a -> RIO env (a)
---runEitherRIO :: {-(Enviro.HasDesignName env,Enviro.HasPointIdSupply env, Enviro.HasLineIdSupply env) =>-} T.Text -> Either Hex.HasMeshException a -> RIO env (a)
---There should be no need for all these restrictions, as it is not using any of them. The calling code has it's own version of env, and does not use this env.
 runEitherRIO _ (Right a) = return a
 runEitherRIO location (Left(Hex.ZeroLengthName msg)) = do
-  throwIO $ Hex.ZeroLengthName $ location <> ": " <> msg 
+  throwM $ Hex.ZeroLengthName $ location <> ": " <> msg
+runEitherRIO location (Left(Hex.SafeList3MinError msg)) = do
+  throwM $ Hex.SafeList3MinError $ location <> ": " <> msg 
 
 
