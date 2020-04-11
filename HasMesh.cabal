@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cc2b34d2cf97b86e68a8cb073a8924c422a969c2fa583da3d5aef7e9846b490e
+-- hash: df207058a637de8e83359af53c7a2ba4c979555b2a424566b316bc4bebb329ec
 
 name:           HasMesh
 version:        0.1.0.0
@@ -84,6 +84,7 @@ test-suite HasMesh-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      ExceptionsTest
       FileWriterTest
       LineTest
       ScriptingTest

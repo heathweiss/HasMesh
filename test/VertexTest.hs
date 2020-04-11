@@ -210,7 +210,7 @@ runTests = do
           finalId <- readIORef pointIdRef
           return (finalId)
       
-      env <- EnvLdr.loadEnvironment
+      env <- EnvLdr.loadTestEnvironment
       result <- runRIO env workInRIO 
       assertEqual "get the vector id from an ioref" (Gmsh.PointId $ Gmsh.PointInt 2) result 
    )
