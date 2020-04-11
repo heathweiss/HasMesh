@@ -6,7 +6,7 @@
 {- |
 import qualified Utils.RunExceptions as HexR
 -}
-module Utils.RunExceptions(runEitherIO, runEitherRIO,{- runEitherIOEx, runEitherRIOEx-}) where
+module Utils.RunExceptions(runEitherIO, runEitherRIO) where
 
 import RIO
 import qualified RIO.Text as T
@@ -40,3 +40,5 @@ runEitherRIO :: T.Text -> Either Hex.HasMeshException a -> RIO env (a)
 runEitherRIO _ (Right a) = return a
 runEitherRIO location (Left(Hex.ZeroLengthName msg)) = do
   throwIO $ Hex.ZeroLengthName $ location <> ": " <> msg 
+
+
