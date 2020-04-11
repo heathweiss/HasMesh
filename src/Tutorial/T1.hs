@@ -36,11 +36,10 @@ t1 = do
             vertexs = [Geo.newVertex  0 0 0,    --{0, 0, 0, lc}
                        Geo.newVertex  0.1 0 0,  --{.1, 0,  0, lc};
                        Geo.newVertex 0.1 0.3 0, --{.1, .3, 0, lc};
-                       Geo.newVertex 0 0.3 0    --{0,  .3, 0, lc};
+                       Geo.newVertex 10 0.3 0    --{0,  .3, 0, lc};
                        ]
-          eitherPoints <- runRIO env $ Pnt.toPoints vertexs
-          points <- HexR.runEitherRIO "points" eitherPoints
-          _ <- runRIO env $ Line.createLinesFromPoints points 
+          
+          _ <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" >>= Line.createLinesFromPoints
           return ()
       env <- EnvLdr.loadEnvironment
       designName <-  HexR.runEitherIO "designName" $ FW.newDesignName "t1"
