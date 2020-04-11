@@ -12,6 +12,7 @@ import qualified RIO.ByteString as B
 
 import qualified Utils.FileWriter as FW
 import qualified Utils.RunExceptions as HexR
+import qualified Utils.Exceptions as Hex
 import qualified Utils.Environment as Enviro
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Geometry.Geometry as Geo
@@ -36,10 +37,12 @@ t1 = do
             vertexs = [Geo.newVertex  0 0 0,    --{0, 0, 0, lc}
                        Geo.newVertex  0.1 0 0,  --{.1, 0,  0, lc};
                        Geo.newVertex 0.1 0.3 0, --{.1, .3, 0, lc};
-                       Geo.newVertex 10 0.3 0    --{0,  .3, 0, lc};
+                       Geo.newVertex 0 0.3 0    --{0,  .3, 0, lc};
                        ]
-          
-          _ <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" >>= Line.createLinesFromPoints
+          -- can create with: vertex -> points -> lines
+          -- _ <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" >>= Line.createLinesFromPoints
+          -- or bybass the point: vertex -> lines
+          _ <- runRIO env $ Line.createLinesFromVertex "lines" vertexs -- >>= HexR.runEitherRIO "lines" 
           return ()
       env <- EnvLdr.loadEnvironment
       designName <-  HexR.runEitherIO "designName" $ FW.newDesignName "t1"
@@ -47,6 +50,14 @@ t1 = do
       handle_ <- SIO.openFile (FW.designFilePath designName) WriteMode
       handleRef <- newIORef handle_
       runRIO (env {Enviro.env_geoFileHandle = handleRef}) createDesign
+      
+        `catch`
+        -- this is not catchint the SafeList3MinError
+        (\(Hex.SafeList3MinError msg) -> do
+            runSimpleApp $ logInfo $ "t1.hs err: " <> displayShow (Hex.SafeList3MinError msg)-- msg
+            throwIO $ Hex.SafeList3MinError msg 
+        )
+        
         `catch`
         (\(SomeException e) -> do
             handle' <- readIORef handleRef
