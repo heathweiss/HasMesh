@@ -85,31 +85,12 @@ runTests = do
   testCreateLineFromVertexs2 = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
-      {-
-      point1 <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
-      point2 <- runRIO env $ Pts.toPoint $ Geo.newVertex  4 5 6
-      point3 <- runRIO env $ Pts.toPoint $ Geo.newVertex  4.7 4.8 4.9-}
       let vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6, Geo.newVertex  7 8 9]
       eitherPoints <- runRIO env $ Pnt.toPoints vertexs
       points <- HexR.runEitherIO "points" eitherPoints
-      --lineId <- runRIO env $ Line.createLinesFromPoints $ L.Cons point1 point2 [point3] L.Nil
       lineIds <- runRIO env $ Line.createLinesFromPoints points
-      assertEqual "create line from 2 point ids" ([Gmsh.LineId $ Gmsh.LineInt 1, Gmsh.LineId $ Gmsh.LineInt 2, Gmsh.LineId $ Gmsh.LineInt 3]) lineIds
+      assertEqual "create line from 2 point ids" ([Gmsh.LineId $ Gmsh.LineInt 1, Gmsh.LineId $ Gmsh.LineInt 2, Gmsh.LineId $ Gmsh.LineInt 3]) (L.evalSafeList3 lineIds)
    )
  runTestTT testCreateLineFromVertexs2
 
-{-
- let
-  testCreateLineFromVertexs2 = TestCase
-   (do
-      env <- EnvLdr.loadTestEnvironment
-      
-      point1 <- runRIO env $ Pts.toPoint $ Geo.newVertex  1 2 3
-      point2 <- runRIO env $ Pts.toPoint $ Geo.newVertex  4 5 6
-      point3 <- runRIO env $ Pts.toPoint $ Geo.newVertex  4.7 4.8 4.9
-      lineId <- runRIO env $ Line.createLinesFromPoints $ L.Cons point1 point2 [point3] L.Nil
-      assertEqual "create line from 2 point ids" ([Gmsh.LineId $ Gmsh.LineInt 1, Gmsh.LineId $ Gmsh.LineInt 2, Gmsh.LineId $ Gmsh.LineInt 3]) lineId
-   )
- runTestTT testCreateLineFromVertexs2
 
--}

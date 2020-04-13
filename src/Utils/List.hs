@@ -8,7 +8,7 @@ Supply specialized lists.
 
 import qualified Utils.List as L
 -}
-module Utils.List(SafeList3(..), NonEmptyID(), safeHead3) where
+module Utils.List(SafeList3(..), NonEmptyID(), safeHead3, evalSafeList3) where
 
 import RIO
 import qualified Gmsh.ID as ID
@@ -37,18 +37,27 @@ data SafeList3 a b where
 --deriving instance Show (SafeList a b)
 --deriving instance  Eq (SafeList a)
 
--- Provide show instance of 'SafeList3' for testing.
+-- Provide show instance for testing.
 instance Show (SafeList3 (ID.Id ID.PointInt) NonEmptyID) where
+ show ((Cons x y ys _)) = "Cons x: " ++ show x ++ " y: " ++ show y ++ " ys: " ++ show ys -- ^ Required for testing.
+
+-- Provide show instance for testing.
+instance Show (SafeList3 (ID.Id ID.LineInt) NonEmptyID) where
  show ((Cons x y ys _)) = "Cons x: " ++ show x ++ " y: " ++ show y ++ " ys: " ++ show ys -- ^ Required for testing.
  
 -- Provide show instance of 'SafeList3' for testing.
 instance Eq (SafeList3 (ID.Id ID.PointInt) NonEmptyID) where
   ((Cons x y ys _)) == ((Cons x' y' ys' _)) = (x == x') && (y == y') && (ys == ys') -- ^ Required for testing.
 
+-- Provide show instance of 'SafeList3' for testing.
+instance Eq (SafeList3 (ID.Id ID.LineInt) NonEmptyID) where
+  ((Cons x y ys _)) == ((Cons x' y' ys' _)) = (x == x') && (y == y') && (ys == ys') -- ^ Required for testing.
+
 -- | Get the head of a 'SafeList3'
 safeHead3 :: SafeList3 a NonEmptyID -> a
-safeHead3 (Cons x y ys _) = x
+safeHead3 (Cons x _ _ _) = x
 --runSafeHead = safeHead $ Cons "hi" "there" ["how is your", "pie there" ] Nil
 --runSafeHead2 = safeHead $ Cons "hi" "there" [] Nil
 
-
+evalSafeList3 :: SafeList3 a NonEmptyID -> [a]
+evalSafeList3 (Cons x y ys _) = (x:y:ys)
