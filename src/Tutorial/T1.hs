@@ -10,7 +10,7 @@ import RIO
 import qualified System.IO as SIO
 import qualified RIO.ByteString as B
 
-import qualified Utils.FileWriter as FW
+import qualified Utils.Design as Design
 import qualified Utils.RunExceptions as HexR
 import qualified Utils.Exceptions as Hex
 import qualified Utils.Environment as Enviro
@@ -29,9 +29,9 @@ designLoader :: RIO Enviro.Environment () -> IO ()
 designLoader createDesign = do
       
       env <- EnvLdr.loadEnvironment
-      designName <-  HexR.runEitherIO "designName" $ FW.newDesignName "t1"
+      designName <-  HexR.runEitherIO "designName" $ Design.newDesignName "t1"
       
-      handle_ <- SIO.openFile (FW.designFilePath designName) WriteMode
+      handle_ <- SIO.openFile (Design.designFilePath designName) WriteMode
       handleRef <- newIORef handle_
       runRIO (env {Enviro.env_geoFileHandle = handleRef}) createDesign
         `catch`

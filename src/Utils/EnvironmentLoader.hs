@@ -21,7 +21,7 @@ import qualified RIO.Map as Map
 import qualified Utils.Exceptions as Hex
 import qualified Utils.RunExceptions as HexR
 import qualified Utils.Environment as Enviro
-import qualified Utils.FileWriter as FW
+import qualified Utils.Design as Design
 import qualified Gmsh.Gmsh as Gmsh
 
 
@@ -35,7 +35,7 @@ loadEnvironment = do
   iorefLineIdSupply <- newIORef $ Gmsh.newLineId  1
   let
     env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply
-  validDesignName <- HexR.runEitherIO "validDesignName" $ FW.newDesignName $  view Enviro.designNameL env_
+  validDesignName <- HexR.runEitherIO "validDesignName" $ Design.newDesignName $  view Enviro.designNameL env_
   return $ env_ 
 
 -- | Load the global RIO 'Environment', and set values to default values that wil not change. For testing.

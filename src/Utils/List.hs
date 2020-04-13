@@ -39,19 +39,19 @@ data SafeList3 a b where
 
 -- Provide show instance for testing.
 instance Show (SafeList3 (ID.Id ID.PointInt) NonEmptyID) where
- show ((Cons x y ys _)) = "Cons x: " ++ show x ++ " y: " ++ show y ++ " ys: " ++ show ys -- ^ Required for testing.
+ show ((Cons x y ys _)) = "Cons x: " ++ show x ++ " y: " ++ show y ++ " ys: " ++ show ys  
 
 -- Provide show instance for testing.
 instance Show (SafeList3 (ID.Id ID.LineInt) NonEmptyID) where
- show ((Cons x y ys _)) = "Cons x: " ++ show x ++ " y: " ++ show y ++ " ys: " ++ show ys -- ^ Required for testing.
+ show ((Cons x y ys _)) = "Cons x: " ++ show x ++ " y: " ++ show y ++ " ys: " ++ show ys 
  
 -- Provide show instance of 'SafeList3' for testing.
 instance Eq (SafeList3 (ID.Id ID.PointInt) NonEmptyID) where
-  ((Cons x y ys _)) == ((Cons x' y' ys' _)) = (x == x') && (y == y') && (ys == ys') -- ^ Required for testing.
+  ((Cons x y ys _)) == ((Cons x' y' ys' _)) = (x == x') && (y == y') && (ys == ys') 
 
 -- Provide show instance of 'SafeList3' for testing.
 instance Eq (SafeList3 (ID.Id ID.LineInt) NonEmptyID) where
-  ((Cons x y ys _)) == ((Cons x' y' ys' _)) = (x == x') && (y == y') && (ys == ys') -- ^ Required for testing.
+  ((Cons x y ys _)) == ((Cons x' y' ys' _)) = (x == x') && (y == y') && (ys == ys') 
 
 -- | Get the head of a 'SafeList3'
 safeHead3 :: SafeList3 a NonEmptyID -> a

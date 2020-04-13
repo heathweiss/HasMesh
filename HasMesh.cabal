@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: df207058a637de8e83359af53c7a2ba4c979555b2a424566b316bc4bebb329ec
+-- hash: e3f4c8fd4eb52311cfeb79cff3a08fa1c3f66d2f2754d8e61c7962ebbb8fcfe1
 
 name:           HasMesh
 version:        0.1.0.0
@@ -40,10 +40,10 @@ library
       Tutorial.T1
       Types
       Util
+      Utils.Design
       Utils.Environment
       Utils.EnvironmentLoader
       Utils.Exceptions
-      Utils.FileWriter
       Utils.List
       Utils.RunExceptions
   other-modules:

@@ -7,9 +7,9 @@
 {- |
 Supply functionality for dealing with design files, as in file name, file paths.
 
-import qualified Utils.FileWriter as FW
+import qualified Utils.Design as Design
 -}
-module Utils.FileWriter(DesignName(..), newDesignName, designFilePath) where
+module Utils.Design(DesignName(..), newDesignName, designFilePath) where
 
 import RIO
 import qualified RIO.Text as T

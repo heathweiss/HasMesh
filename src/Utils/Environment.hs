@@ -7,7 +7,7 @@
 {- |
 import qualified Utils.Environment as Enviro
 -}
-module Utils.Environment(Environment(..),  HasIdSupply(..), HasPointIdMap(..), HasGeoFileHandle(..), HasDesignName(..),  loadLoader, toEnvironment,) where
+module Utils.Environment(Environment(..), Loader(),  HasIdSupply(..), HasPointIdMap(..), HasGeoFileHandle(..), HasDesignName(..),  loadLoader, toEnvironment,) where
 
 import qualified RIO.ByteString as B
 import qualified Data.Yaml as Y
@@ -24,7 +24,8 @@ import qualified Gmsh.ID as ID
 
 
 
---  The Env as read from Loader.yaml.
+-- |  Environment.yaml read and parsed into a 'Loader' which is pre 'Environment' data. It will be used to create the 'Environment' data.
+-- So far it only loads the designName, which needs to be validated into a 'Utils.FileWriter.DesignName'  using 'Utils.FileWriter.newDesignName'
 data Loader =
   Loader
       { designName :: Text   -- The DesignName. Used to build the path to the saved file.
@@ -33,7 +34,7 @@ data Loader =
 
 instance FromJSON Loader 
 
-
+-- | Read the Environment.yaml yaml file into the 'Loader'
 loadLoader :: IO (Loader)
 loadLoader = do
     content <- B.readFile "Environment.yaml" 
