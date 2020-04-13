@@ -28,7 +28,7 @@ import qualified Utils.RunExceptions as HexR
 
 -- | Creates a 'ID.Id ID.LineInt' that associates 2 'ID.Id ID.PointInt' into a Gmsh line.
 -- Will create a new 'ID.Id ID.LineInt' even if the same 2 'ID.Id ID.PointInt' were already used for a 'ID.Id ID.LineInt'
-getLineId :: (Enviro.HasLineIdSupply env) =>   RIO env (ID.Id ID.LineInt)
+getLineId :: (Enviro.HasIdSupply env) =>   RIO env (ID.Id ID.LineInt)
 getLineId = do
   env <- ask
   lineIdSupplyIORef <- view Enviro.lineIdSupplyL
@@ -45,12 +45,12 @@ type LineIdSafe3List = L.SafeList3 (ID.Id ID.LineInt) L.NonEmptyID
 
 
 
-createLinesFromVertex :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env, Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env) => T.Text -> [Geo.Vertex] -> RIO env LineIdSafe3List
+createLinesFromVertex :: (Enviro.HasGeoFileHandle env, Enviro.HasIdSupply env, Enviro.HasPointIdMap env) => T.Text -> [Geo.Vertex] -> RIO env LineIdSafe3List
 createLinesFromVertex errMsg vertex = do
   let
     -- Create a ['ID.Id ID.LineInt'] from a ['Geometry.Vertex.Vertex'], which is a [Gmsh lines]
     -- If the ['Geometry.Vertex.Vertex'] has > 3 items, a 'Utils.Exceptions.HasMeshException' will be thrown.
-    createLinesFromVertex' :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env, Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env) => T.Text -> [Geo.Vertex] -> RIO env [ID.Id ID.LineInt]
+    createLinesFromVertex' :: (Enviro.HasGeoFileHandle env, Enviro.HasIdSupply env, Enviro.HasPointIdMap env) => T.Text -> [Geo.Vertex] -> RIO env [ID.Id ID.LineInt]
     createLinesFromVertex' errMsg vertex = do
       env <- ask
       lines <- runRIO env $ Pnt.toPoints vertex >>= HexR.runEitherRIO errMsg >>= createUnsafeListOfLinesFromPoints 
@@ -62,7 +62,7 @@ createLinesFromVertex errMsg vertex = do
 
 
 {-
-createLinesFromVertexSafe :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env, Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env) => T.Text -> [Geo.Vertex] -> RIO env LineIdSafe3List
+createLinesFromVertexSafe :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env, Enviro.HasIdSupply env, Enviro.HasPointIdMap env) => T.Text -> [Geo.Vertex] -> RIO env LineIdSafe3List
 createLinesFromVertexSafe errMsg vertex = do
   env <- ask
   lines <- runRIO env $ createLinesFromVertex errMsg vertex
@@ -70,7 +70,7 @@ createLinesFromVertexSafe errMsg vertex = do
 
 -- Create a ['ID.Id ID.LineInt'] from a ['Geometry.Vertex.Vertex'], which is a [Gmsh lines]
 -- If the ['Geometry.Vertex.Vertex'] has > 3 items, a 'Utils.Exceptions.HasMeshException' will be thrown.
-createLinesFromVertex :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env, Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env) => T.Text -> [Geo.Vertex] -> RIO env [ID.Id ID.LineInt]
+createLinesFromVertex :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env, Enviro.HasIdSupply env, Enviro.HasPointIdMap env) => T.Text -> [Geo.Vertex] -> RIO env [ID.Id ID.LineInt]
 createLinesFromVertex errMsg vertex = do
   env <- ask
   lines <- runRIO env $ Pnt.toPoints vertex >>= HexR.runEitherRIO errMsg >>= createUnsafeListOfLinesFromPoints 
@@ -85,7 +85,7 @@ toLineList :: [ID.Id ID.LineInt] -> LineIdSafe3List
 toLineList (x:y:ys) = L.Cons x y ys  L.Nil
 
 --  Create a new Line from 2 gmsh line ids. Called by createLinesFromPoints to create each line in the [line] that it is creating.
-createLineFromPoints :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env) => ID.Id ID.PointInt -> ID.Id ID.PointInt -> RIO env (ID.Id ID.LineInt)
+createLineFromPoints :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env) => ID.Id ID.PointInt -> ID.Id ID.PointInt -> RIO env (ID.Id ID.LineInt)
 createLineFromPoints (pointId1) (pointId2) = do
   env <- ask
   handleIORef <- view Enviro.geoFileHandleL
@@ -101,10 +101,10 @@ createLineFromPoints (pointId1) (pointId2) = do
 -- The ['ID.Id ID.PointInt'] must have at least 3 items, or no line can be generated and so it uses an input of 'Pnt.PointIdList' to ensure this minimum length of 3.
 -- The 'Pnt.PointIdList' is created by 'Gmsh.Point.toPoints' which will throw an error if there are > 3 input 'Geometry.Vertex.Vertex', which gives a single entry point
 -- to creating a 'Pnt.PointIdList'.
-createUnsafeListOfLinesFromPoints :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env) => Pnt.PointIdList -> RIO env [ID.Id ID.LineInt]
+createUnsafeListOfLinesFromPoints :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env) => Pnt.PointIdList -> RIO env [ID.Id ID.LineInt]
 createUnsafeListOfLinesFromPoints (L.Cons x y ys _) = do
   let
-    createUnsafeListOfLinesFromPoints' :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env) => [ID.Id ID.PointInt] -> [ID.Id ID.LineInt] -> RIO env ([ID.Id ID.LineInt])
+    createUnsafeListOfLinesFromPoints' :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env) => [ID.Id ID.PointInt] -> [ID.Id ID.LineInt] -> RIO env ([ID.Id ID.LineInt])
     createUnsafeListOfLinesFromPoints' (x':x'':[]) workingList = do
       env <- ask
       lastLine <- runRIO env $ createLineFromPoints x' x''
@@ -119,7 +119,7 @@ createUnsafeListOfLinesFromPoints (L.Cons x y ys _) = do
 
 -- | Create a [gmsh line ids] which is garanteed to have 3 items.
 -- It is a closed loop as the endpoint of the last line is == the initial point of the first line.
-createLinesFromPoints :: (Enviro.HasLineIdSupply env, Enviro.HasGeoFileHandle env) => Pnt.PointIdList -> RIO env LineIdSafe3List
+createLinesFromPoints :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env) => Pnt.PointIdList -> RIO env LineIdSafe3List
 createLinesFromPoints pointIdList = do
   env <- ask 
   unsafeLines <- runRIO env $ createUnsafeListOfLinesFromPoints pointIdList

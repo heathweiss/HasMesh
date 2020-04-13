@@ -202,7 +202,7 @@ runTests = do
   testGetVertexId2 = TestCase
    (do
       let
-        workInRIO :: (Enviro.HasPointIdSupply env) => RIO env (Gmsh.Id (Gmsh.PointInt))
+        workInRIO :: (Enviro.HasIdSupply env) => RIO env (Gmsh.Id (Gmsh.PointInt))
         workInRIO = do
           pointIdRef <- view Enviro.pointIdSupplyL
           currId <- readIORef pointIdRef

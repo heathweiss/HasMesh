@@ -60,7 +60,7 @@ designLoader createDesign = do
 -}
 t1a = do
   let
-        createDesign :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env, Enviro.HasDesignName env, Enviro.HasLineIdSupply env) => RIO env ()
+        createDesign :: (Enviro.HasIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env, Enviro.HasDesignName env) => RIO env ()
         createDesign = do
           env <- ask
           geoFileHandleIORef <- view Enviro.geoFileHandleL
@@ -132,7 +132,7 @@ t1c = do
 -}
 t1d = do
   let
-        createDesign :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env, Enviro.HasDesignName env, Enviro.HasLineIdSupply env) => RIO env ()
+        createDesign :: (Enviro.HasIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env, Enviro.HasDesignName env) => RIO env ()
         createDesign = do
           env <- ask
           geoFileHandleIORef <- view Enviro.geoFileHandleL

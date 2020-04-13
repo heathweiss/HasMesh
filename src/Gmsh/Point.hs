@@ -29,7 +29,7 @@ import qualified Utils.Exceptions as Hex
 -- Associate a 'Geometry.Vertex.Vertex' with a 'ID.PointId', which is the Id used by Gmsh in scripting.
 -- If the vertex already has an Id, just return the Id, otherwise create a new Id, and write it to a .geo file via the env handle.
 
-toPoint :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => Geo.Vertex -> RIO env (ID.Id ID.PointInt)
+toPoint :: (Enviro.HasIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => Geo.Vertex -> RIO env (ID.Id ID.PointInt)
 toPoint vertex = do
   pointMapIORef <- view Enviro.pointIdMapL
   pointMap <- readIORef pointMapIORef
@@ -56,7 +56,7 @@ toPoint vertex = do
 --
 -- toDo: Should the idea of a list of lines being closed be repesented/enforece with a type such as Closed {closedList :: [a]}
 -- For now, will simpley return a closed list, without any type or enforcement.
-toPoints :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env, Enviro.HasLineIdSupply env) => [Geo.Vertex] -> RIO env (Either Hex.HasMeshException PointIdList)
+toPoints :: (Enviro.HasIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => [Geo.Vertex] -> RIO env (Either Hex.HasMeshException PointIdList)
 toPoints [] = return $ Left $ Hex.SafeList3MinError "length == 0"
 toPoints (x:[]) = return $ Left $ Hex.SafeList3MinError "length == 1"
 toPoints (x:y:[]) = return $ Left $ Hex.SafeList3MinError "length == 2"
@@ -69,7 +69,7 @@ toPoints (x:y:ys) = do
         decode (x':y':ys) = L.Cons x' y' ys  L.Nil
       in
         decode $ reverse vertex
-    toPoints' :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => Geo.Vertex -> [Geo.Vertex] -> [ID.Id ID.PointInt] -> RIO env (Either Hex.HasMeshException PointIdList)
+    toPoints' :: (Enviro.HasIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => Geo.Vertex -> [Geo.Vertex] -> [ID.Id ID.PointInt] -> RIO env (Either Hex.HasMeshException PointIdList)
     toPoints' initVertex (x:[]) workingPoints = do
       --runSimpleApp $ logInfo $ displayShow "in toPoints'"
       env <- ask

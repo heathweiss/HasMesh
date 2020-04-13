@@ -49,7 +49,7 @@ runTests = do
   testGetAndIncrLineIdFromEnv = TestCase
    (do
       let
-        workInRIO :: (Enviro.HasLineIdSupply env) => RIO env (Gmsh.Id (Gmsh.LineInt))
+        workInRIO :: (Enviro.HasIdSupply env) => RIO env (Gmsh.Id (Gmsh.LineInt))
         workInRIO = do
           lineIdRef <- view Enviro.lineIdSupplyL
           currId <- readIORef lineIdRef
