@@ -4,6 +4,7 @@ import qualified FileWriterTest as FileWriterTest
 import qualified ScriptingTest as ScriptingTest
 import qualified LineTest as LineTest
 import qualified ExceptionsTest as ExceptionsTest
+import qualified CurveLoopTest as CurveLoopTest
 
 main = do
   VertexTest.runTests
@@ -11,3 +12,4 @@ main = do
   ScriptingTest.runTests
   LineTest.runTests
   ExceptionsTest.runTests
+  CurveLoopTest.runTests

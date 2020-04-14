@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e3f4c8fd4eb52311cfeb79cff3a08fa1c3f66d2f2754d8e61c7962ebbb8fcfe1
+-- hash: 596a610102f2c65555db0b7bdfd9fb144edd6ef09802dbdfa10af68a53669075
 
 name:           HasMesh
 version:        0.1.0.0
@@ -29,6 +29,7 @@ library
   exposed-modules:
       Geometry.Geometry
       Geometry.Vertex
+      Gmsh.CurveLoop
       Gmsh.Gmsh
       Gmsh.ID
       Gmsh.Line
@@ -84,6 +85,7 @@ test-suite HasMesh-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      CurveLoopTest
       ExceptionsTest
       FileWriterTest
       LineTest
