@@ -8,7 +8,7 @@
 Imported as part of Gmsh.Gmsh: import qualified Gmsh.Gmsh as Gmsh
 For internal import: import qualified Gmsh.ID as ID
 -}
-module Gmsh.ID(Id(..), PointInt(..), LineInt(..), newPointId, newLineId, incr, evalLineId) where
+module Gmsh.ID(Id(..), PointInt(..), LineInt(..), newPointId, initializeIdLineInt, incr, evalLineId) where
 
 import RIO
 import qualified RIO.Map as Map
@@ -49,8 +49,8 @@ newPointId :: Int -> Id PointInt
 newPointId int = PointId $ PointInt int
 
 -- | Create a new 'Id LineInt' for the seed value of the 'Environment.Environment' line 'ID' supply.
-newLineId :: Int -> Id LineInt
-newLineId int = LineId $ LineInt int
+initializeIdLineInt :: Int -> Id LineInt
+initializeIdLineInt int = LineId $ LineInt int
 
 evalLineId :: Id LineInt-> LineInt
 evalLineId (LineId lineInt) = lineInt

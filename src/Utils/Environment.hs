@@ -46,6 +46,9 @@ loadLoader = do
           return $ Loader designName
 
 -- | Environment to the RIO monad, which is used throughout HasMesh.
+--
+-- toDo: Figure out how the Gmsh ID system works. Do I even need separate ID system for points, line...
+-- What happens with the IDs on an extrusion.
 data Environment = 
   Env { env_designName :: !Text, -- ^ The 'DesignName'. Used to build the path to the saved file.
         --env_pointIdSupply :: !(IORef (ID.Id Int)), -- ^ The supply for 'Geometry.Gmsh.PointID'

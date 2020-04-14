@@ -217,26 +217,23 @@ runTests = do
  runTestTT testGetVertexId2
 
 
-{- 
---Load an environment in IO, then insert 2 Vertexs that are in an array
+--Load an environment in IO, then create 3 lines from 3 Vertexs that are in an array, using Pts.toPoints as an intermediate step
  let
-  testGetVertexIdsUsingRIO3 = TestCase
+  use3VertexToCreate3Points = TestCase
    (do
       
       
       env <- EnvLdr.loadTestEnvironment
       let
-        vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6]
+        vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6, Geo.newVertex  7 8 9]
       points <- runRIO env $ Pts.toPoints vertexs
-      assertEqual "get the vector id from an ioref" [Gmsh.PointId $ Gmsh.PointInt 1, Gmsh.PointId $ Gmsh.PointInt 2] points -- result 
+      assertEqual "get the vector id from an ioref" (Right $ L.Cons (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 2)  []  L.Nil) points -- result 
    )
- runTestTT testGetVertexIdsUsingRIO3
--}
-
+ runTestTT use3VertexToCreate3Points
 
 --Load an environment in IO, then create 3 lines from 3 Vertexs that are in an array, using Pts.toPointsT
  let
-  testGetVertexIdsUsingRIO3T = TestCase
+  using2VertexToCreatePointsFailsDueToSafeList3MinError = TestCase
    (do
       
       
@@ -244,10 +241,9 @@ runTests = do
       let
         vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6]
       points <- runRIO env $ Pts.toPoints vertexs
-      --assertEqual "get the vector id from an ioref" [Gmsh.PointId $ Gmsh.PointInt 1, Gmsh.PointId $ Gmsh.PointInt 2] points -- result
       assertEqual "get the vector id from an ioref" (Right $ L.Cons (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 2) []  L.Nil) points -- result 
    )
- runTestTT testGetVertexIdsUsingRIO3T
+ runTestTT using2VertexToCreatePointsFailsDueToSafeList3MinError
 
 
 -- =========================================== get PointId and write to handle ===========================

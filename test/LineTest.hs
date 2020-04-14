@@ -29,17 +29,17 @@ runTests = do
  let
   testNewLineId = TestCase $ assertEqual
    "Create a new line id"
-   (Gmsh.newLineId 1)
-   (Gmsh.newLineId 1) 
+   (Gmsh.initializeIdLineInt 1)
+   (Gmsh.initializeIdLineInt 1) 
  runTestTT testNewLineId
 
 
  let
   testIncrLineId = TestCase $ assertEqual
    "Incr a line id"
-   (Gmsh.newLineId 2)
-   (Gmsh.incr $ Gmsh.newLineId 1)
-   --(Gmsh.evalLineId (Gmsh.incr $ Gmsh.LineId $ Gmsh.newLineId 1) )
+   (Gmsh.initializeIdLineInt 2)
+   (Gmsh.incr $ Gmsh.initializeIdLineInt 1)
+   --(Gmsh.evalLineId (Gmsh.incr $ Gmsh.LineId $ Gmsh.initializeIdLineInt 1) )
  runTestTT testIncrLineId
 
 -- ======================================== create and increment Line Id's: use with Env ================================
@@ -69,8 +69,8 @@ runTests = do
   testGetAndIncrLineIdFromEnv2 = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
-      fstId <- runRIO env Gmsh.getLineId
-      sndId <- runRIO env Gmsh.getLineId
+      fstId <- runRIO env Gmsh.newLineId
+      sndId <- runRIO env Gmsh.newLineId
       assertEqual "get the vector id from an ioref" (Gmsh.LineId $ Gmsh.LineInt 2) sndId
    )
  runTestTT testGetAndIncrLineIdFromEnv2

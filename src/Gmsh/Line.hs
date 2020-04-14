@@ -11,7 +11,7 @@
 import qualified Gmsh.Line as Line
 or import via Gmsh.Gmsh
 -}
-module Gmsh.Line(getLineId, createLinesFromPoints, {-createLinesFromVertex,-} createLinesFromVertex) where
+module Gmsh.Line(newLineId, createLinesFromPoints, {-createLinesFromVertex,-} createLinesFromVertex) where
 
 import RIO
 import qualified RIO.Map as Map
@@ -28,8 +28,8 @@ import qualified Utils.RunExceptions as HexR
 
 -- | Creates a 'ID.Id ID.LineInt' that associates 2 'ID.Id ID.PointInt' into a Gmsh line.
 -- Will create a new 'ID.Id ID.LineInt' even if the same 2 'ID.Id ID.PointInt' were already used for a 'ID.Id ID.LineInt'
-getLineId :: (Enviro.HasIdSupply env) =>   RIO env (ID.Id ID.LineInt)
-getLineId = do
+newLineId :: (Enviro.HasIdSupply env) =>   RIO env (ID.Id ID.LineInt)
+newLineId = do
   env <- ask
   lineIdSupplyIORef <- view Enviro.lineIdSupplyL
   lineIdSupply <- readIORef lineIdSupplyIORef
@@ -90,7 +90,7 @@ createLineFromPoints (pointId1) (pointId2) = do
   env <- ask
   handleIORef <- view Enviro.geoFileHandleL
   handle <- readIORef handleIORef
-  lineId  <- runRIO env getLineId
+  lineId  <- runRIO env newLineId
   --Does not write to handle, unless the hPut call is followed by(not preceded by) the display show.
   --Why is this not the case for writing points in Point.hs
   B.hPut handle $ ScrB.writeLine lineId pointId1 pointId2
