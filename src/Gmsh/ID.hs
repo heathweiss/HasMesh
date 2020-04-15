@@ -14,7 +14,6 @@ import RIO
 import qualified RIO.Map as Map
 
 
-
 import qualified Data.Hashable as H
 import qualified Geometry.Geometry as Geo
 

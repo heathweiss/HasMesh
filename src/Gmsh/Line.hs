@@ -56,7 +56,7 @@ createLinesFromVertex errMsg vertex = do
       runRIO env $ Pnt.toPoints vertex >>= HexR.runEitherRIO errMsg >>= createUnsafeListOfLinesFromPoints 
         
   
-  env <- ask
+  env <- ask 
   lines <- runRIO env $ createLinesFromVertex' errMsg vertex
   return $ toLineList lines
 {-
