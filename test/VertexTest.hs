@@ -14,10 +14,11 @@ import qualified System.IO as SIO
 import qualified Geometry.Vertex as V
 import qualified Gmsh.Gmsh as Gmsh
 import qualified Geometry.Geometry as Geo
-import qualified Gmsh.Point as Pts  
+--import qualified Gmsh.Point as Pts  
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Utils.Environment as Enviro
 import qualified Utils.List as L
+import qualified Utils.Exceptions as Hex
 
 
 runTests = do
@@ -217,37 +218,8 @@ runTests = do
  runTestTT testGetVertexId2
 
 
---Load an environment in IO, then create 3 lines from 3 Vertexs that are in an array, using Pts.toPoints as an intermediate step
--- toDo: need to adjust safeList3 so it takes x:y:z:zs. It needs one more item.
- let
-  use3VertexToCreate3Points = TestCase
-   (do
-      
-      
-      env <- EnvLdr.loadTestEnvironment
-      let
-        vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6, Geo.newVertex  7 8 9]
-      points <- runRIO env $ Pts.toPoints vertexs
-      assertEqual "get the vector id from an ioref" (Right $ L.Cons (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 2)  []  L.Nil) points -- result 
-   )
- runTestTT use3VertexToCreate3Points
 
---same test as above, but needs but toDo: to be written so it fails with only 2 vertex
- let
-  using2VertexToCreatePointsFailsDueToSafeList3MinError = TestCase
-   (do
-      
-      
-      env <- EnvLdr.loadTestEnvironment
-      let
-        vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6]
-      points <- runRIO env $ Pts.toPoints vertexs
-      assertEqual "get the vector id from an ioref" (Right $ L.Cons (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 2) []  L.Nil) points -- result 
-   )
- runTestTT using2VertexToCreatePointsFailsDueToSafeList3MinError
-
-
--- =========================================== get PointId and write to handle ===========================
+-- toDo: figure out where this test should go. It is about handles.
  let
   -- Show that a Handle can be set to stdout, for test purposes, so gmsh script are not written to a file.
   testGetVertexIdsUsingRIOAndHandle = TestCase
