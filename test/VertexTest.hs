@@ -218,6 +218,7 @@ runTests = do
 
 
 --Load an environment in IO, then create 3 lines from 3 Vertexs that are in an array, using Pts.toPoints as an intermediate step
+-- toDo: need to adjust safeList3 so it takes x:y:z:zs. It needs one more item.
  let
   use3VertexToCreate3Points = TestCase
    (do
@@ -231,7 +232,7 @@ runTests = do
    )
  runTestTT use3VertexToCreate3Points
 
---Load an environment in IO, then create 3 lines from 3 Vertexs that are in an array, using Pts.toPointsT
+--same test as above, but needs but toDo: to be written so it fails with only 2 vertex
  let
   using2VertexToCreatePointsFailsDueToSafeList3MinError = TestCase
    (do
