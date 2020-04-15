@@ -12,3 +12,8 @@ import qualified Gmsh.Line as Line
 or import via Gmsh.Gmsh
 -}
 module Gmsh.CurveLoop() where
+
+import RIO
+import RIO.Text as T
+
+
