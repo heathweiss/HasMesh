@@ -5,6 +5,7 @@ import qualified ScriptingTest as ScriptingTest
 import qualified LineTest as LineTest
 import qualified ExceptionsTest as ExceptionsTest
 import qualified CurveLoopTest as CurveLoopTest
+import qualified PointTest as PointTest 
 
 main = do
   VertexTest.runTests
@@ -13,3 +14,4 @@ main = do
   LineTest.runTests
   ExceptionsTest.runTests
   CurveLoopTest.runTests
+  PointTest.runTests
