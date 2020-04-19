@@ -1,7 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-
+{-# LANGUAGE OverloadedStrings, NoImplicitPrelude, GADTs #-}
 module VertexTest(runTests) where
 import RIO
 import qualified RIO.Text as T
@@ -231,3 +229,222 @@ runTests = do
       assertEqual "try redirecting a Handle" True (isOpen)-- False
    )
  runTestTT testGetVertexIdsUsingRIOAndHandle
+
+
+----------------------------------------------- use a vertex as a SafeList3-------------------------------
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+
+---------------------------- to safe list: do 2 - 5--------------------
+
+ let
+   toSafeList2test = TestCase $ assertEqual
+     "creating SafeList3 from 2 vertex throws an error"
+     (Left (Hex.SafeList3MinError "length == 2"))
+     (let
+        safeList = (L.toSafeList3 [(V.newVertex 1 1 1), (V.newVertex 2 2 2)]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case safeList of
+          Right (L.Cons x y z zs _) -> Right $ L.evalSafeList3 (L.Cons x y z zs L.Nil)
+          Left err -> Left err
+     )
+ runTestTT toSafeList2test
+
+ let
+   toSafeList3test = TestCase $ assertEqual
+     "toSafeList3test from 3 vertex"
+     --(Right $ L.Cons (V.newVertex 1 1 1) (V.newVertex 2 2 2) (V.newVertex 3 3 3) [] L.Nil)
+     (Right [(V.newVertex 1 1 1), (V.newVertex 2 2 2), (V.newVertex 3 3 3)])
+     (let
+        safeList = (L.toSafeList3 [(V.newVertex 1 1 1), (V.newVertex 2 2 2), (V.newVertex 3 3 3)]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case safeList of
+          Right (L.Cons x y z zs _) -> Right $ L.evalSafeList3 (L.Cons x y z zs L.Nil)
+          Left err -> Left err
+     )
+ runTestTT toSafeList3test
+
+------------------------- reverse 3 - 6 ---------------------------
+ let
+   reverseSafeList3Test = TestCase $ assertEqual
+     "reverse SafeList3 length == 3"
+     --(Right $ L.Cons (V.newVertex 1 1 1) (V.newVertex 2 2 2) (V.newVertex 3 3 3) [] L.Nil)
+     (Right [(V.newVertex 3 3 3), (V.newVertex 2 2 2) ,(V.newVertex 1 1 1) ])
+     (let
+        eitherSafeList = (L.toSafeList3 [(V.newVertex 1 1 1), (V.newVertex 2 2 2), (V.newVertex 3 3 3)]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.evalSafeList3  $ L.reverseSafeList3 safeList
+          Left err -> Left err
+     )
+ runTestTT reverseSafeList3Test
+
+ let
+   reverseSafeList4Test = TestCase $ assertEqual
+     "reverse SafeList3 length == 4"
+     (Right [(V.newVertex 4 4 4), (V.newVertex 3 3 3), (V.newVertex 2 2 2) ,(V.newVertex 1 1 1) ])
+     (let
+        eitherSafeList = (L.toSafeList3 [(V.newVertex 1 1 1), (V.newVertex 2 2 2), (V.newVertex 3 3 3), (V.newVertex 4 4 4)]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.evalSafeList3  $ L.reverseSafeList3 safeList
+          Left err -> Left err
+     )
+ runTestTT reverseSafeList4Test
+
+ let
+   reverseSafeList5Test = TestCase $ assertEqual
+     "reverse SafeList3 length == 5"
+     (Right [(V.newVertex 5 5 5), (V.newVertex 4 4 4), (V.newVertex 3 3 3), (V.newVertex 2 2 2) ,(V.newVertex 1 1 1) ])
+     (let
+        eitherSafeList =
+          (L.toSafeList3
+           [(V.newVertex 1 1 1), (V.newVertex 2 2 2), (V.newVertex 3 3 3), (V.newVertex 4 4 4), (V.newVertex 5 5 5)]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.evalSafeList3  $ L.reverseSafeList3 safeList
+          Left err -> Left err
+     )
+ runTestTT reverseSafeList5Test
+
+------------------------------ append 3 - 5 ----------------------------------
+
+ let
+   appendSafeList3Test = TestCase $ assertEqual
+     "append to SafeList3 length == 3"
+     (Right [V.newVertex 1 1 1,(V.newVertex 2 2 2), (V.newVertex 3 3 3), (V.newVertex 4 4 4)])
+     (let
+        eitherSafeList = (L.toSafeList3 [(V.newVertex 2 2 2), (V.newVertex 3 3 3), (V.newVertex 4 4 4)]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.evalSafeList3 $  L.appendSafeList3 (V.newVertex 1 1 1) safeList
+          Left err -> Left err
+     )
+ runTestTT appendSafeList3Test
+
+
+ let
+   appendSafeList4Test = TestCase $ assertEqual
+     "append to SafeList3 length == 4"
+     (Right [V.newVertex 1 1 1,(V.newVertex 2 2 2), (V.newVertex 3 3 3), (V.newVertex 4 4 4), V.newVertex 5 5 5])
+     (let
+        eitherSafeList = (L.toSafeList3 [(V.newVertex 2 2 2), (V.newVertex 3 3 3), (V.newVertex 4 4 4),V.newVertex 5 5 5]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.evalSafeList3 $  L.appendSafeList3 (V.newVertex 1 1 1) safeList
+          Left err -> Left err
+     )
+ runTestTT appendSafeList4Test
+
+-------------------------------- safehead 4 --------------------------------
+ let
+   headSafeList3Test = TestCase $ assertEqual
+     "head of SafeList3 length == 3"
+     (Right $ V.newVertex 1 1 1)
+     (let
+        eitherSafeList = (L.toSafeList3 [V.newVertex 1 1 1, (V.newVertex 2 2 2), (V.newVertex 3 3 3), (V.newVertex 4 4 4)]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $  L.safeHead3 safeList
+          Left err -> Left err
+     )
+ runTestTT headSafeList3Test
+
+ --------------- last 3 - 6 ---------------------------------
+ let
+   lastSafeList3Test = TestCase $ assertEqual
+     "last SafeList3 length == 3"
+     (Right $ V.newVertex 3 3 3)
+     (let
+        eitherSafeList = (L.toSafeList3 [(V.newVertex 1 1 1),(V.newVertex 2 2 2), (V.newVertex 3 3 3)]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.safeLast3 safeList
+          Left err -> Left err
+     )
+ runTestTT lastSafeList3Test
+
+ let
+   lastSafeList4Test = TestCase $ assertEqual
+     "last SafeList3 length == 4"
+     (Right $ V.newVertex 4 4 4)
+     (let
+        eitherSafeList = (L.toSafeList3 [(V.newVertex 1 1 1),(V.newVertex 2 2 2), (V.newVertex 3 3 3), V.newVertex 4 4 4]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.safeLast3 safeList
+          Left err -> Left err
+     )
+ runTestTT lastSafeList4Test
+
+
+ let
+   lastSafeList5Test = TestCase $ assertEqual
+     "last SafeList3 length == 5"
+     (Right $ V.newVertex 5 5 5)
+     (let
+        eitherSafeList = (L.toSafeList3 [(V.newVertex 1 1 1),(V.newVertex 2 2 2), (V.newVertex 3 3 3), V.newVertex 4 4 4, V.newVertex 5 5 5]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.safeLast3 safeList
+          Left err -> Left err
+     )
+ runTestTT lastSafeList5Test
+
+----------------------- is open 3 - 5 ---------------------------
+ let
+   isOpenSafeList3Test = TestCase $ assertEqual
+     "isOpen SafeList3 length == 3"
+     (Right True)
+     (let
+        eitherSafeList = (L.toSafeList3 [(V.newVertex 1 1 1),(V.newVertex 2 2 2), (V.newVertex 3 3 3)]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.isOpen safeList
+          Left err -> Left err
+     )
+ runTestTT isOpenSafeList3Test
+
+ let
+   isNotOpenSafeList3Test = TestCase $ assertEqual
+     "not isOpen SafeList3 length == 3"
+     (Right False)
+     (let
+        eitherSafeList = (L.toSafeList3 [(V.newVertex 1 1 1),(V.newVertex 2 2 2), (V.newVertex 1 1 1)]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.isOpen safeList
+          Left err -> Left err
+     )
+ runTestTT isNotOpenSafeList3Test
+
+ let
+   isOpenSafeList4Test = TestCase $ assertEqual
+     "isOpen SafeList3 length == 4"
+     (Right True)
+     (let
+        eitherSafeList = (L.toSafeList3 [(V.newVertex 1 1 1),(V.newVertex 2 2 2), (V.newVertex 3 3 3), V.newVertex 4 4 4]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.isOpen safeList
+          Left err -> Left err
+     )
+ runTestTT isOpenSafeList4Test
+
+ let
+   isNotOpenSafeList4Test = TestCase $ assertEqual
+     "not isOpen SafeList3 length == 4"
+     (Right False)
+     (let
+        eitherSafeList = (L.toSafeList3 [(V.newVertex 1 1 1),(V.newVertex 2 2 2), V.newVertex 3 3 3, (V.newVertex 1 1 1)]) :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.isOpen safeList
+          Left err -> Left err
+     )
+ runTestTT isNotOpenSafeList4Test
+
+------ evalSafeList 3 - 6

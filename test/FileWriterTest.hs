@@ -14,6 +14,6 @@ runTests = do
   testHandles1 = TestCase 
    (do
       
-      assertEqual "put a map into a IOVar" True False
+      assertEqual "there are no tests yet" True False
    )
  runTestTT testHandles1

@@ -47,6 +47,9 @@ incr (LineId  (LineInt int)) = LineId $ LineInt $ int + 1
 newPointId :: Int -> Id PointInt
 newPointId int = PointId $ PointInt int
 
+
+
+
 -- | Create a new 'Id LineInt' for the seed value of the 'Environment.Environment' line 'ID' supply.
 initializeIdLineInt :: Int -> Id LineInt
 initializeIdLineInt int = LineId $ LineInt int

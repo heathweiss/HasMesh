@@ -6,12 +6,13 @@ import qualified LineTest as LineTest
 import qualified ExceptionsTest as ExceptionsTest
 import qualified CurveLoopTest as CurveLoopTest
 import qualified PointTest as PointTest 
-
+import qualified ListTest as ListTest
 main = do
-  VertexTest.runTests
   FileWriterTest.runTests
   ScriptingTest.runTests
   LineTest.runTests
   ExceptionsTest.runTests
   CurveLoopTest.runTests
+  ListTest.runTests
+  VertexTest.runTests
   PointTest.runTests

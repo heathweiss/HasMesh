@@ -76,21 +76,59 @@ runTests = do
  runTestTT testGetAndIncrLineIdFromEnv2
 
 -- ============================ create Lines from [Vertex] ===================================
-
-
-
 -- create 2 vertex, get their gmsh ids, then create a new line from those ids as a [id].
 -- Note that there are 3 lines from only 3 vertex. This is because it closes the loop by creating a line from the last vertex back to the head vertex.
  let
-  testCreateLineFromVertexs2 = TestCase
+  createLineFrom3Vertexs = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
-      let vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6, Geo.newVertex  7 8 9]
-      eitherPoints <- runRIO env $ Pnt.toPoints vertexs
-      points <- HexR.runEitherIO "points" eitherPoints
+      let vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
+      points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" 
       lineIds <- runRIO env $ Line.createLinesFromPoints points
       assertEqual "create line from 2 point ids" ([Gmsh.LineId $ Gmsh.LineInt 1, Gmsh.LineId $ Gmsh.LineInt 2, Gmsh.LineId $ Gmsh.LineInt 3]) (L.evalSafeList3 lineIds)
    )
- runTestTT testCreateLineFromVertexs2
+ runTestTT createLineFrom3Vertexs
+
+ let
+  createLineFrom4Vertexs = TestCase
+   (do
+      env <- EnvLdr.loadTestEnvironment
+      let vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3, Geo.newVertex 4 4 4]
+      points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" 
+      lineIds <- runRIO env $ Line.createLinesFromPoints points
+      assertEqual "create line from 2 point ids"
+        ([Gmsh.LineId $ Gmsh.LineInt 1, Gmsh.LineId $ Gmsh.LineInt 2, Gmsh.LineId $ Gmsh.LineInt 3, Gmsh.LineId $ Gmsh.LineInt 4])
+        (L.evalSafeList3 lineIds)
+   )
+ runTestTT createLineFrom4Vertexs
+
+ let
+  createLineFrom5Vertexs = TestCase
+   (do
+      env <- EnvLdr.loadTestEnvironment
+      let vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3, Geo.newVertex 4 4 4, Geo.newVertex 5 5 5]
+      points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" 
+      lineIds <- runRIO env $ Line.createLinesFromPoints points
+      assertEqual "create line from 2 point ids"
+        ([Gmsh.LineId $ Gmsh.LineInt 1, Gmsh.LineId $ Gmsh.LineInt 2, Gmsh.LineId $ Gmsh.LineInt 3, Gmsh.LineId $ Gmsh.LineInt 4, Gmsh.LineId $ Gmsh.LineInt 5])
+        (L.evalSafeList3 lineIds)
+   )
+ runTestTT createLineFrom5Vertexs
+
+
+ let
+  createLinesFrom6Vertexs = TestCase
+   (do
+      env <- EnvLdr.loadTestEnvironment
+      let vertexs = [Geo.newVertex 1 1 1, Geo.newVertex 2 2 2, Geo.newVertex 3 3 3,
+                     Geo.newVertex 4 4 4, Geo.newVertex 5 5 5, Geo.newVertex 6 6 6
+                    ]
+      points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" 
+      lineIds <- runRIO env $ Line.createLinesFromPoints points
+      assertEqual "ensures that createSafeListOfLinesFromPoints' closes the lines "
+        ([Gmsh.LineId $ Gmsh.LineInt 1, Gmsh.LineId $ Gmsh.LineInt 2, Gmsh.LineId $ Gmsh.LineInt 3, Gmsh.LineId $ Gmsh.LineInt 4, Gmsh.LineId $ Gmsh.LineInt 5, Gmsh.LineId $ Gmsh.LineInt 6])
+        (L.evalSafeList3 lineIds)
+   )
+ runTestTT createLinesFrom6Vertexs
 
 

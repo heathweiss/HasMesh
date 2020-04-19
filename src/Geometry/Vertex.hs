@@ -6,6 +6,10 @@
 Supply a basic 3D geometrical vertex.
 Supply a GPoint type that will add an Id to it.
 Add additional functionality for creating and tracking Ids and vectors.
+
+import qualified Geometry.Vertex as V
+
+or import with 'Geometry.Geometry'
 -}
 module Geometry.Vertex(Vertex(), pattern Vertex',  newVertex) where
 
