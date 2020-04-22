@@ -10,9 +10,10 @@ import Test.HUnit
 import qualified System.IO as SIO
 
 import qualified Geometry.Vertex as V
+import qualified Geometry.Polar as Polar
+import qualified Geometry.Axis as Axis
 import qualified Gmsh.Gmsh as Gmsh
 import qualified Geometry.Geometry as Geo
---import qualified Gmsh.Point as Pts  
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Utils.Environment as Enviro
 import qualified Utils.List as L
@@ -82,14 +83,14 @@ runTests = do
  let
    testHashing1 = TestCase $ assertEqual
      "Vector 0 0 0 is hashed"
-      (340311421221253963)
+      (-3771506651183149892)
       (H.hash (V.newVertex 0 0 0) )
  runTestTT testHashing1
 
  let
    testHashing2 = TestCase $ assertEqual
      "Vector of neg numbers is hashed"
-      (-7052347367107415221)
+      (-6664453513253834666)
       (H.hash (V.newVertex (-1) (-2) (-3)) )
  runTestTT testHashing2
 
@@ -447,4 +448,4 @@ runTests = do
      )
  runTestTT isNotOpenSafeList4Test
 
------- evalSafeList 3 - 6
+ 

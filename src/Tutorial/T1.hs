@@ -4,7 +4,7 @@
 {- |
 
 -}
-module Tutorial.T1() where
+module Tutorial.T1(t1_linesFromPoints, t1_linesFromPolarTuples) where
 
 import RIO
 import qualified System.IO as SIO
@@ -16,12 +16,12 @@ import qualified Utils.Exceptions as Hex
 import qualified Utils.Environment as Enviro
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Geometry.Geometry as Geo
-import qualified Gmsh.Point as Pnt
 import qualified Gmsh.ToScript.BuiltIn as ScrB
-import qualified Utils.List as L
 import qualified Gmsh.Point as Pnt
 import qualified Gmsh.Line as Line
-import qualified Gmsh.ID as ID
+import qualified Geometry.Vertex as V
+import qualified Geometry.Polar as Polar
+
 
 
 -- Base function that can run the various RIO fxs that does the geometry work
@@ -56,17 +56,16 @@ designLoader createDesign = do
 
 {- |
 ['Geo.Vertex.Vertex'] -> 'Gmsh.PointIdList' -> 'Gmsh.LineIdList'
-
+Create the vertex, then the points, then the lines
 -}
-t1a = do
+t1_linesFromPoints = do
   let
-        createDesign :: (Enviro.HasIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env, Enviro.HasDesignName env) => RIO env ()
+        createDesign :: (Enviro.HasIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => RIO env ()
         createDesign = do
           env <- ask
           geoFileHandleIORef <- view Enviro.geoFileHandleL
           geoFileHandle <- readIORef geoFileHandleIORef
-          B.hPut geoFileHandle $ ScrB.writeLC2
-
+          B.hPut geoFileHandle ScrB.writeLC2
           let
             vertexs = [Geo.newVertex  0 0 0,    
                        Geo.newVertex  0.1 0 0,  
@@ -80,56 +79,55 @@ t1a = do
   designLoader createDesign
 
 
-{- |
-['Geo.Vertex.Vertex'] ->  '[ID.Id ID.LineInt]'
 
-t1b = do
+-- | Create the lines directly from the vertex.
+t1_linesFromVertex = do
   let
-        createDesign :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env, Enviro.HasDesignName env, Enviro.HasLineIdSupply env) => RIO env ()
+        createDesign :: (Enviro.HasIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => RIO env ()
+        
         createDesign = do
           env <- ask
           geoFileHandleIORef <- view Enviro.geoFileHandleL
           geoFileHandle <- readIORef geoFileHandleIORef
-          B.hPut geoFileHandle $ ScrB.writeLC2
+          B.hPut geoFileHandle ScrB.writeLC2
 
           let
-            vertexs = [Geo.newVertex  0 0 0,    --{0, 0, 0, lc}
-                       Geo.newVertex  0.1 0 0,  --{.1, 0,  0, lc};
-                       Geo.newVertex 0.1 0.3 0, --{.1, .3, 0, lc};
-                       Geo.newVertex 10 0.3 0    --{0,  .3, 0, lc};
-                      ]
-          lines <- runRIO env $ Line.createLinesFromVertex "lines" vertexs 
-          
-          return ()
-  designLoader createDesign
--}
-{- |
-['Geo.Vertex.Vertex'] -> 'Gmsh.PointIdList' from ['Geo.Vertex.Vertex'] -> 'Gmsh.[ID.Id ID.LineInt]'
-
-
-t1c = do
-  let
-        createDesign :: (Enviro.HasPointIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env, Enviro.HasDesignName env, Enviro.HasLineIdSupply env) => RIO env ()
-        createDesign = do
-          env <- ask
-          geoFileHandleIORef <- view Enviro.geoFileHandleL
-          geoFileHandle <- readIORef geoFileHandleIORef
-          B.hPut geoFileHandle $ ScrB.writeLC2
-
-          let
-            vertexs = [Geo.newVertex  0 0 0,  
-                       Geo.newVertex  0.1 0 0,
+            vertexs = [Geo.newVertex  0 0 0,   
+                       Geo.newVertex  0.1 0 0, 
                        Geo.newVertex 0.1 0.3 0,
-                       Geo.newVertex 0 0.3 0   
+                       Geo.newVertex 0 0.3 0  
                       ]
-          points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" 
-          _ <- runRIO env $ Line.createLinesFromPoints points 
+          _ <- runRIO env $ Line.createLinesFromVertex "lines" vertexs
           return ()
   designLoader createDesign
--}
-{- |
-['Geo.Vertex.Vertex'] ->  'LineIdList'
--}
+
+-- | Generate the vertex using polar coordinates. Then create the lines directly from the vertex.
+t1_linesFromPolarTuples = do
+  let
+    createDesign :: (Enviro.HasIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env) => RIO env ()
+    createDesign = do
+        env <- ask
+        geoFileHandleIORef <- view Enviro.geoFileHandleL
+        geoFileHandle <- readIORef geoFileHandleIORef
+        --writing the lc2 before the let statement causes it to be eval'd.
+        a <- B.hPut geoFileHandle ScrB.writeLC2
+        --evaluate a :maybe this would force it to evaluate
+        let
+          radius = 50
+          height = 0
+          vertexs =
+            Polar.newVertexFromPolarCoordinatesTuples
+              [(60, radius, height),
+               (120, radius, height),
+               (240, radius, height),
+               (300, radius, height)
+              ]
+        _ <- runRIO env $ Line.createLinesFromVertex "lines" vertexs
+        return ()
+        
+  designLoader createDesign
+
+{-
 t1d = do
   let
         createDesign :: (Enviro.HasIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env, Enviro.HasDesignName env) => RIO env ()
@@ -150,3 +148,4 @@ t1d = do
           return ()
   designLoader createDesign
 
+-}

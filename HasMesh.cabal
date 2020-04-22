@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ccf2c637ae9172a80e1f28d59a988abbc0fe671bdde2f248b2056638eafa6c16
+-- hash: c8004a19367a8f96f0e9e7f058c410fe501f9e2d6b672aa4edf72e642660f7e6
 
 name:           HasMesh
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Geometry.Axis
       Geometry.Geometry
       Geometry.Polar
       Geometry.Vertex
@@ -93,6 +94,7 @@ test-suite HasMesh-test
       LineTest
       ListTest
       PointTest
+      PolarTest
       ScriptingTest
       UtilSpec
       VertexTest

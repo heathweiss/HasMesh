@@ -1,4 +1,4 @@
-{-
+{- |
 
 import qualified Gmsh.Gmsh as Gmsh
 -}

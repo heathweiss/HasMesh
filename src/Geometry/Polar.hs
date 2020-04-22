@@ -1,52 +1,76 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module Geometry.Polar() where
+{- |
+Polar Geometry. 
+
+import qualified Geometry.Polar as Polar
+-}
+module Geometry.Polar(PolarCoordinate(), Radius(..), Degree(..), polarToXaxis, polarToYaxis, polarToZaxis, newPolarCoordinate, newPolarCoordinateFromTuple,
+                     toVertex, newVertexFromPolarCoordinatesTuples) where
+
+
 
 import RIO
+import qualified Geometry.Vertex as V
+import qualified Geometry.Axis as Axis
 
+data PolarCoordinate = PolarCood {_angle :: Degree, _radius :: Radius, _pc_zAxis :: Axis.ZAxis}
+  deriving (Show,Eq)
 
-data PolarCoordinate = PolarCd {_theta :: Degree, _radius :: Radius, _pc_zAxis :: ZAxis}
-data RectangularCoordinate = RecCood {rc_xAxis :: XAxis, rc_yAxis :: YAxis, rc_zAsis :: ZAxis}
+newtype Radius = Radius {_rad_length :: Double} deriving (Show,Eq)
+newtype Degree = Degree {_degree :: Double} deriving (Show,Eq)
+newtype Radian = Radian {_rad :: Double} deriving (Show,Eq)
 
+data Origin = Origin {_xOrigin :: Axis.XAxis, _yOrigin :: Axis.YAxis, _zOrigin :: Axis.ZAxis}
 
-newtype XAxis = XAxis {_xAxis :: Double}
-newtype YAxis = YAxis {_yAxis :: Double}
-newtype ZAxis = ZAxis {_zAxis :: Double}
-newtype Radius = Radius {_rad_length :: Double}
-newtype Degree = Degree {_degree :: Double}
-newtype Radian = Radian {_rad :: Double}
+-- | Generate a new 'PolarCoordinate'
+newPolarCoordinate :: Degree -> Radius -> Axis.ZAxis -> PolarCoordinate
+newPolarCoordinate = PolarCood
 
-data Origin = Origin {_xOrigin :: XAxis, _yOrigin :: YAxis, _zOrigin :: ZAxis}
+-- | A weakly typed constructor to allow easy creation from [(Double,Double,Double)] or from a database.
+newPolarCoordinateFromTuple :: (Double, Double, Double) -> PolarCoordinate
+newPolarCoordinateFromTuple (degree, radius, zAxis) =
+  newPolarCoordinate (Degree degree) (Radius radius) (Axis.ZAxis zAxis)
+  
 
+  
 
 degreeToRadians :: Degree -> Radian
-degreeToRadians (Degree degree) = Radian $ degree * 0.0174533
-
+degreeToRadians (Degree degree) = Radian $ degree * (pi/180) 
                            
-polarToXaxis :: PolarCoordinate -> XAxis
-polarToXaxis (PolarCd degree (Radius radius) _) =
+polarToXaxis :: PolarCoordinate -> Axis.XAxis
+polarToXaxis (PolarCood degree (Radius radius) _) =
   let
     (Radian radian) = degreeToRadians degree
   in
-    XAxis $ radius * cos radian
+    Axis.XAxis $ radius * cos radian
 
 
-polarToYaxis :: PolarCoordinate -> YAxis
-polarToYaxis (PolarCd degree (Radius radius) _) =
+polarToYaxis :: PolarCoordinate -> Axis.YAxis
+polarToYaxis (PolarCood degree (Radius radius) _) =
   let
     (Radian radian) = degreeToRadians degree
   in
-    YAxis $ radius * sin radian
+    Axis.YAxis $ radius * sin radian
 
-polarToZaxis :: PolarCoordinate -> ZAxis
-polarToZaxis (PolarCd _ _ zAxis) = zAxis
+polarToZaxis :: PolarCoordinate -> Axis.ZAxis
+polarToZaxis (PolarCood _ _ zAxis) = zAxis
     
-polarToRectangular :: PolarCoordinate -> RectangularCoordinate
-polarToRectangular polarCood =
-  RecCood (polarToXaxis polarCood) (polarToYaxis polarCood) (polarToZaxis polarCood)
+
+newVertexFromPolarCoordinatesTuples :: [(Double, Double, Double)] -> [V.Vertex]
+newVertexFromPolarCoordinatesTuples values =
+  map (toVertex . newPolarCoordinateFromTuple) values
+
+toVertex :: PolarCoordinate -> V.Vertex
+toVertex polarCood =
+  let
+    (Axis.XAxis x) = polarToXaxis polarCood
+    (Axis.YAxis y) = polarToYaxis polarCood
+    (Axis.ZAxis z) = polarToZaxis polarCood
+    
+    
+  in
+    V.newVertex x y z    
+    
+    
   
-    
-    
-
-
-
