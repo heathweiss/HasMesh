@@ -2,13 +2,18 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 {- | Supply 'Id's. 
 
 Imported as part of Gmsh.Gmsh: import qualified Gmsh.Gmsh as Gmsh
 For internal import: import qualified Gmsh.ID as ID
 -}
-module Gmsh.ID(Id(..), PointInt(..), LineInt(..), newPointId, initializeIdLineInt, incr, evalLineId) where
+--module Gmsh.ID(Id(..), LineInt(..), Initialize(..), PointInt(..), newPointId, initializeIdLineInt, incr, evalLineId) where
+module Gmsh.ID(Id(..), LineInt(..), Initialize(..),   PointInt(), pattern PointInt', {-newPointId, initializeIdLineInt,-} incr, evalLineId, evalPointId) where
+
+
+
 
 import RIO
 import qualified RIO.Map as Map
@@ -18,19 +23,24 @@ import qualified Data.Hashable as H
 import qualified Geometry.Geometry as Geo
 
 
-
 -- Uses GADTs in order to implement the typecase pattern. See book: Haskell Design Patterns.
 -- Using GADTs has not gained me anything, other than getting some experience with GADT's.
 -- By having them all be of type Int, they can all use the incr fx.
 -- | The gmsh <Point Line etc> ID that is associated with a < 'Vertex' Line etc >
 -- These are used by the 'ID' ADT to give a unique return type for each constructor.
 newtype PointInt = PointInt Int deriving (Show,Eq)
+pattern PointInt' i <- PointInt i
+
+
+
+
 newtype LineInt = LineInt Int deriving (Show,Eq)
 
 data Id id where
   PointId :: PointInt -> Id PointInt
   LineId  :: LineInt -> Id LineInt
   
+
 
 deriving instance Show (Id a)
 deriving instance  Eq (Id a)
@@ -50,10 +60,36 @@ newPointId int = PointId $ PointInt int
 
 
 
--- | Create a new 'Id LineInt' for the seed value of the 'Environment.Environment' line 'ID' supply.
+{- | Create a new 'Id LineInt' for the seed value of the 'Environment.Environment' line 'ID' supply.
 initializeIdLineInt :: Int -> Id LineInt
-initializeIdLineInt int = LineId $ LineInt int
+initializeIdLineInt int = LineId $ LineInt int-}
 
 evalLineId :: Id LineInt-> LineInt
 evalLineId (LineId lineInt) = lineInt
 
+evalPointId :: Id PointInt -> Int
+evalPointId (PointId pointInt) = evalPointInt pointInt
+evalPointInt :: PointInt -> Int
+evalPointInt (PointInt int) = int
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------
+-- work to standardize id system
+
+
+---------------------------------------------------
+class Initialize a where
+  initialId :: Id a
+  
+  
+instance Initialize PointInt where
+  initialId = PointId $ PointInt 1
+  
+instance Initialize LineInt where
+  initialId = LineId $ LineInt 1
+  
+  
+
+  

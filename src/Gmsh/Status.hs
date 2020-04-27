@@ -1,4 +1,4 @@
-module Gmsh.Status() where
+module Gmsh.Status(Closed(), Open()) where
 
 -- | A state where a list of items wraps around on itself and so the 1st item == last item.
 --

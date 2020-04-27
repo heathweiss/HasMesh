@@ -29,10 +29,10 @@ import qualified Gmsh.Gmsh as Gmsh
 loadEnvironment :: IO (Enviro.Environment)
 loadEnvironment = do
   loaded <- Enviro.loadLoader
-  iorefPointIdSupply <- newIORef $ Gmsh.newPointId  1
+  iorefPointIdSupply <- newIORef $ Gmsh.initialId 
   iorefPoints <- newIORef $ Map.fromList []
   iorefDesignFileHandle <- newIORef stdout
-  iorefLineIdSupply <- newIORef $ Gmsh.initializeIdLineInt  1
+  iorefLineIdSupply <- newIORef Gmsh.initialId 
   let
     env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply
   validDesignName <- HexR.runEitherIO "validDesignName" $ Design.newDesignName $  view Enviro.designNameL env_
@@ -42,10 +42,11 @@ loadEnvironment = do
 loadTestEnvironment :: IO (Enviro.Environment)
 loadTestEnvironment = do
   loaded <- Enviro.loadLoader
-  iorefPointIdSupply <- newIORef $ Gmsh.PointId $ Gmsh.PointInt 1
-  iorefPoints <- newIORef $ Map.fromList []
+  iorefPointIdSupply <- newIORef Gmsh.initialId 
+  iorefPoints <- newIORef $ Map.fromList []    
   iorefDesignFileHandle <- newIORef stdout
-  iorefLineIdSupply <- newIORef $ Gmsh.initializeIdLineInt  1
+  iorefLineIdSupply <- newIORef $ Gmsh.initialId 
+  
   let
     env_ = Enviro.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply
   return $ env_ {Enviro.env_designName = "testDesignName"} 

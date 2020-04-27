@@ -38,6 +38,10 @@ instance Show (SafeList3 (ID.Id ID.PointInt) NonEmptyID) where
 
 -- Provide show instance for testing.
 instance Show (SafeList3 (ID.Id ID.LineInt) NonEmptyID) where
+ show ((Cons x y z zs _)) = "Cons x: " ++ show x ++ " y: " ++ show y ++ show z ++ " zs: " ++ show zs
+
+-- Provide show instance for testing.
+instance Show (SafeList3 V.Vertex NonEmptyID) where
  show ((Cons x y z zs _)) = "Cons x: " ++ show x ++ " y: " ++ show y ++ show z ++ " zs: " ++ show zs 
  
 -- Provide show instance of 'SafeList3' for testing.
@@ -148,7 +152,7 @@ instance ToSafeList3 [V.Vertex] VertexSafe3List where
   
 
 
-
+-- This needs to be moved into the Gmsh.Status module.
 class IsOpen a where
   isOpen :: (Eq a) =>  a -> Bool
   

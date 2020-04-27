@@ -144,10 +144,12 @@ runTests = do
       points <- runRIO env $ Gmsh.toPoints vertexs >>= HexR.runEitherRIO "points"
       assertEqual
        "All i get is 1 2 1 2. Need to cx the hashes."
-       (L.Cons (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 2) (Gmsh.PointId $ Gmsh.PointInt 3)  [(Gmsh.PointId $ Gmsh.PointInt 4)]  L.Nil)
-       (points )
+       --(L.Cons (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 2) (Gmsh.PointId $ Gmsh.PointInt 3)  [(Gmsh.PointId $ Gmsh.PointInt 4)]  L.Nil)
+       [1,2,3,4]
+       (map Gmsh.evalPointId $ L.evalSafeList3 points )
    )
  runTestTT createThe4PointsT1
+
 
  let
    lookAtVectorHashes = TestCase $ assertEqual

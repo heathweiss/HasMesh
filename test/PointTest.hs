@@ -97,7 +97,7 @@ runTests = do
       assertEqual "get the vector id from an ioref" (Left (Hex.SafeList3MinError "length == 2")) points -- result 
    )
  runTestTT toPointsFailsWith2Vertex
-
+{-
  --create 3 points from 3 Vertexs
  let
   use3VertexToCreate3Points = TestCase
@@ -206,7 +206,7 @@ runTests = do
        )
    )
  runTestTT use3VertexToCreateNonOpenPoints
-
+-}
 
 -------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------

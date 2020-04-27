@@ -29,7 +29,7 @@ runTests = do
  runTestTT testComment
 
 -- ============================= Vertex tests ==========================================
-
+{-
  let
   testPoint1 = TestCase $ assertEqual
    "output a point"
@@ -70,3 +70,4 @@ runTests = do
    ("\nLine(5) = {1,11};")
    (ScrB.writeLine (Gmsh.LineId $ Gmsh.LineInt 5) (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 11) )
  runTestTT testLine
+-}

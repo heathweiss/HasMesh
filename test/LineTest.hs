@@ -24,56 +24,20 @@ import qualified Utils.List as L
 import qualified Utils.RunExceptions as HexR
 
 runTests = do
- P.putStrLn $ "=============== LineTest ====================="  
- -- =================================== create and increment Line Id's ===================
- let
-  testNewLineId = TestCase $ assertEqual
-   "Create a new line id"
-   (Gmsh.initializeIdLineInt 1)
-   (Gmsh.initializeIdLineInt 1) 
- runTestTT testNewLineId
-
-
- let
-  testIncrLineId = TestCase $ assertEqual
-   "Incr a line id"
-   (Gmsh.initializeIdLineInt 2)
-   (Gmsh.incr $ Gmsh.initializeIdLineInt 1)
-   --(Gmsh.evalLineId (Gmsh.incr $ Gmsh.LineId $ Gmsh.initializeIdLineInt 1) )
- runTestTT testIncrLineId
-
--- ======================================== create and increment Line Id's: use with Env ================================
---Load an environment in IO, and increment the LineId from within a RIO monad.
---This is the inner working of the Gmsh.getLineId fx.
- let
-  testGetAndIncrLineIdFromEnv = TestCase
-   (do
-      let
-        workInRIO :: (Enviro.HasIdSupply env) => RIO env (Gmsh.Id (Gmsh.LineInt))
-        workInRIO = do
-          lineIdRef <- view Enviro.lineIdSupplyL
-          currId <- readIORef lineIdRef
-          writeIORef lineIdRef (Gmsh.incr currId )
-          finalId <- readIORef lineIdRef
-          return (finalId)
-      
-      env <- EnvLdr.loadEnvironment
-      result <- runRIO env workInRIO 
-      assertEqual "get the vector id from an ioref" (Gmsh.LineId $ Gmsh.LineInt 2) result 
-   )
- runTestTT testGetAndIncrLineIdFromEnv
-
+ P.putStrLn $ "=============== LineTest ====================="
+ 
 --Load an environment in IO, and then get 2 LineId's from within a RIO monad.
 --By getting > 1 Id, will also test that the LineId supply was incremented when getting the 1st id.
  let
   testGetAndIncrLineIdFromEnv2 = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
-      fstId <- runRIO env Gmsh.newLineId
+      _ <- runRIO env Gmsh.newLineId
       sndId <- runRIO env Gmsh.newLineId
       assertEqual "get the vector id from an ioref" (Gmsh.LineId $ Gmsh.LineInt 2) sndId
    )
- runTestTT testGetAndIncrLineIdFromEnv2
+ _ <- runTestTT testGetAndIncrLineIdFromEnv2
+ 
 
 -- ============================ create Lines from [Vertex] ===================================
 -- create 2 vertex, get their gmsh ids, then create a new line from those ids as a [id].

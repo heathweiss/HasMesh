@@ -3,12 +3,12 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
-{- | Supply functions to support the  'Gmsh.ID.LineId' ADT and associated classes.
+{- | Supply a Gmsh Line Id as, 'Gmsh.ID.LineId'.
 
-"Points" in this module refers to 'Gmsh.Id ID.PointInt', which is the Gmsh Id associated with a 'Geometry.Vertex'
+As in Gmsh, each line is made up of numerous points. HasMesh enforces a minimum of 3 lines to be created from
+either ['Geometry.Vertex.Vertex'] or a ['Gmsh.ID.PointId']. The ['Gmsh.ID.LineId'] will be 'Gmsh.Status.Closed'.
 
-import qualified Gmsh.Line as Line
-or import via Gmsh.Gmsh
+import qualified Gmsh.Line as Line or import via Gmsh.Gmsh
 -}
 module Gmsh.Line(newLineId, createLinesFromPoints, createLinesFromVertex) where
 
@@ -39,8 +39,12 @@ newLineId = do
   lineIdSupply <- readIORef lineIdSupplyIORef
   writeIORef lineIdSupplyIORef $ ID.incr lineIdSupply
   return lineIdSupply
+----------------------------------------------------------------------------------------------------------------------------
+-- work to standardize id system
+--instance ID.Identifiers LineInt where
+  
 
-
+----------------------------------------------------------------------------------------------------------------------------
 
 --  Create a new Line from 2 gmsh line ids. Called by createLinesFromPoints to create each line in the [line] that it is creating.
 createLineFromPoints :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env) => ID.Id ID.PointInt -> ID.Id ID.PointInt -> RIO env (ID.Id ID.LineInt)

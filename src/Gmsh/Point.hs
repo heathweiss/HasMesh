@@ -6,9 +6,11 @@
 
 
 
-{- | Supply functions to support the  'Gmsh.ID.PointId' ADT and associated classes.
+{- | Create Gmsh ponts, as 'Gmsh.ID.PointId' from 'Geometry.Vertex.Vertex', which is a 3D vertex in the cartesian plane.
+   Each unique vertex will only be assigned a single Id. It the same vertex is encountered, the pre-existing Id will be retrieved.
+   Otherwise, it is the first time the vertex has occurrred, and a new Id will be generated.
 
-import qualified Gmsh.Point as Pnt  
+import qualified Gmsh.Point as Pnt  or import via Gmsh.Gmsh
 -}
 module Gmsh.Point(toPoint, toPoints, PointIdList(), {-uncomment for internal tests in test/PointTest toPoint, toPoints'-}) where
 
