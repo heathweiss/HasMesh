@@ -10,7 +10,8 @@ Imported as part of Gmsh.Gmsh: import qualified Gmsh.Gmsh as Gmsh
 For internal import: import qualified Gmsh.ID as ID
 -}
 --module Gmsh.ID(Id(..), LineInt(..), Initialize(..), PointInt(..), newPointId, initializeIdLineInt, incr, evalLineId) where
-module Gmsh.ID(Id(..), LineInt(..), Initialize(..),   PointInt(), pattern PointInt', {-newPointId, initializeIdLineInt,-} incr, evalLineId, evalPointId) where
+module Gmsh.ID(Id(..), LineInt(), pattern LineInt', Initialize(..),   PointInt(), pattern PointInt', incr, evalLineId, evalPointId) where
+
 
 
 
@@ -31,10 +32,8 @@ import qualified Geometry.Geometry as Geo
 newtype PointInt = PointInt Int deriving (Show,Eq)
 pattern PointInt' i <- PointInt i
 
-
-
-
 newtype LineInt = LineInt Int deriving (Show,Eq)
+pattern LineInt' i <- LineInt i
 
 data Id id where
   PointId :: PointInt -> Id PointInt
@@ -60,13 +59,11 @@ newPointId int = PointId $ PointInt int
 
 
 
-{- | Create a new 'Id LineInt' for the seed value of the 'Environment.Environment' line 'ID' supply.
-initializeIdLineInt :: Int -> Id LineInt
-initializeIdLineInt int = LineId $ LineInt int-}
-
-evalLineId :: Id LineInt-> LineInt
-evalLineId (LineId lineInt) = lineInt
-
+-- | Extract the Int.
+evalLineId :: Id LineInt-> Int
+evalLineId (LineId (LineInt int)) = int
+          
+-- | Extract the Int.
 evalPointId :: Id PointInt -> Int
 evalPointId (PointId pointInt) = evalPointInt pointInt
 evalPointInt :: PointInt -> Int

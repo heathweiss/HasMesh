@@ -54,14 +54,13 @@ runTests = do
       env <- EnvLdr.loadTestEnvironment
       let
         vertexs1 = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
-        --vertexs2 = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  33 33 33]
       points1 <- runRIO env $ Pnt.toPoints vertexs1 >>= HexR.runEitherRIO "points"
       points2 <- runRIO env $ Pnt.toPoints vertexs1 >>= HexR.runEitherRIO "points"
       assertEqual
        "2 safe lists created from same vertex are eq"
        points1 points2
    )  
- runTestTT  safe3ListsFromSameVectorsAreEq
+ _ <- runTestTT  safe3ListsFromSameVectorsAreEq
 
  let
   safe3ListsFromDiffVectorsAreNotEq = TestCase
@@ -76,7 +75,8 @@ runTests = do
        "2 safe lists created from different vertex are not Eq"
        False (points1 ==  points2)
    )
- runTestTT safe3ListsFromDiffVectorsAreNotEq
+ _ <- runTestTT safe3ListsFromDiffVectorsAreNotEq
+ 
 
  
 -------------------------------------------------------------------------------------------------
@@ -96,28 +96,49 @@ runTests = do
       points <- runRIO env $ Pnt.toPoints vertexs
       assertEqual "get the vector id from an ioref" (Left (Hex.SafeList3MinError "length == 2")) points -- result 
    )
- runTestTT toPointsFailsWith2Vertex
-{-
- --create 3 points from 3 Vertexs
+ _ <- runTestTT toPointsFailsWith2Vertex
+
+
  let
-  use3VertexToCreate3Points = TestCase
+  create3PointsFrom3Vertex = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
       let
         vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6, Geo.newVertex  7 8 9]
       eitherPoints <- runRIO env $ Pnt.toPoints vertexs
       assertEqual "get the vector id from an ioref"
-       (Right [(Gmsh.PointId $ Gmsh.PointInt 1), (Gmsh.PointId $ Gmsh.PointInt 2), (Gmsh.PointId $ Gmsh.PointInt 3)])
+       (Right [1, 2, 3])
        (case eitherPoints of
-          Right points -> Right $ L.evalSafeList3 points
+          Right points -> Right $ map Gmsh.evalPointId (L.evalSafeList3 points)
           Left err -> Left err
        )
    )
- runTestTT use3VertexToCreate3Points
+ _ <- runTestTT create3PointsFrom3Vertex
+ 
 
---create 3 points from 3 closed Vertexs 
+  
  let
-  use3ClosedVertexToCreate3Points = TestCase
+  create4PointsFrom4Vertex = TestCase
+   (do
+      env <- EnvLdr.loadTestEnvironment
+      let
+        vertexs = [Geo.newVertex 1 1 1, Geo.newVertex 2 2 2, Geo.newVertex 3 3 3, Geo.newVertex 4 4 4]
+      eitherPoints <- runRIO env $ Pnt.toPoints vertexs
+      assertEqual "get the vector id from an ioref"
+       (Right [1,2,3,4])
+       (case eitherPoints of
+          Right points -> Right $  map Gmsh.evalPointId (L.evalSafeList3 points)
+          Left err -> Left err
+          
+       )
+   )
+ _ <- runTestTT create4PointsFrom4Vertex
+
+
+ ------------------------------------------ test for isOpen: so last point != head point--------------------------------------------------
+
+ let
+  create3PointsFrom3ClosedVertex = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
       let
@@ -130,84 +151,11 @@ runTests = do
           Left err -> Left err
        )
    )
- runTestTT use3ClosedVertexToCreate3Points
+ runTestTT create3PointsFrom3ClosedVertex
  
- let
-  use4VertexToCreate4Points = TestCase
-   (do
-      env <- EnvLdr.loadTestEnvironment
-      let
-        vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6, Geo.newVertex  7 8 9, Geo.newVertex 10 11 12]
-      points <- runRIO env $ Pnt.toPoints vertexs
-      assertEqual "get the vector id from an ioref"
-       (Right $ L.Cons (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 2) (Gmsh.PointId $ Gmsh.PointInt 3)  [(Gmsh.PointId $ Gmsh.PointInt 4)]  L.Nil)
-       points -- result 
-   )
- runTestTT use4VertexToCreate4Points
-
- let
-  use5VertexToCreate5Points = TestCase
-   (do
-      env <- EnvLdr.loadTestEnvironment
-      let
-        vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3, Geo.newVertex 4 4 4, Geo.newVertex 5 5 5 ]
-      points <- runRIO env $ Pnt.toPoints vertexs
-      assertEqual "create 5 points from 5 unique vectors"
-       (Right $ L.Cons (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 2) (Gmsh.PointId $ Gmsh.PointInt 3)  [(Gmsh.PointId $ Gmsh.PointInt 4), (Gmsh.PointId $ Gmsh.PointInt 5)]  L.Nil)
-       points -- result 
-   )
- runTestTT use5VertexToCreate5Points
 
 
----------------------------------------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------ L.safeLast ----------------------------------------------------------------------------------
--- easier to do it in a place like PointTest where all the imports are in place
- let
-  getTheLastPoint = TestCase
-   (do
-      env <- EnvLdr.loadTestEnvironment
-      let
-        vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
-      points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points"
-      assertEqual
-       "Get the last point made from a length 3 [vertex]"
-       (ID.PointId (ID.PointInt 3)) (L.safeLast3 points)
-   )
- runTestTT getTheLastPoint
-------------------------------------------------------------------------------------------------------------------------------------------------------------
------------------------------------------- test that PointIdSafe3List is open: so last point != head point--------------------------------------------------
-
- let
-  use3VertexToCreateOpenPoints = TestCase
-   (do
-      env <- EnvLdr.loadTestEnvironment
-      let
-        vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
-      points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points"
-      assertEqual
-       "PointIdSafe3List from 3 vectors is open."
-       True (L.isOpen points)
-   )
- runTestTT use3VertexToCreateOpenPoints
-
- let
-  use3VertexToCreateNonOpenPoints = TestCase
-   (do
-      env <- EnvLdr.loadTestEnvironment
-      let
-        vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  1 1 1]
-      eitherPoints <- runRIO env $ Pnt.toPoints vertexs -- >>= HexR.runEitherRIO "points"
-      assertEqual
-       "PointIdSafe3List from 3 vectors is not open."
-       (Left "PointIdSafe3ListIsClosed \"PointIdList is closed\"")
-       (case eitherPoints of
-          Right rightPoints -> Right $ not (L.isOpen rightPoints)
-          Left ex -> Left $ show ex
-       )
-   )
- runTestTT use3VertexToCreateNonOpenPoints
--}
-
+{-
 -------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------
@@ -217,7 +165,7 @@ runTests = do
 -------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------- internal testing ------------------------------------------------
 -- requires export of Gmsh.Point.toPoints'
-{-
+
 -------------------------------------- toPoints' ----------------------------------------
 -- Use the toPoints' fx in the same way that toPoints uses it.
  let
@@ -302,3 +250,4 @@ runTests = do
    )
  runTestTT getSafePointIdListFor5Vectors
 -}
+

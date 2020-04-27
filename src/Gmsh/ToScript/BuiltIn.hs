@@ -47,7 +47,8 @@ writeLC3 = "lc = 1e-3;"
 
 
 writeLine :: ID.Id ID.LineInt -> ID.Id ID.PointInt -> ID.Id ID.PointInt -> B.ByteString
-writeLine (ID.LineId (ID.LineInt lineId)) (ID.PointId (ID.PointInt' pointId1)) (ID.PointId (ID.PointInt' pointId2)) =
+writeLine (ID.LineId (ID.LineInt' lineId)) (ID.PointId (ID.PointInt' pointId1)) (ID.PointId (ID.PointInt' pointId2)) =
+  
   [i|\nLine(#{lineId}) = {#{pointId1},#{pointId2}};|] :: B.ByteString
 
 {-

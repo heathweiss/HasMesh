@@ -26,40 +26,40 @@ runTests = do
    "output a comment"
    ("\n//my comment")
    (SCom.writeComment "my comment")
- runTestTT testComment
-
+ _ <- runTestTT testComment
+ 
 -- ============================= Vertex tests ==========================================
-{-
+
  let
   testPoint1 = TestCase $ assertEqual
    "output a point"
-   ("\nPoint(1) = {1.0,2.0,3.0,lc};")
-   --(ScrB.writePoint (Geo.newVertex 1 2 3) (Gmsh.PointId 1))
-   (ScrB.writePoint (Geo.newVertex 1 2 3) (Gmsh.PointId $ Gmsh.PointInt 1))
- runTestTT testPoint1
-
+   "\nPoint(1) = {1.0,2.0,3.0,lc};"
+   (ScrB.writePoint (Geo.newVertex 1 2 3) Gmsh.initialId)
+ _ <- runTestTT testPoint1
 
 -- ============================= lc tests ==========================================
  let
   testLc1 = TestCase $ assertEqual
    "output an 1c1"
-   ("lc = 1e-1;")
-   (ScrB.writeLC1)
- runTestTT testLc1
+   "lc = 1e-1;"
+   ScrB.writeLC1
+ _ <- runTestTT testLc1
 
  let
   testLc2 = TestCase $ assertEqual
    "output an 2c2"
-   ("lc = 1e-2;")
-   (ScrB.writeLC2)
- runTestTT testLc2
+   "lc = 1e-2;"
+   ScrB.writeLC2
+ _ <- runTestTT testLc2
+
 
  let
   testLc3 = TestCase $ assertEqual
    "output an 1e-3"
-   ("lc = 1e-3;")
-   (ScrB.writeLC3)
- runTestTT testLc3
+   "lc = 1e-3;"
+   ScrB.writeLC3
+ _ <- runTestTT testLc3
+ 
 
 
 -- ============================ LINE tests =============================================
@@ -67,7 +67,8 @@ runTests = do
  let
   testLine = TestCase $ assertEqual
    "write a line"
-   ("\nLine(5) = {1,11};")
-   (ScrB.writeLine (Gmsh.LineId $ Gmsh.LineInt 5) (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 11) )
+   "\nLine(5) = {1,11};"
+   (ScrB.writeLine (Gmsh.initialId :: Gmsh.Id Gmsh.LineInt) (Gmsh.initialId::Gmsh.Id Gmsh.PointInt) (Gmsh.incr Gmsh.initialId::Gmsh.Id Gmsh.PointInt))
  runTestTT testLine
--}
+ 
+
