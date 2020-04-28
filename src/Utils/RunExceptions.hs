@@ -11,7 +11,7 @@ module Utils.RunExceptions(runEitherIO, runEitherRIO) where
 import RIO
 import qualified RIO.Text as T
 import qualified Utils.Exceptions as Hex
-import qualified Utils.Environment as Enviro
+--import qualified Utils.Environment as Enviro
 --import qualified Utils.Designs as Design
 
 -- | Used to check the status of an Either while in the IO monad. Eliminates the use of EitherT as recommended by RIO monad.

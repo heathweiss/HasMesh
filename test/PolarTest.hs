@@ -11,11 +11,12 @@ import qualified Geometry.Polar as Polar
 import qualified Geometry.Vertex as V
 import qualified Geometry.Axis as Axis
 import qualified Data.Hashable as H
-import qualified Utils.EnvironmentLoader as EnvLdr
+--import qualified Utils.EnvironmentLoader as EnvLdr
 --import qualified Gmsh.Point as Pnt
 import qualified Utils.RunExceptions as HexR
 import qualified Utils.List as L
 import qualified Gmsh.Gmsh as Gmsh
+import qualified Utils.Environment as Env
 
 runTests = do
  P.putStrLn $ "=============== Polar Test ====================="  
@@ -130,7 +131,7 @@ runTests = do
  let
   createThe4PointsT1 = TestCase
    (do
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       let
         radius = 50
         height = 0
@@ -146,7 +147,7 @@ runTests = do
        "All i get is 1 2 1 2. Need to cx the hashes."
        --(L.Cons (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 2) (Gmsh.PointId $ Gmsh.PointInt 3)  [(Gmsh.PointId $ Gmsh.PointInt 4)]  L.Nil)
        [1,2,3,4]
-       (map Gmsh.evalPointId $ L.evalSafeList3 points )
+       (map Env.evalPointId $ L.evalSafeList3 points )
    )
  runTestTT createThe4PointsT1
 

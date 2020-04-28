@@ -10,7 +10,7 @@ either ['Geometry.Vertex.Vertex'] or a ['Gmsh.ID.PointId']. The ['Gmsh.ID.LineId
 
 import qualified Gmsh.Line as Line or import via Gmsh.Gmsh
 -}
-module Gmsh.Line(newLineId, createLinesFromPoints, createLinesFromVertex) where
+module Gmsh.Line({-newLineId,-} createLinesFromPoints, createLinesFromVertex) where
 
 import RIO
 --import qualified RIO.Map as Map
@@ -18,7 +18,8 @@ import RIO
 import qualified RIO.ByteString as B
 import qualified RIO.Text as T
 import qualified Geometry.Geometry as Geo
-import qualified Gmsh.ID as ID
+--import qualified Gmsh.ID as ID
+import qualified Utils.Environment as Env
 import qualified Gmsh.ToScript.BuiltIn as ScrB
 import qualified Utils.Environment as Enviro
 import qualified Utils.List as L
@@ -26,33 +27,34 @@ import qualified Gmsh.Point as Pnt
 import qualified Utils.RunExceptions as HexR
 
 
--- | A 'Utils.List.SafeList3' containing [ID.Id ID.PointInt].
+-- | A 'Utils.List.SafeList3' containing [Env.Id Env.PointInt].
 -- The list will always be 'Gmsh.Status.Closed'
-type LineIdSafe3List = L.SafeList3 (ID.Id ID.LineInt) L.NonEmptyID
+type LineIdSafe3List = L.SafeList3 (Env.Id Env.LineInt) L.NonEmptyID
 
-
--- | Creates a 'ID.Id ID.LineInt' that associates 2 'ID.Id ID.PointInt' into a Gmsh line.
--- Will create a new 'ID.Id ID.LineInt' even if the same 2 'ID.Id ID.PointInt' were already used for a 'ID.Id ID.LineInt'
-newLineId :: (Enviro.HasIdSupply env) =>   RIO env (ID.Id ID.LineInt)
+{-moved to Environment
+-- | Creates a 'Env.Id Env.LineInt' that associates 2 'Env.Id Env.PointInt' into a Gmsh line.
+-- Will create a new 'Env.Id Env.LineInt' even if the same 2 'Env.Id Env.PointInt' were already used for a 'Env.Id Env.LineInt'
+newLineId :: (Enviro.HasIdSupply env) =>   RIO env (Env.Id Env.LineInt)
 newLineId = do
   lineIdSupplyIORef <- view Enviro.lineIdSupplyL
   lineIdSupply <- readIORef lineIdSupplyIORef
-  writeIORef lineIdSupplyIORef $ ID.incr lineIdSupply
+  writeIORef lineIdSupplyIORef $ Env.incr lineIdSupply
   return lineIdSupply
+-}
 ----------------------------------------------------------------------------------------------------------------------------
 -- work to standardize id system
---instance ID.Identifiers LineInt where
+--instance Env.Identifiers LineInt where
   
 
 ----------------------------------------------------------------------------------------------------------------------------
 
 --  Create a new Line from 2 gmsh line ids. Called by createLinesFromPoints to create each line in the [line] that it is creating.
-createLineFromPoints :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env) => ID.Id ID.PointInt -> ID.Id ID.PointInt -> RIO env (ID.Id ID.LineInt)
+createLineFromPoints :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env) => Env.Id Env.PointInt -> Env.Id Env.PointInt -> RIO env (Env.Id Env.LineInt)
 createLineFromPoints pointId1 pointId2 = do
   env <- ask
   handleIORef <- view Enviro.geoFileHandleL
   handle_ <- readIORef handleIORef
-  lineId  <- runRIO env newLineId
+  lineId  <- runRIO env Env.getLineId
   --Does not write to handle, unless the hPut call is followed by(not preceded by) the display show.
   --Why is this not the case for writing points in Point.hs
   B.hPut handle_ $ ScrB.writeLine lineId pointId1 pointId2
@@ -60,7 +62,7 @@ createLineFromPoints pointId1 pointId2 = do
   return lineId
 
 
--- | Generate a 'Gmsh.Status.Closed' 'Gmsh.ID.LineIdSafe3List'. 
+-- | Generate a 'Gmsh.Status.Closed' 'Gmsh.Env.LineIdSafe3List'. 
 createLinesFromVertex :: (Enviro.HasGeoFileHandle env, Enviro.HasIdSupply env, Enviro.HasPointIdMap env) => T.Text -> [Geo.Vertex] -> RIO env LineIdSafe3List
 createLinesFromVertex errMsg vertex = do
   env <- ask 
@@ -68,7 +70,7 @@ createLinesFromVertex errMsg vertex = do
   createLinesFromPoints points
   
   
--- | Generate a 'Gmsh.Status.Closed' 'Gmsh.ID.LineIdSafe3List'. 
+-- | Generate a 'Gmsh.Status.Closed' 'Gmsh.Env.LineIdSafe3List'. 
 createLinesFromPoints :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env) => Pnt.PointIdList ->  RIO env LineIdSafe3List 
 createLinesFromPoints (L.Cons x y z (x':y':z':z'':zs) _) = do
   env <- ask
@@ -112,7 +114,7 @@ createLinesFromPoints (L.Cons x y z [] _) = do
   
   
 
-createSafeListOfLinesFromPoints' :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env) => ID.Id ID.PointInt ->  Pnt.PointIdList -> LineIdSafe3List ->  RIO env LineIdSafe3List
+createSafeListOfLinesFromPoints' :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env) => Env.Id Env.PointInt ->  Pnt.PointIdList -> LineIdSafe3List ->  RIO env LineIdSafe3List
 createSafeListOfLinesFromPoints' initialPnt (L.Cons x y z (x':y':z':zs) _) safeWorkingList = do
   env <- ask
   linexyId <- runRIO env $ createLineFromPoints x y

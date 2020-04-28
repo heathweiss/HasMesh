@@ -11,7 +11,8 @@ module Utils.List(SafeList3(..), NonEmptyID(),
                   reverseSafeList3, appendSafeList3) where
 
 import RIO
-import qualified Gmsh.ID as ID
+--import qualified Gmsh.ID as ID
+import qualified Utils.Environment as Env
 import qualified Utils.Exceptions as Hex
 import qualified Geometry.Vertex as V
 
@@ -33,11 +34,11 @@ data SafeList3 a b where
      Cons:: a -> a -> a -> [a] -> SafeList3 a b -> SafeList3 a NonEmptyID
  
 -- Provide show instance for testing.
-instance Show (SafeList3 (ID.Id ID.PointInt) NonEmptyID) where
+instance Show (SafeList3 (Env.Id Env.PointInt) NonEmptyID) where
  show ((Cons x y z zs _)) = "Cons x: " ++ show x ++ " y: " ++ show y ++ " z: " ++ show z ++ " zs: " ++ show zs  
 
 -- Provide show instance for testing.
-instance Show (SafeList3 (ID.Id ID.LineInt) NonEmptyID) where
+instance Show (SafeList3 (Env.Id Env.LineInt) NonEmptyID) where
  show ((Cons x y z zs _)) = "Cons x: " ++ show x ++ " y: " ++ show y ++ show z ++ " zs: " ++ show zs
 
 -- Provide show instance for testing.
@@ -45,14 +46,14 @@ instance Show (SafeList3 V.Vertex NonEmptyID) where
  show ((Cons x y z zs _)) = "Cons x: " ++ show x ++ " y: " ++ show y ++ show z ++ " zs: " ++ show zs 
  
 -- Provide show instance of 'SafeList3' for testing.
-instance Eq (SafeList3 (ID.Id ID.PointInt) NonEmptyID) where
+instance Eq (SafeList3 (Env.Id Env.PointInt) NonEmptyID) where
   ((Cons x y z zs _)) == ((Cons x' y' z' zs' _)) = (x == x') && (y == y') && (z == z') && (zs == zs') 
 
--- Provide show instance of 'SafeList3' ('ID.Id' 'ID.LineInt') for testing.
-instance Eq (SafeList3 (ID.Id ID.LineInt) NonEmptyID) where
+-- Provide show instance of 'SafeList3' ('Env.Id' 'Env.LineInt') for testing.
+instance Eq (SafeList3 (Env.Id Env.LineInt) NonEmptyID) where
   ((Cons x y z zs _)) == ((Cons x' y' z' zs' _)) = (x == x') && (y == y') && (z == z') && (zs == zs') 
 
--- Provide show instance of 'SafeList3' ('ID.Id' 'ID.LineInt') for testing.
+-- Provide show instance of 'SafeList3' ('Env.Id' 'Env.LineInt') for testing.
 instance Eq (SafeList3 (V.Vertex) NonEmptyID) where
   ((Cons x y z zs _)) == ((Cons x' y' z' zs' _)) = (x == x') && (y == y') && (z == z') && (zs == zs') 
 
@@ -117,8 +118,8 @@ reverseSafeList3 (Cons x y z zs _) =
   
 
 
-type LineIdSafe3List = SafeList3 (ID.Id ID.LineInt) NonEmptyID
-type PointIdSafe3List = SafeList3 (ID.Id ID.PointInt) NonEmptyID
+type LineIdSafe3List = SafeList3 (Env.Id Env.LineInt) NonEmptyID
+type PointIdSafe3List = SafeList3 (Env.Id Env.PointInt) NonEmptyID
 type VertexSafe3List = SafeList3 V.Vertex NonEmptyID
 
 
@@ -128,7 +129,7 @@ class ToSafeList3 a b | b -> a where
 
   
 
-instance ToSafeList3 [ID.Id ID.LineInt] LineIdSafe3List where
+instance ToSafeList3 [Env.Id Env.LineInt] LineIdSafe3List where
   toSafeList3 [] = Left $ Hex.SafeList3MinError "length == 0"
   toSafeList3 [_] = Left $ Hex.SafeList3MinError "length == 1"
   toSafeList3 [_,_] = Left $ Hex.SafeList3MinError "length == 2"
@@ -136,7 +137,7 @@ instance ToSafeList3 [ID.Id ID.LineInt] LineIdSafe3List where
   toSafeList3 (x:y:z:zs) = Right $ Cons x y z zs Nil
 
 
-instance ToSafeList3 [ID.Id ID.PointInt] PointIdSafe3List where  
+instance ToSafeList3 [Env.Id Env.PointInt] PointIdSafe3List where  
   toSafeList3 [] = Left $ Hex.SafeList3MinError "length == 0"
   toSafeList3 [_] = Left $ Hex.SafeList3MinError "length == 1"
   toSafeList3 [_,_] = Left $ Hex.SafeList3MinError "length == 2"

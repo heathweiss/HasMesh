@@ -12,15 +12,16 @@ import Test.HUnit
 import qualified System.IO as SIO
 
 import qualified Geometry.Vertex as V
-import qualified Gmsh.Gmsh as Gmsh
+--import qualified Gmsh.Gmsh as Gmsh
 import qualified Geometry.Geometry as Geo
 import qualified Gmsh.Point as Pnt  
-import qualified Utils.EnvironmentLoader as EnvLdr
-import qualified Utils.Environment as Enviro
+--import qualified Utils.EnvironmentLoader as EnvLdr
+import qualified Utils.Environment as Env
 import qualified Utils.List as L
 import qualified Utils.Exceptions as Hex
 import qualified Utils.RunExceptions as HexR
-import qualified Gmsh.ID as ID
+--import qualified Gmsh.ID as ID
+import qualified Utils.Environment as Env
 
 
 runTests = do
@@ -31,7 +32,7 @@ runTests = do
  let
   pointsAreEqual = TestCase
    (do
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       point111 <- runRIO env $ Pnt.toPoint $ Geo.newVertex  1 1 1
       pointFromSameVector <- runRIO env $ Pnt.toPoint $ Geo.newVertex  1 1 1
       assertEqual "points are Eq" True (point111 == pointFromSameVector)
@@ -41,7 +42,7 @@ runTests = do
  let
   pointsAreEqualFromEnviro = TestCase
    (do
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       point111 <- runRIO env $ Pnt.toPoint $ Geo.newVertex  1 1 1
       pointFromSameVector <- runRIO env $ Pnt.toPoint $ Geo.newVertex  1 1 1
       assertEqual "create a point from the Environment module, and test for ==" True (point111 == pointFromSameVector)
@@ -54,7 +55,7 @@ runTests = do
  let
   pointsAreNotEqual = TestCase
    (do
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       point111 <- runRIO env $ Pnt.toPoint $ Geo.newVertex  1 1 1
       point222 <- runRIO env $ Pnt.toPoint $ Geo.newVertex  2 2 2
       assertEqual "points are not Eq" True  (point222 /= point111)
@@ -64,7 +65,7 @@ runTests = do
  let
   safe3ListsFromSameVectorsAreEq = TestCase
    (do
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       let
         vertexs1 = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
       points1 <- runRIO env $ Pnt.toPoints vertexs1 >>= HexR.runEitherRIO "points"
@@ -78,7 +79,7 @@ runTests = do
  let
   safe3ListsFromDiffVectorsAreNotEq = TestCase
    (do
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       let
         vertexs1 = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
         vertexs2 = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  33 33 33]
@@ -103,7 +104,7 @@ runTests = do
    (do
       
       
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       let
         vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6]
       points <- runRIO env $ Pnt.toPoints vertexs
@@ -115,14 +116,14 @@ runTests = do
  let
   create3PointsFrom3Vertex = TestCase
    (do
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       let
         vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6, Geo.newVertex  7 8 9]
       eitherPoints <- runRIO env $ Pnt.toPoints vertexs
       assertEqual "get the vector id from an ioref"
        (Right [1, 2, 3])
        (case eitherPoints of
-          Right points -> Right $ map Gmsh.evalPointId (L.evalSafeList3 points)
+          Right points -> Right $ map Env.evalPointId (L.evalSafeList3 points)
           Left err -> Left err
        )
    )
@@ -133,14 +134,14 @@ runTests = do
  let
   create4PointsFrom4Vertex = TestCase
    (do
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       let
         vertexs = [Geo.newVertex 1 1 1, Geo.newVertex 2 2 2, Geo.newVertex 3 3 3, Geo.newVertex 4 4 4]
       eitherPoints <- runRIO env $ Pnt.toPoints vertexs
       assertEqual "get the vector id from an ioref"
        (Right [1,2,3,4])
        (case eitherPoints of
-          Right points -> Right $  map Gmsh.evalPointId (L.evalSafeList3 points)
+          Right points -> Right $  map Env.evalPointId (L.evalSafeList3 points)
           Left err -> Left err
           
        )
@@ -153,7 +154,7 @@ runTests = do
  let
   create3PointsFrom3ClosedVertex = TestCase
    (do
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       let
         vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  1 1 1]
       eitherPoints <- runRIO env $ Pnt.toPoints vertexs
@@ -184,7 +185,7 @@ runTests = do
  let
   getSafePointIdListFor3Vectors = TestCase
    (do
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       xPointId <- runRIO env $ Pnt.toPoint $ V.newVertex 1 1 1 -- initialVertex
       yPointId <- runRIO env $ Pnt.toPoint $ V.newVertex 2 2 2 --y
       zPointId <- runRIO env $ Pnt.toPoint $ V.newVertex 3 3 3 --z
@@ -212,7 +213,7 @@ runTests = do
  let
   getSafePointIdListFor4Vectors = TestCase
    (do
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       xPointId <- runRIO env $ Pnt.toPoint $ V.newVertex 1 1 1 -- initialVertex
       yPointId <- runRIO env $ Pnt.toPoint $ V.newVertex 2 2 2 --y
       zPointId <- runRIO env $ Pnt.toPoint $ V.newVertex 3 3 3 --z
@@ -240,7 +241,7 @@ runTests = do
  let
   getSafePointIdListFor5Vectors = TestCase
    (do
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       xPointId <- runRIO env $ Pnt.toPoint $ V.newVertex 1 1 1 -- initialVertex
       yPointId <- runRIO env $ Pnt.toPoint $ V.newVertex 2 2 2 --y
       zPointId <- runRIO env $ Pnt.toPoint $ V.newVertex 3 3 3 --z

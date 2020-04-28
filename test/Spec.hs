@@ -8,7 +8,7 @@ import qualified CurveLoopTest as CurveLoopTest
 import qualified PointTest as PointTest 
 import qualified ListTest as ListTest
 import qualified PolarTest as PolarTest
-import qualified IDTest as IDTest
+import qualified EnvironmentTest as EnvironmentTest
 main = do
   FileWriterTest.runTests
   ScriptingTest.runTests
@@ -19,4 +19,4 @@ main = do
   VertexTest.runTests
   PointTest.runTests
   PolarTest.runTests
-  IDTest.runTests
+  EnvironmentTest.runTests

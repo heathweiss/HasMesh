@@ -4,7 +4,8 @@ module ListTest(runTests) where
 import RIO
 import Test.HUnit
 import qualified Prelude as P
-import qualified Gmsh.ID as ID
+--import qualified Gmsh.ID as ID
+import qualified Utils.Environment as Env
 import qualified Utils.List as L
 import qualified Utils.Exceptions as Hex
 
@@ -17,20 +18,20 @@ runTests = do
  -- ================================================== toSafeList3 =================================================
       
  let
-  pointId1 = ID.initialId
-  pointId2 = ID.incr pointId1
+  pointId1 = Env.initialId
+  pointId2 = Env.incr pointId1
   buildPointIdSafe3ListFrom2PointIdFails = TestCase $ assertEqual
-   "build a PointIdSafe3List from < 3 ID.PointId ID.PointInt throws and exception"
+   "build a PointIdSafe3List from < 3 Env.PointId Env.PointInt throws and exception"
    (Left (Hex.SafeList3MinError "length == 2"))
    (L.toSafeList3 [pointId1, pointId2]::Either Hex.HasMeshException L.PointIdSafe3List)
  _ <- runTestTT buildPointIdSafe3ListFrom2PointIdFails
  
  let
-  pointId11 = ID.initialId
-  pointId12 = ID.incr pointId1
-  pointId13 = ID.incr pointId2
+  pointId11 = Env.initialId
+  pointId12 = Env.incr pointId1
+  pointId13 = Env.incr pointId2
   buildSafe3ListFrom3Points = TestCase $ assertEqual
-   "build a PointIdSafe3List from 3 ID.PointId ID.PointInt"
+   "build a PointIdSafe3List from 3 Env.PointId Env.PointInt"
    (Right (L.Cons pointId11 pointId12 pointId13 [] L.Nil::L.PointIdSafe3List))
    (L.toSafeList3 [pointId11, pointId12, pointId13])
  _ <- runTestTT buildSafe3ListFrom3Points

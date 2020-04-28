@@ -18,15 +18,16 @@ import qualified RIO.Text as T
 import Data.String.Interpolate ( i )
 
 import qualified Geometry.Geometry as Geo
-import qualified Gmsh.ID as ID
+--import qualified Gmsh.ID as ID
+import qualified Utils.Environment as Env
 
 -- | Output a gmsh point.
-writePoint :: Geo.Vertex -> ID.Id ID.PointInt -> B.ByteString
-writePoint (Geo.Vertex' x y z) (ID.PointId (ID.PointInt' id)) =
+writePoint :: Geo.Vertex -> Env.Id Env.PointInt -> B.ByteString
+writePoint (Geo.Vertex' x y z) (Env.PointId (Env.PointInt' id)) =
   [i|\nPoint(#{id}) = {#{x},#{y},#{z},lc};|] :: B.ByteString
 {-
-writePoint :: Geo.Vertex -> ID.Id Int -> B.ByteString
-writePoint (Geo.Vertex' x y z) (ID.PointId id) =
+writePoint :: Geo.Vertex -> Env.Id Int -> B.ByteString
+writePoint (Geo.Vertex' x y z) (Env.PointId id) =
   [i|\nPoint(#{id}) = {#{x},#{y},#{z},lc};|] :: B.ByteString
 
 before GADT
@@ -46,8 +47,8 @@ writeLC3 :: B.ByteString
 writeLC3 = "lc = 1e-3;"
 
 
-writeLine :: ID.Id ID.LineInt -> ID.Id ID.PointInt -> ID.Id ID.PointInt -> B.ByteString
-writeLine (ID.LineId (ID.LineInt' lineId)) (ID.PointId (ID.PointInt' pointId1)) (ID.PointId (ID.PointInt' pointId2)) =
+writeLine :: Env.Id Env.LineInt -> Env.Id Env.PointInt -> Env.Id Env.PointInt -> B.ByteString
+writeLine (Env.LineId (Env.LineInt' lineId)) (Env.PointId (Env.PointInt' pointId1)) (Env.PointId (Env.PointInt' pointId2)) =
   
   [i|\nLine(#{lineId}) = {#{pointId1},#{pointId2}};|] :: B.ByteString
 

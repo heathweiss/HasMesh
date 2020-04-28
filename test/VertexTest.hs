@@ -11,10 +11,8 @@ import qualified System.IO as SIO
 import qualified Geometry.Vertex as V
 import qualified Geometry.Polar as Polar
 import qualified Geometry.Axis as Axis
-import qualified Gmsh.Gmsh as Gmsh
+import qualified Utils.Environment as Env
 import qualified Geometry.Geometry as Geo
-import qualified Utils.EnvironmentLoader as EnvLdr
-import qualified Utils.Environment as Enviro
 import qualified Utils.List as L
 import qualified Utils.Exceptions as Hex
 
@@ -114,13 +112,13 @@ runTests = do
  let
    createVertexMap = TestCase $ assertEqual
      "Stick a Vector into a map, using its hash value as key"
-      (Map.fromList [(H.hash $ V.newVertex 1 2 3 , Gmsh.initialId)]::Map Int (Gmsh.Id Gmsh.PointInt))
+      (Map.fromList [(H.hash $ V.newVertex 1 2 3 , Env.initialId)]::Map Int (Env.Id Env.PointInt))
       (let
           newMap = Map.empty
           vertex = V.newVertex 1 2 3
           hashed = H.hash vertex
        in
-         Map.insert hashed Gmsh.initialId newMap
+         Map.insert hashed Env.initialId newMap
       )
  _ <- runTestTT createVertexMap
  
@@ -131,11 +129,11 @@ runTests = do
   --emptyMap = Map.empty
   insertNewPointIntoIORefPointMap = TestCase 
    (do
-      newIOMap <- newIORef (Map.insert  (H.hash $ V.newVertex 1 1 1) Gmsh.initialId Map.empty::(Map Int (Gmsh.Id Gmsh.PointInt)))
+      newIOMap <- newIORef (Map.insert  (H.hash $ V.newVertex 1 1 1) Env.initialId Map.empty::(Map Int (Env.Id Env.PointInt)))
       newMap <- readIORef newIOMap 
-      writeIORef newIOMap (Map.insert (H.hash $ V.newVertex 2 2 2) (Gmsh.incr Gmsh.initialId) newMap)
+      writeIORef newIOMap (Map.insert (H.hash $ V.newVertex 2 2 2) (Env.incr Env.initialId) newMap)
       mapWith2ndVertexAdded <- readIORef newIOMap
-      assertEqual "insert a new vertex and PointId into an IORef map" (Map.fromList [(H.hash $ V.newVertex 1 1 1 , Gmsh.initialId), (H.hash $ V.newVertex 2 2 2  , Gmsh.incr Gmsh.initialId)]) mapWith2ndVertexAdded
+      assertEqual "insert a new vertex and PointId into an IORef map" (Map.fromList [(H.hash $ V.newVertex 1 1 1 , Env.initialId), (H.hash $ V.newVertex 2 2 2  , Env.incr Env.initialId)]) mapWith2ndVertexAdded
       
    )
  _ <- runTestTT insertNewPointIntoIORefPointMap

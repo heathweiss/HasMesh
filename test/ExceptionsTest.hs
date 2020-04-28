@@ -11,7 +11,7 @@ import qualified Prelude as P
 
 import qualified Utils.Exceptions as Hex
 import qualified Utils.RunExceptions as HexR
-import qualified Utils.EnvironmentLoader as EnvLdr
+import qualified Utils.Environment as Env
 
 runTests = do
  P.putStrLn $ "=============== Exceptions Test ====================="  
@@ -25,7 +25,7 @@ runTests = do
         workInRIO :: RIO env (Either Hex.HasMeshException Bool)
         workInRIO = do
           return $ Right True
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       eitherResult <- runRIO env workInRIO
       result <- HexR.runEitherIO "result" eitherResult
       assertEqual "extract a Bool from a Either Hex.HasMeshException Bool" (True) result 
@@ -60,7 +60,7 @@ runTests = do
           --Could have left it in an Either, but not including the final >>=  HexR.runEitherRIO "consumed"
           return bool
           
-      env <- EnvLdr.loadTestEnvironment
+      env <- Env.loadTestEnvironment
       result <- runRIO env runRioComposition -- :: Either Hex.HasMeshException Bool
       assertEqual "extract a Bool from a Either Hex.HasMeshException Bool" True result
    )

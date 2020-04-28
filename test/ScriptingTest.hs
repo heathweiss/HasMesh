@@ -9,7 +9,8 @@ import qualified Gmsh.ToScript.BuiltIn as ScrB
 import qualified Gmsh.ToScript.Common as SCom
 import qualified RIO.Text as T
 import qualified Geometry.Geometry as Geo
-import qualified Gmsh.Gmsh as Gmsh
+--import qualified Gmsh.Gmsh as Gmsh
+import qualified Utils.Environment as Env
 
 runTests = do
  putStrLn $ "=============== Scripting Tests ====================="
@@ -34,7 +35,7 @@ runTests = do
   testPoint1 = TestCase $ assertEqual
    "output a point"
    "\nPoint(1) = {1.0,2.0,3.0,lc};"
-   (ScrB.writePoint (Geo.newVertex 1 2 3) Gmsh.initialId)
+   (ScrB.writePoint (Geo.newVertex 1 2 3) Env.initialId)
  _ <- runTestTT testPoint1
 
 -- ============================= lc tests ==========================================
@@ -68,7 +69,7 @@ runTests = do
   testLine = TestCase $ assertEqual
    "write a line"
    "\nLine(1) = {1,2};"
-   (ScrB.writeLine (Gmsh.initialId :: Gmsh.Id Gmsh.LineInt) (Gmsh.initialId::Gmsh.Id Gmsh.PointInt) (Gmsh.incr Gmsh.initialId::Gmsh.Id Gmsh.PointInt))
+   (ScrB.writeLine (Env.initialId :: Env.Id Env.LineInt) (Env.initialId::Env.Id Env.PointInt) (Env.incr Env.initialId::Env.Id Env.PointInt))
  runTestTT testLine
  
 
