@@ -38,7 +38,7 @@ runTests = do
 
 
  --Get a new pointId, and see that the ioref id supply was updated
-
+{- leave till all ID functionality is moved into Enviro.
  let
   getANewPointId = TestCase
    (do 
@@ -48,7 +48,39 @@ runTests = do
       assertEqual "get the vector id from an ioref" ID.initialId status
    )
  _ <- runTestTT getANewPointId
- 
+-}
+ let
+  getANewHardCodedPointIdFromEviro = TestCase
+   (do 
+      env <- EnvLdr.loadTestEnvironment
+      newStatusPointId <- runRIO env $ Enviro.getPointId $ V.newVertex 2 2 2
+      assertEqual "the status and id are hardcoded in" (Enviro.PointIdDidNotExist(ID.initialId)) newStatusPointId
+   )
+ _ <- runTestTT getANewHardCodedPointIdFromEviro
+
+ let
+  getASecondPointIdFromEnviro = TestCase
+   (do 
+      env <- EnvLdr.loadTestEnvironment
+      _ <- runRIO env $ Enviro.getPointId $ V.newVertex 2 2 2
+      secondStatusPointId <- runRIO env $ Enviro.getPointId $ V.newVertex 2 2 2
+      assertEqual "the status and id are hardcoded in" (Enviro.PointIdDidNotExist(ID.incr $ ID.initialId)) secondStatusPointId
+      
+   )
+ _ <- runTestTT getASecondPointIdFromEnviro
+
+ let
+  getAThirdPointIdFromEnviro = TestCase
+   (do 
+      env <- EnvLdr.loadTestEnvironment
+      _ <- runRIO env $ Enviro.getPointId $ V.newVertex 1 1 1
+      _ <- runRIO env $ Enviro.getPointId $ V.newVertex 2 2 2
+      thirdStatusPointId <- runRIO env $ Enviro.getPointId $ V.newVertex 3 3 3
+      assertEqual "the status and id are hardcoded in" (Enviro.PointIdDidNotExist(ID.incr $ ID.incr $ ID.initialId)) thirdStatusPointId
+      
+   )
+ _ <- runTestTT getAThirdPointIdFromEnviro
+
  
 
 

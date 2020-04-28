@@ -7,7 +7,9 @@
 {- |
 import qualified Utils.Environment as Enviro
 -}
-module Utils.Environment(Environment(..), Loader(),  HasIdSupply(..), HasPointIdMap(..), HasGeoFileHandle(..), HasDesignName(..),  loadLoader, toEnvironment,) where
+module Utils.Environment(Environment(..), Loader(), PointIdStatus(..),  HasIdSupply(..), HasPointIdMap(..), HasGeoFileHandle(..), HasDesignName(..), loadLoader, toEnvironment, getPointId) where
+
+
 
 import qualified RIO.ByteString as B
 import qualified Data.Yaml as Y
@@ -17,9 +19,10 @@ import Data.Aeson
 import RIO
 import qualified Prelude as P
 import qualified RIO.Text as T
-
+import qualified RIO.Map as Map
+import qualified Data.Hashable as H
 import qualified Gmsh.ID as ID
---import qualified Geometry.ID as ID
+import qualified Geometry.Vertex as V
 --
 
 
@@ -96,5 +99,35 @@ class HasDesignName env where
 instance HasDesignName Environment where
   designNameL = lens env_designName (\x y -> x {env_designName = y})
 
+data PointIdStatus = PointIdAlreadyExisted (ID.Id ID.PointInt) |  PointIdDidNotExist (ID.Id ID.PointInt) deriving (Show,Eq)
+
+
+
+getPointId :: (HasIdSupply env, HasPointIdMap env) =>  V.Vertex -> RIO env  PointIdStatus
+
+getPointId doesThisVertexHaveAnId = do
+  env <- ask
+  pointMapIORef <- view pointIdMapL
+  pointMap <- readIORef pointMapIORef
+  
+  case Map.lookup (H.hash doesThisVertexHaveAnId) pointMap of
+    Just pointId -> return $ PointIdAlreadyExisted pointId
+    Nothing -> do
+      poIntIdSupplyioref <- view pointIdSupplyL
+      currPointId <- readIORef poIntIdSupplyioref
+      writeIORef poIntIdSupplyioref (ID.incr currPointId )
+      return $ PointIdDidNotExist  currPointId
+      
+    
+    
+      
+  
+
+
+
+
 
   
+  
+
+

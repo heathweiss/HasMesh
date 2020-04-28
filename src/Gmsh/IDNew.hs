@@ -9,7 +9,7 @@ or
 
 import qualified Gmsh.Gmsh as Gmsh
 -}
-module Gmsh.IDNew(PointIdStatus(..), newPointId) where
+module Gmsh.IDNew({-PointIdStatus(..), newPointId-}) where
 
 import RIO
 import qualified RIO.Map as Map

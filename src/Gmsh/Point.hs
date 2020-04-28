@@ -28,7 +28,8 @@ import qualified Utils.Exceptions as Hex
 import qualified Utils.RunExceptions as HexR
 
 -- Indicates if the returned ID.Id ID.PointInt is a new Id, or it already exsisted.
-data PointIdStatus = PointIdAlreadyExisted (ID.Id ID.PointInt) |  PointIdDidNotExist (ID.Id ID.PointInt)
+--data PointIdStatus = PointIdAlreadyExisted (ID.Id ID.PointInt) |  PointIdDidNotExist (ID.Id ID.PointInt)
+
 
 -- | A 'Utils.List.SafeList3' containing [ID.Id ID.PointInt] for containing a min length of 3 list of Gmsh point Ids.
 type PointIdList = L.SafeList3 (ID.Id ID.PointInt) L.NonEmptyID
@@ -40,8 +41,9 @@ toPoint vertex  = do
   env <- ask
   pointIdStatus <- runRIO env $ getSetVertexId vertex
   case pointIdStatus of
-    PointIdAlreadyExisted preExistingPointId -> return preExistingPointId
-    PointIdDidNotExist newPointId -> do
+    Enviro.PointIdAlreadyExisted preExistingPointId -> return preExistingPointId
+    
+    Enviro.PointIdDidNotExist newPointId -> do
       geoFileHandleIORef <- view Enviro.geoFileHandleL
       geoFileHandle <- readIORef geoFileHandleIORef
       B.hPut geoFileHandle $ ScrB.writePoint vertex newPointId
@@ -50,17 +52,21 @@ toPoint vertex  = do
   --Check to see if the Vertex has already had a PointId assigned to it.
   -- Will know that by seeing if it has been inserted into the point id map: Map Int (ID.Id ID.PointInt)
   -- If not: get a new PointId, and add it to the point id map: Map Int (ID.Id ID.PointInt). Will increment the PointIsSupply as well.
-  getSetVertexId :: (Enviro.HasPointIdMap env, Enviro.HasIdSupply env) => Geo.Vertex -> RIO env  PointIdStatus
+  getSetVertexId :: (Enviro.HasPointIdMap env, Enviro.HasIdSupply env) => Geo.Vertex -> RIO env  Enviro.PointIdStatus
+  
+  
   getSetVertexId doesThisVertexHaveAnId = do
     pointMapIORef <- view Enviro.pointIdMapL
     pointMap <- readIORef pointMapIORef
     case Map.lookup (H.hash doesThisVertexHaveAnId) pointMap of
-      Just pointId -> return $ PointIdAlreadyExisted pointId
+      Just pointId -> return $ Enviro.PointIdAlreadyExisted pointId
+      
       Nothing -> do
         env <- ask
         newPointId <- runRIO env getSetPointId 
         runRIO env $ insertNewPointIntoPointMap  doesThisVertexHaveAnId newPointId
-        return $ PointIdDidNotExist newPointId
+        return $ Enviro.PointIdDidNotExist newPointId
+        
   insertNewPointIntoPointMap :: (Enviro.HasPointIdMap env) => Geo.Vertex -> ID.Id ID.PointInt -> RIO env ()
   insertNewPointIntoPointMap vertex_ pointId = do
     pointMapIORef <- view Enviro.pointIdMapL

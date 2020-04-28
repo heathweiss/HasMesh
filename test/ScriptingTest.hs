@@ -67,7 +67,7 @@ runTests = do
  let
   testLine = TestCase $ assertEqual
    "write a line"
-   "\nLine(5) = {1,11};"
+   "\nLine(1) = {1,2};"
    (ScrB.writeLine (Gmsh.initialId :: Gmsh.Id Gmsh.LineInt) (Gmsh.initialId::Gmsh.Id Gmsh.PointInt) (Gmsh.incr Gmsh.initialId::Gmsh.Id Gmsh.PointInt))
  runTestTT testLine
  

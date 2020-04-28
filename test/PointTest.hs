@@ -39,6 +39,19 @@ runTests = do
  runTestTT pointsAreEqual
 
  let
+  pointsAreEqualFromEnviro = TestCase
+   (do
+      env <- EnvLdr.loadTestEnvironment
+      point111 <- runRIO env $ Pnt.toPoint $ Geo.newVertex  1 1 1
+      pointFromSameVector <- runRIO env $ Pnt.toPoint $ Geo.newVertex  1 1 1
+      assertEqual "create a point from the Environment module, and test for ==" True (point111 == pointFromSameVector)
+   )
+ runTestTT pointsAreEqualFromEnviro
+  
+
+ 
+
+ let
   pointsAreNotEqual = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
