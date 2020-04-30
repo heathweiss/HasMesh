@@ -14,10 +14,11 @@ This includes all ID functions. Eg: 'Id': 'PointInt' and 'LineInt'.
 
 import qualified Utils.Environment as Env
 -}
-module Utils.Environment(Environment(..), PointIdStatus(..),  HasIdSupply(..), HasPointIdMap(..), HasGeoFileHandle(..), HasDesignName(..), 
+module Utils.Environment(Environment(..), PointIdStatus(..),  HasIdSupply(..), HasPointIdMap(..), HasGeoFileHandle(..), HasDesignName(..), HasScriptWriter(..),
                          toEnvironment, getPointId, Id(..), LineInt(), pattern LineInt', Initialize(..),   PointInt(), pattern PointInt',
-                         pattern DesignNameP,
-                         evalLineId, evalPointId, getLineId, loadEnvironment, loadTestEnvironment, incr, newDesignName, designFilePath 
+                         pattern DesignNameP, loadLoader,
+                         
+                         evalLineId, evalPointId, getLineId, incr, newDesignName, designFilePath 
                         ) where
 
 
@@ -33,7 +34,7 @@ import qualified RIO.Text as T
 import qualified RIO.Map as Map
 import qualified Data.Hashable as H
 --import qualified Geometry.Geometry as Geo
-import qualified Utils.RunExceptions as HexR
+
 import qualified Geometry.Vertex as V
 --import qualified Utils.Design as Design
 
@@ -41,16 +42,13 @@ import qualified Geometry.Vertex as V
 
 -- Environment.yaml read and parsed into a 'Loader' which is pre 'Environment' data. It will be used to create the 'Environment' data.
 -- Loader is required as an intermediate step, as the yaml does not contain ID supplies, and the 'designName' needs to be validated.
-data Loader =
-  Loader
-      { designName :: Text   -- The DesignName. Used to build the path to the saved file.
-        
-      } deriving (Show, Generic)
+newtype Loader = Loader
+                  { designName :: Text   -- The DesignName. Used to build the path to the saved file.
+                  } deriving (Show, Generic)
+instance FromJSON Loader
 
-instance FromJSON Loader 
-
--- Read the Environment.yaml yaml file into the Loader.
-loadLoader :: IO (Loader)
+-- | Read the Environment.yaml file, and parse the yaml into the 'Loader'.
+loadLoader :: IO Loader
 loadLoader = do
     content <- B.readFile "Environment.yaml" 
     let parsedContent = Y.decode content :: Maybe Loader 
@@ -66,17 +64,19 @@ data Environment =
         env_pointIdSupply :: !(IORef (Id PointInt)), -- ^ The supply for 'Geometry.Gmsh.PointID'
         env_pointIdMap :: !(IORef (Map Int (Id PointInt))), -- ^ The map containing the 'Gmsh.GPointId's associated with each 'Geometry.Vertex.Vertex'. Used to ensure a 'Geometry.Vertex.Vertex' only has a single 'Id' 'PointInt'.
         env_geoFileHandle :: !(IORef Handle), -- ^ Handle for writing gmsh script to the design file. Set to stdout for default value.
-        env_lineIdSupply :: !(IORef (Id LineInt)) -- ^ The supply for 'Geometry.Gmsh.PointID'
-      } 
+        env_lineIdSupply :: !(IORef (Id LineInt)), -- ^ The supply for 'Geometry.Gmsh.PointID'
+        env_pntScriptWriter :: Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt)
+      }
+  
 
 -- | Show the Environment for testing.
 instance Show Environment where
-  show (Env designName _ _ _ _) = show designName
+  show (Env designName _ _ _ _ _) = show designName
+  
 
---convert a Loader to an Environment.
-toEnvironment :: Loader -> IORef (Id PointInt) -> IORef (Map Int (Id PointInt)) -> IORef Handle -> IORef (Id LineInt) -> Environment
-toEnvironment (Loader designName ) iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply =
-  Env designName iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply
+-- | Convert the 'Loader', which loaded/decoded the Environment.yaml, into an 'Environment'
+toEnvironment :: Loader -> IORef (Id PointInt) -> IORef (Map Int (Id PointInt)) -> IORef Handle -> IORef (Id LineInt) -> (Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt)) -> Environment
+toEnvironment (Loader designName') = Env designName'
 
 -- | Supplies a Handle for writing gmsh script. This could be a file handle for a .geo file, or stdout.
 class HasGeoFileHandle env where
@@ -105,39 +105,13 @@ class HasDesignName env where
 instance HasDesignName Environment where
   designNameL = lens env_designName (\x y -> x {env_designName = y})
 
-
--- | Load the global RIO 'Environment'
--- Initializes all Id supplies with initial value of 1, and the 'env_pointIdMap' as an empty map.
---
--- Throws an error if the 'env_designName' is not valid.
-loadEnvironment :: IO (Environment)
-loadEnvironment = do
-  loaded <- loadLoader
-  iorefPointIdSupply <- newIORef $ initialId 
-  iorefPoints <- newIORef $ Map.fromList []
-  iorefDesignFileHandle <- newIORef stdout
-  iorefLineIdSupply <- newIORef initialId 
-  let
-    env_ = toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply
-  _ <- HexR.runEitherIO "validDesignName" $ newDesignName $  view designNameL env_
-  return env_
-  
+class HasScriptWriter env where
+  pntScriptWriterL :: Lens' env (Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt)) -- ^ Write the gmsh script for points.
   
 
--- | Load a global RIO 'Environment' for testing. Set values to default values that will not change.
--- Set the Handle to stdout.
-loadTestEnvironment :: IO (Environment)
-loadTestEnvironment = do
-  loaded <- loadLoader
-  iorefPointIdSupply <- newIORef initialId 
-  iorefPoints <- newIORef $ Map.fromList []    
-  iorefDesignFileHandle <- newIORef stdout
-  iorefLineIdSupply <- newIORef initialId
+instance HasScriptWriter Environment where
+  pntScriptWriterL = lens env_pntScriptWriter (\x y -> x {env_pntScriptWriter = y})
   
-  
-  let
-    env_ = toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply
-  return $ env_ {env_designName = "testDesignName"} 
 
 -----------------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------------
@@ -145,11 +119,12 @@ loadTestEnvironment = do
 -----------------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------- ID-----------------------------------------------------------------
-
+-- | Wraps a point id with a status indicating if it is a new id, or if the vertex and id already existed.
+-- This is used in decision to print the point gmsh script.
 data PointIdStatus = PointIdAlreadyExisted (Id PointInt) |  PointIdDidNotExist (Id PointInt) deriving (Show,Eq)
 
+-- | Get a Gmsh Id for a 'V.Vertex'. The 'PointIdStatus' is set according to if the point/vertex already exists.
 getPointId :: (HasIdSupply env, HasPointIdMap env) =>  V.Vertex -> RIO env  PointIdStatus
-
 getPointId doesThisVertexHaveAnId = do
   pointMapIORef <- view pointIdMapL
   pointMap <- readIORef pointMapIORef
@@ -168,13 +143,19 @@ getPointId doesThisVertexHaveAnId = do
 -- Uses GADTs in order to implement the typecase pattern. See book: Haskell Design Patterns.
 -- Using GADTs has not gained me anything, other than getting some experience with GADT's.
 -- By having them all be of type Int, they can all use the incr fx.
--- | The gmsh <Point Line etc> ID that is associated with a < 'Vertex' Line etc >
--- These are used by the 'ID' ADT to give a unique return type for each constructor.
+-- | The gmsh Point ID that is associated with a 'V.Vertex' 
+-- These are used by the 'ID' GADT to give a unique return type for each constructor.
 newtype PointInt = PointInt Int deriving (Show,Eq)
+pattern PointInt' :: Int -> PointInt
 pattern PointInt' i <- PointInt i
 
+
+-- | The gmsh Line ID that is associated with a pair of Gmsh points.
+-- These are used by the 'ID' GADT to give a unique return type for each constructor.
 newtype LineInt = LineInt Int deriving (Show,Eq)
+pattern LineInt' :: Int -> LineInt
 pattern LineInt' i <- LineInt i
+
 
 -- | Identifiers that correspond to the IDs used in Gmsh script and APIs.
 data Id id where
@@ -212,11 +193,6 @@ getLineId = do
   writeIORef lineIdSupplyIORef $ incr lineIdSupply
   return lineIdSupply
 
-------------------------------------------------------------------------------------------------------------------------------
--- work to standardize id system
-
-
----------------------------------------------------
 class Initialize a where
   initialId :: Id a
   
@@ -255,12 +231,5 @@ designFilePath ( DesignName designName) =
   T.unpack $ "src/Data/GeoFiles/" <> designName <> ".geo"
   
 
-
-
-
-
-
-  
-  
 
 

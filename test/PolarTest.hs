@@ -11,7 +11,7 @@ import qualified Geometry.Polar as Polar
 import qualified Geometry.Vertex as V
 import qualified Geometry.Axis as Axis
 import qualified Data.Hashable as H
---import qualified Utils.EnvironmentLoader as EnvLdr
+import qualified Utils.EnvironmentLoader as EnvLdr
 --import qualified Gmsh.Point as Pnt
 import qualified Utils.RunExceptions as HexR
 import qualified Utils.List as L
@@ -131,7 +131,7 @@ runTests = do
  let
   createThe4PointsT1 = TestCase
    (do
-      env <- Env.loadTestEnvironment
+      env <- EnvLdr.loadTestEnvironment
       let
         radius = 50
         height = 0

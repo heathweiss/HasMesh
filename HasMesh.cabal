@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8575fad6538fad43f134f2b32b186dc07fa03f9a81935d3dbe25f5bac3126bbc
+-- hash: be9d0ff801be4253e771642c6c85c30fbfe31461bc1ec3899fa5792c843d030a
 
 name:           HasMesh
 version:        0.1.0.0
@@ -44,6 +44,7 @@ library
       Types
       Util
       Utils.Environment
+      Utils.EnvironmentLoader
       Utils.Exceptions
       Utils.List
       Utils.RunExceptions

@@ -12,6 +12,7 @@ import qualified RIO.ByteString as B
 import qualified Utils.RunExceptions as HexR
 import qualified Utils.Exceptions as Hex
 import qualified Utils.Environment as Env
+import qualified Utils.EnvironmentLoader as EnvLdr 
 import qualified Geometry.Geometry as Geo
 import qualified Gmsh.ToScript.BuiltIn as ScrB
 import qualified Gmsh.Point as Pnt
@@ -25,7 +26,8 @@ import qualified Geometry.Polar as Polar
 designLoader :: RIO Env.Environment () -> IO ()
 designLoader createDesign = do
       
-      env <- Env.loadEnvironment
+      env <- EnvLdr.loadEnvironment
+      
       designName <-  HexR.runEitherIO "designName" $ Env.newDesignName "t1"
       
       handle_ <- SIO.openFile (Env.designFilePath designName) WriteMode
@@ -57,7 +59,8 @@ Create the vertex, then the points, then the lines
 -}
 t1_linesFromPoints = do
   let
-        createDesign :: (Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env) => RIO env ()
+        createDesign :: (Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env, Env.HasScriptWriter env) => RIO env ()
+        
         createDesign = do
           env <- ask
           geoFileHandleIORef <- view Env.geoFileHandleL
@@ -80,7 +83,8 @@ t1_linesFromPoints = do
 -- | Create the lines directly from the vertex.
 t1_linesFromVertex = do
   let
-        createDesign :: (Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env) => RIO env ()
+        createDesign :: (Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env, Env.HasScriptWriter env) => RIO env ()
+        
         
         createDesign = do
           env <- ask
@@ -101,7 +105,8 @@ t1_linesFromVertex = do
 -- | Generate the vertex using polar coordinates. Then create the lines directly from the vertex.
 t1_linesFromPolarTuples = do
   let
-    createDesign :: (Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env) => RIO env ()
+    createDesign :: (Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env, Env.HasScriptWriter env) => RIO env ()
+    
     createDesign = do
         env <- ask
         geoFileHandleIORef <- view Env.geoFileHandleL

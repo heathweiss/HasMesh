@@ -35,7 +35,7 @@ runTests = do
   testPoint1 = TestCase $ assertEqual
    "output a point"
    "\nPoint(1) = {1.0,2.0,3.0,lc};"
-   (ScrB.writePoint (Geo.newVertex 1 2 3) Env.initialId)
+   (ScrB.genPointScript (Geo.newVertex 1 2 3) Env.initialId)
  _ <- runTestTT testPoint1
 
 -- ============================= lc tests ==========================================

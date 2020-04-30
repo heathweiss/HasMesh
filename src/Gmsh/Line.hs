@@ -63,7 +63,7 @@ createLineFromPoints pointId1 pointId2 = do
 
 
 -- | Generate a 'Gmsh.Status.Closed' 'Gmsh.Env.LineIdSafe3List'. 
-createLinesFromVertex :: (Enviro.HasGeoFileHandle env, Enviro.HasIdSupply env, Enviro.HasPointIdMap env) => T.Text -> [Geo.Vertex] -> RIO env LineIdSafe3List
+createLinesFromVertex :: (Enviro.HasGeoFileHandle env, Enviro.HasIdSupply env, Enviro.HasPointIdMap env, Env.HasScriptWriter env) => T.Text -> [Geo.Vertex] -> RIO env LineIdSafe3List
 createLinesFromVertex errMsg vertex = do
   env <- ask 
   points <- runRIO env $ Pnt.toPoints vertex >>= HexR.runEitherRIO errMsg
