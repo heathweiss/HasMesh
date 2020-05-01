@@ -31,7 +31,7 @@ loadEnvironment = do
   iorefDesignFileHandle <- newIORef stdout
   iorefLineIdSupply <- newIORef Env.initialId
   let
-    env_ = Env.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply ScrB.pointWriter
+    env_ = Env.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply ScrB.pointWriter ScrB.lineWriter
   _ <- HexR.runEitherIO "validDesignName" $ Env.newDesignName $  view Env.designNameL env_
   return env_
 
@@ -47,7 +47,8 @@ loadTestEnvironment = do
   iorefDesignFileHandle <- newIORef stdout
   iorefLineIdSupply <- newIORef Env.initialId
   let
-    env_ = Env.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply ScrB.nullPointWriter
+    env_ = Env.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply ScrB.nullPointWriter ScrB.nullLineWriter
+    
   return $ env_ {Env.env_designName = "testDesignName"}
   
 

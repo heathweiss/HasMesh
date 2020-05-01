@@ -65,17 +65,22 @@ data Environment =
         env_pointIdMap :: !(IORef (Map Int (Id PointInt))), -- ^ The map containing the 'Gmsh.GPointId's associated with each 'Geometry.Vertex.Vertex'. Used to ensure a 'Geometry.Vertex.Vertex' only has a single 'Id' 'PointInt'.
         env_geoFileHandle :: !(IORef Handle), -- ^ Handle for writing gmsh script to the design file. Set to stdout for default value.
         env_lineIdSupply :: !(IORef (Id LineInt)), -- ^ The supply for 'Geometry.Gmsh.PointID'
-        env_pntScriptWriter :: Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt)
+        env_pntScriptWriter :: Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt), -- ^ Function to write the Gmsh point to file, if required to do so.
+        env_lineScriptWriter :: Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt) -- ^ Function to write the Gmsh line to file, if required to do so.
       }
   
 
 -- | Show the Environment for testing.
 instance Show Environment where
-  show (Env designName _ _ _ _ _) = show designName
+  show (Env designName _ _ _ _ _ _) = show designName
+  
   
 
 -- | Convert the 'Loader', which loaded/decoded the Environment.yaml, into an 'Environment'
-toEnvironment :: Loader -> IORef (Id PointInt) -> IORef (Map Int (Id PointInt)) -> IORef Handle -> IORef (Id LineInt) -> (Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt)) -> Environment
+toEnvironment :: Loader -> IORef (Id PointInt) -> IORef (Map Int (Id PointInt)) -> IORef Handle -> IORef (Id LineInt)
+              -> (Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt))
+              -> (Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt))
+              -> Environment
 toEnvironment (Loader designName') = Env designName'
 
 -- | Supplies a Handle for writing gmsh script. This could be a file handle for a .geo file, or stdout.
@@ -107,10 +112,13 @@ instance HasDesignName Environment where
 
 class HasScriptWriter env where
   pntScriptWriterL :: Lens' env (Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt)) -- ^ Write the gmsh script for points.
+  lineScriptWriterL :: Lens' env (Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt)) -- ^ Write the gmsh script for points.
+  
   
 
 instance HasScriptWriter Environment where
   pntScriptWriterL = lens env_pntScriptWriter (\x y -> x {env_pntScriptWriter = y})
+  lineScriptWriterL = lens env_lineScriptWriter (\x y -> x {env_lineScriptWriter = y})
   
 
 -----------------------------------------------------------------------------------------------------------------------------

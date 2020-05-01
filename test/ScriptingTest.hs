@@ -69,7 +69,7 @@ runTests = do
   testLine = TestCase $ assertEqual
    "write a line"
    "\nLine(1) = {1,2};"
-   (ScrB.writeLine (Env.initialId :: Env.Id Env.LineInt) (Env.initialId::Env.Id Env.PointInt) (Env.incr Env.initialId::Env.Id Env.PointInt))
+   (ScrB.genLineScript (Env.initialId :: Env.Id Env.LineInt) (Env.initialId::Env.Id Env.PointInt) (Env.incr Env.initialId::Env.Id Env.PointInt))
  runTestTT testLine
  
 

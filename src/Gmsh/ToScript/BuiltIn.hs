@@ -10,7 +10,9 @@ import qualified Gmsh.ToScript.BuiltIn as ScrB
 or as part of the Gmsh import module
 import qualified Gmsh.Gmsh as Gmsh
 -}
-module Gmsh.ToScript.BuiltIn(genPointScript, writeLine, writeLC1, writeLC2, writeLC3, nullPointWriter, pointWriter) where
+module Gmsh.ToScript.BuiltIn(genPointScript, lineWriter, nullLineWriter, genLineScript, writeLC1, writeLC2, writeLC3, nullPointWriter, pointWriter) where
+
+
 
 
 import RIO
@@ -48,10 +50,19 @@ writeLC3 :: B.ByteString
 writeLC3 = "lc = 1e-3;"
 
 
-writeLine :: Env.Id Env.LineInt -> Env.Id Env.PointInt -> Env.Id Env.PointInt -> B.ByteString
-writeLine (Env.LineId (Env.LineInt' lineId)) (Env.PointId (Env.PointInt' pointId1)) (Env.PointId (Env.PointInt' pointId2)) =
-  
+genLineScript :: Env.Id Env.LineInt -> Env.Id Env.PointInt -> Env.Id Env.PointInt -> B.ByteString
+genLineScript (Env.LineId (Env.LineInt' lineId)) (Env.PointId (Env.PointInt' pointId1)) (Env.PointId (Env.PointInt' pointId2)) =
   [i|\nLine(#{lineId}) = {#{pointId1},#{pointId2}};|] :: B.ByteString
+
+-- | Write the gmsh line script to handle, which should be .geo file.
+lineWriter :: Handle -> Env.Id Env.LineInt -> Env.Id Env.PointInt -> Env.Id Env.PointInt -> IO (Env.Id Env.LineInt)
+lineWriter handle' lineId pointId1 pointId2 = do
+  B.hPut handle' $ genLineScript lineId pointId1 pointId2
+  return lineId
+
+-- | Don't bother writing the Gmsh line script to handle, which will be stdout for tests.
+nullLineWriter :: Handle -> Env.Id Env.LineInt -> Env.Id Env.PointInt -> Env.Id Env.PointInt -> IO (Env.Id Env.LineInt)
+nullLineWriter _ lineId _ _ = return lineId
 
 --Handles point writing, when nothing is to be written
 nullPointWriter :: Handle -> Env.PointIdStatus -> V.Vertex -> IO (Env.Id Env.PointInt)
@@ -63,19 +74,7 @@ pointWriter :: Handle -> Env.PointIdStatus -> V.Vertex -> IO (Env.Id Env.PointIn
 pointWriter handle' (Env.PointIdDidNotExist pointId) vertex = do
   B.hPut handle' $ genPointScript vertex pointId
   return pointId
-pointWriter handle' (Env.PointIdAlreadyExisted pointId) vertex = return pointId
-  
-  
-{-
---Handles point writing, when nothing is to be written
-nullPointWriter :: Handle -> Env.Id Env.PointInt -> V.Vertex -> IO (Env.Id Env.PointInt)
-nullPointWriter _ pointId _ = 
-      return pointId
+pointWriter _ (Env.PointIdAlreadyExisted pointId) _ = return pointId
 
-pointWriter :: Handle -> Env.Id Env.PointInt -> V.Vertex -> IO (Env.Id Env.PointInt)
-pointWriter handle' pointId vertex = do
-  B.hPut handle' $ genPointScript vertex pointId
-  return pointId
-
--} 
+  
   
