@@ -16,7 +16,7 @@ main = do
   ExceptionsTest.runTests
   CurveLoopTest.runTests
   ListTest.runTests
-  VertexTest.runTests
-  PointTest.runTests
   PolarTest.runTests
   EnvironmentTest.runTests
+  VertexTest.runTests
+  PointTest.runTests

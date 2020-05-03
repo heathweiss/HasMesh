@@ -12,10 +12,11 @@ import qualified Geometry.Vertex as V
 import qualified Geometry.Polar as Polar
 import qualified Geometry.Axis as Axis
 import qualified Utils.Environment as Env
+import qualified Utils.EnvironmentLoader as EnvLdr 
 import qualified Geometry.Geometry as Geo
 import qualified Utils.List as L
 import qualified Utils.Exceptions as Hex
-
+import qualified Utils.RunExceptions as HexR
 
 runTests = do
  P.putStrLn $ "=============== VertexTest ====================="  
@@ -139,6 +140,7 @@ runTests = do
  _ <- runTestTT insertNewPointIntoIORefPointMap
  
 -- ============================================ cx isOpen ================================================
+-- isOpen should be replace by having no duplicates, isUnique.
  let
    isOpenSafeList3Test = TestCase $ assertEqual
      "isOpen SafeList3 length == 3"
@@ -152,6 +154,7 @@ runTests = do
      )
  _ <- runTestTT isOpenSafeList3Test
 
+{- fails because of new isUnique. Keep here till isUnique system is done.
  let
    isNotOpenSafeList3Test = TestCase $ assertEqual
      "not isOpen SafeList3 length == 3"
@@ -164,6 +167,8 @@ runTests = do
           Left err -> Left err
      )
  _ <- runTestTT isNotOpenSafeList3Test
+-}
+
 
  let
    isOpenSafeList4Test = TestCase $ assertEqual
@@ -177,7 +182,7 @@ runTests = do
           Left err -> Left err
      )
  _ <- runTestTT isOpenSafeList4Test
-
+{- fails because of new isUnique. Keep here till isUnique system is done.
  let
    isNotOpenSafeList4Test = TestCase $ assertEqual
      "not isOpen SafeList3 length == 4"
@@ -190,5 +195,85 @@ runTests = do
           Left err -> Left err
      )
  runTestTT isNotOpenSafeList4Test
+-}
+
+-- ============================================ cx isUnique ================================================
+-- The toSafeList will construct a unique list of vertex, or return an exception.
+
+
+--------------- first create a unique fx that will be used by VertexSafe3List constructor--------------
+ let
+   isUniqueSafeList = TestCase $ assertEqual
+     "isUnique SafeList3 length == 3"
+     (Right True)
+     (let                               
+        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 3 3 3] :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.isUnique safeList
+          Left err -> Left err
+     )
+ runTestTT isUniqueSafeList
+
+{- fails because of new isUnique. Keep here till isUnique system is done.
+ let
+   isNotUniqueSafeList = TestCase $ assertEqual
+     "not isUnique SafeList3 length == 3"
+     (Right False)
+     (let                               
+        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 1 1 1] :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.isUnique safeList
+          Left err -> Left err
+     )
+ runTestTT isNotUniqueSafeList
+-}
+ let
+   isNotUniqueSafeList4 = TestCase $ assertEqual
+     "not isUnique SafeList3 length == 4"
+     (Left (Hex.NonUniqueVertex "non unique safe [Vertex]"))
+     (let                               
+        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 1 1 1, V.newVertex 4 4 4] :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.isUnique safeList
+          Left (Hex.SafeList3MinError msg) -> Left $ Hex.SafeList3MinError msg
+          Left (Hex.NonUniqueVertex msg) -> Left $ Hex.NonUniqueVertex msg
+          Left err -> Left err
+     )
+ runTestTT isNotUniqueSafeList4
+
+
+--------------- check that VertexSafe3List constructor creates a unique list--------------
+ let
+   nonUniqueSafeListOf3ReturnsEx = TestCase $ assertEqual
+     "not isUnique SafeList3 returns an exception"
+     (Left (Hex.NonUniqueVertex "non unique safe [Vertex]"))
+     (let                               
+        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 2 2 2] :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.isUnique safeList
+          Left (Hex.SafeList3MinError msg) -> Left $ Hex.SafeList3MinError msg
+          Left (Hex.NonUniqueVertex msg) -> Left $ Hex.NonUniqueVertex msg
+          Left err -> Left err
+     )
+ runTestTT nonUniqueSafeListOf3ReturnsEx
+
+ let
+   nonUniqueSafeListOf4ReturnsEx = TestCase $ assertEqual
+     "not isUnique SafeList3 returns an exception"
+     (Left (Hex.NonUniqueVertex "non unique safe [Vertex]"))
+     (let                               
+        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 3 3 3, V.newVertex 2 2 2] :: Either  Hex.HasMeshException  L.VertexSafe3List
+      in
+        case eitherSafeList of
+          Right safeList -> Right $ L.isUnique safeList
+          Left (Hex.SafeList3MinError msg) -> Left $ Hex.SafeList3MinError msg
+          Left (Hex.NonUniqueVertex msg) -> Left $ Hex.NonUniqueVertex msg
+          Left err -> Left err
+     )
+ runTestTT nonUniqueSafeListOf4ReturnsEx
 
 

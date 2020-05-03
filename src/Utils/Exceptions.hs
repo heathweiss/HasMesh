@@ -19,7 +19,8 @@ import qualified Data.IORef as IOref
 data HasMeshException = ZeroLengthName Text -- ^ For any Text or ByteString, for which the length must be > 0.
                      | GeneralException Text -- ^ Catch-all HasMesh Exception.
                      | SafeList3MinError Text -- ^ Gmsh.PointIdList must have length >= 3
-                     | PointIdSafe3ListIsClosed Text -- ^ 'Gmsh.PointIdList' head and last must not be equal 
+                     | PointIdSafe3ListIsClosed Text -- ^ 'Gmsh.PointIdList' head and last must not be equal
+                     | NonUniqueVertex Text -- ^ 'Utils.List.VertexSafe3List' must be a ['Geometry.Vertex.Vertex'] without duplicate entries.
   deriving (Typeable, Show, Eq)
 
 
@@ -28,5 +29,5 @@ instance Exception HasMeshException where
   displayException (ZeroLengthName msg) = "ZeroLengthName" ++ show msg 
   displayException (SafeList3MinError msg) = "SafeList3MinError with length < 3"
   displayException (PointIdSafe3ListIsClosed msg) = "Gmsh.PointIdList is not open. head and last must not be equal"
-  
+  displayException (NonUniqueVertex msg) = "'Utils.List.VertexSafe3List' must be a ['Geometry.Vertex.Vertex'] without duplicate entries."
 

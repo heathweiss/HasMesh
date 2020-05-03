@@ -1,17 +1,17 @@
 {-# LANGUAGE OverloadedStrings, NoImplicitPrelude, GADTs, StandaloneDeriving, FlexibleInstances, MultiParamTypeClasses, FunctionalDependencies #-}
 
 {- |
-Supply specialized lists.
+Supply specialized lists that guarantee minimum length of 3, an other features depending on the type of list.
 
 import qualified Utils.List as L
 -}
-module Utils.List(SafeList3(..), NonEmptyID(),
+module Utils.List(SafeList3(..), NonEmptyID(), isUnique,
                   PointIdSafe3List(), LineIdSafe3List(), VertexSafe3List(), 
                   safeHead3, evalSafeList3, safeLast3, ToSafeList3(..), LineIdSafe3List(),  IsOpen(..),
                   reverseSafeList3, appendSafeList3) where
 
 import RIO
---import qualified Gmsh.ID as ID
+import qualified RIO.List as L
 import qualified Utils.Environment as Env
 import qualified Utils.Exceptions as Hex
 import qualified Geometry.Vertex as V
@@ -102,16 +102,8 @@ reverseSafeList3 (Cons x y z zs _) =
     processReversed list =
       let
         (a:b:c:cs) = (list) ++ [z,y,x]
-        
       in
       Cons a b c cs Nil
-    {-
-    processReversed (x1:y1:z1:zs1) =
-      let
-        a = reverse zs1 ++ [z,y,x]
-      in
-      Cons x1 y1 z1 a Nil-}
-    
   in
   processReversed reversedZS
   
@@ -123,12 +115,11 @@ type PointIdSafe3List = SafeList3 (Env.Id Env.PointInt) NonEmptyID
 type VertexSafe3List = SafeList3 V.Vertex NonEmptyID
 
 
---class ToSafeList3 a b | b -> a where
+-- | For creating lists with guaranteed length >= 3, and other qualities depending on the contained type.
 class ToSafeList3 a b | b -> a where
   toSafeList3 :: a -> Either Hex.HasMeshException b
 
   
-
 instance ToSafeList3 [Env.Id Env.LineInt] LineIdSafe3List where
   toSafeList3 [] = Left $ Hex.SafeList3MinError "length == 0"
   toSafeList3 [_] = Left $ Hex.SafeList3MinError "length == 1"
@@ -144,12 +135,32 @@ instance ToSafeList3 [Env.Id Env.PointInt] PointIdSafe3List where
   toSafeList3 [x,y,z] = Right $ Cons x y z [] Nil
   toSafeList3 (x:y:z:zs) = Right $ Cons x y z zs Nil
 
+-- | Need to have guarantee that there will be no duplicate vertices. This will also take care of it being open.
 instance ToSafeList3 [V.Vertex] VertexSafe3List where
   toSafeList3 [] = Left $ Hex.SafeList3MinError "length == 0"
   toSafeList3 [_] = Left $ Hex.SafeList3MinError "length == 1"
   toSafeList3 [_,_] = Left $ Hex.SafeList3MinError "length == 2"
-  toSafeList3 [x,y,z] = Right $ Cons x y z [] Nil
-  toSafeList3 (x:y:z:zs) = Right $ Cons x y z zs Nil
+  --toSafeList3 [x,y,z] = Right $ Cons x y z [] Nil
+  toSafeList3 [x,y,z] =
+    let
+      theList = Cons x y z [] Nil
+    in
+    if isUnique theList then
+      Right theList
+    else
+      Left $ Hex.NonUniqueVertex "non unique safe [Vertex]"
+    
+  --toSafeList3 (x:y:z:zs) = Right $ Cons x y z zs Nil
+  toSafeList3 (x:y:z:zs) =
+    let
+      theList = Cons x y z zs Nil
+    in
+    if isUnique theList then
+      Right theList
+    else
+      Left $ Hex.NonUniqueVertex "non unique safe [Vertex]"
+      
+  
   
 
 
@@ -160,50 +171,23 @@ class IsOpen a where
   
 
 instance IsOpen PointIdSafe3List where
-  isOpen pointIdSafe3List = (safeHead3 pointIdSafe3List) /= safeLast3 pointIdSafe3List
-
+  isOpen pointIdSafe3List = safeHead3 pointIdSafe3List /= safeLast3 pointIdSafe3List
+  
 instance IsOpen VertexSafe3List where
-  isOpen vertexSafe3List = (safeHead3 vertexSafe3List) /= safeLast3 vertexSafe3List
+  isOpen vertexSafe3List = safeHead3 vertexSafe3List /= safeLast3 vertexSafe3List
   
   
-  
-  
+-- | Ensure that the 'VertexSafe3List' has no duplicate values
+-- Should stop exporting it, as is now implemented by the toSafeList fx. Is handy for testing though.
+isUnique ::  VertexSafe3List -> Bool
+isUnique safeList =
+  let
+    checkUnique :: [V.Vertex] -> Bool
+    checkUnique [] = True
+    checkUnique [_] = True
+    checkUnique (v:vs) =
+      not (L.elem v vs) && checkUnique vs
+  in
+    checkUnique $ evalSafeList3 safeList
   
     
-    
-    
-    
-      
-      
-     
-{-
-isOpen (Cons x y z [] _) =
-    if x == z then
-      False
-    else
-      True
--}        
--------------------------------------------------------------------------------------------------------------------------------
-{-
-type LineIdSafe3List = SafeList3 (ID.Id ID.LineInt) NonEmptyID
-type PointIdSafe3List = SafeList3 (ID.Id ID.PointInt) NonEmptyID
-
-class ToSafeList3 a b | b -> a where
-  toSafeList3 :: a -> Either Hex.HasMeshException b
-
-instance ToSafeList3 [ID.Id ID.LineInt] LineIdSafe3List where
-  toSafeList3 [] = Left $ Hex.ZeroLengthName "length == 0"
-  toSafeList3 [_] = Left $ Hex.ZeroLengthName "length == 1"
-  toSafeList3 [_,_] = Left $ Hex.ZeroLengthName "length == 2"
-  toSafeList3 [x,y,z] = Right $ Cons x y z [] Nil
-  toSafeList3 (x:y:z:zs) = Right $ Cons x y z zs Nil
-
-
-instance ToSafeList3 [ID.Id ID.PointInt] PointIdSafe3List where
-  toSafeList3 [] = Left $ Hex.ZeroLengthName "length == 0"
-  toSafeList3 [_] = Left $ Hex.ZeroLengthName "length == 1"
-  toSafeList3 [_,_] = Left $ Hex.ZeroLengthName "length == 2"
-  toSafeList3 [x,y,z] = Right $ Cons x y z [] Nil
-  toSafeList3 (x:y:z:zs) = Right $ Cons x y z zs Nil
-  
-  -}                                                                                                                                               

@@ -25,7 +25,8 @@ runEitherIO :: T.Text -> Either Hex.HasMeshException a -> IO (a)
 runEitherIO _ (Right a) = return a
 runEitherIO location (Left(Hex.ZeroLengthName msg)) = do
   throwIO $ Hex.ZeroLengthName $ location <> ": " <> msg
-
+runEitherIO location _ = do
+  throwIO $ Hex.GeneralException $ location <> ": " <> "had an unhandled IO HasMeshException"
   
 
 -- | Used to check the status of an Either while in the RIO monad. Eliminates the use of EitherT as recommended by RIO monad.
@@ -40,5 +41,6 @@ runEitherRIO location (Left(Hex.ZeroLengthName msg)) = do
   throwM $ Hex.ZeroLengthName $ location <> ": " <> msg
 runEitherRIO location (Left(Hex.SafeList3MinError msg)) = do
   throwM $ Hex.SafeList3MinError $ location <> ": " <> msg 
-
+runEitherRIO location _ = do
+  throwIO $ Hex.GeneralException $ location <> ": " <> "had an unhandled RIO HasMeshException"
 
