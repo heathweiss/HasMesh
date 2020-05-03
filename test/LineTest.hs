@@ -46,8 +46,10 @@ runTests = do
    (do
       env <- EnvLdr.loadTestEnvironment
       let vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
-      points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" 
-      lineIds <- runRIO env $ Line.createLinesFromPoints points
+      safeVertex <-  HexR.runEitherIO "safeVertex" $ L.toSafeList3 vertexs 
+      --points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points"
+      points <- runRIO env $ Pnt.toPoints safeVertex
+      lineIds <- runRIO env $ Line.toLines points
       assertEqual "create line from 2 point ids" [1, 2, 3] (map Env.evalLineId (L.evalSafeList3 lineIds))
    )
  _ <- runTestTT createLinesFrom3Vertexs
@@ -56,9 +58,11 @@ runTests = do
   createLinesFrom4Vertexs = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
-      let vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3, Geo.newVertex 4 4 4]
-      points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" 
-      lineIds <- runRIO env $ Line.createLinesFromPoints points
+      --let vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3, Geo.newVertex 4 4 4]
+      safeVertex <- HexR.runEitherIO "safeVertex"  $ L.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3, Geo.newVertex 4 4 4]
+      points <- runRIO env $ Pnt.toPoints safeVertex 
+      --points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" 
+      lineIds <- runRIO env $ Line.toLines points
       assertEqual "create line from 2 point ids" [1, 2, 3, 4] (map Env.evalLineId (L.evalSafeList3 lineIds))
    )
  runTestTT createLinesFrom4Vertexs
@@ -67,11 +71,15 @@ runTests = do
   createLinesFrom6Vertexs = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
-      let vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3, Geo.newVertex 4 4 4, Geo.newVertex 5 5 5, Geo.newVertex 6 6 6]
-      points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" 
-      lineIds <- runRIO env $ Line.createLinesFromPoints points
+      --let vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3, Geo.newVertex 4 4 4, Geo.newVertex 5 5 5, Geo.newVertex 6 6 6]
+      safeVertex <- HexR.runEitherIO "safeVertex"  $ L.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3, Geo.newVertex 4 4 4, Geo.newVertex 5 5 5, Geo.newVertex 6 6 6]
+      points <- runRIO env $ Pnt.toPoints safeVertex 
+      --points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" 
+      lineIds <- runRIO env $ Line.toLines points
       assertEqual "create line from 2 point ids" [1, 2, 3, 4, 5, 6] (map Env.evalLineId (L.evalSafeList3 lineIds))
    )
  runTestTT createLinesFrom6Vertexs
  
  
+--------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------- use new toPoints with single enty into safelist------------------------------------------------

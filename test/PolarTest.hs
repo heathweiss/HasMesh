@@ -12,7 +12,6 @@ import qualified Geometry.Vertex as V
 import qualified Geometry.Axis as Axis
 import qualified Data.Hashable as H
 import qualified Utils.EnvironmentLoader as EnvLdr
---import qualified Gmsh.Point as Pnt
 import qualified Utils.RunExceptions as HexR
 import qualified Utils.List as L
 import qualified Gmsh.Gmsh as Gmsh
@@ -142,15 +141,15 @@ runTests = do
                (240, radius, height),
                (300, radius, height)
               ]
-      points <- runRIO env $ Gmsh.toPoints vertexs >>= HexR.runEitherRIO "points"
+      safeVertex <- HexR.runEitherIO "safeVertex" $ L.toSafeList3 vertexs 
+      --points <- runRIO env $ Gmsh.toPoints vertexs >>= HexR.runEitherRIO "points"
+      points <- runRIO env $ Gmsh.toPoints safeVertex
       assertEqual
        "All i get is 1 2 1 2. Need to cx the hashes."
-       --(L.Cons (Gmsh.PointId $ Gmsh.PointInt 1) (Gmsh.PointId $ Gmsh.PointInt 2) (Gmsh.PointId $ Gmsh.PointInt 3)  [(Gmsh.PointId $ Gmsh.PointInt 4)]  L.Nil)
        [1,2,3,4]
        (map Env.evalPointId $ L.evalSafeList3 points )
    )
  runTestTT createThe4PointsT1
-
 
  let
    lookAtVectorHashes = TestCase $ assertEqual

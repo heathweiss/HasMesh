@@ -4,7 +4,8 @@
 {- |
 
 -}
-module Tutorial.T1(t1_linesFromPoints, t1_linesFromPolarTuples) where
+module Tutorial.T1(fromVertex, fromPolarVertex) where
+
 
 import RIO
 import qualified System.IO as SIO
@@ -19,8 +20,7 @@ import qualified Gmsh.Point as Pnt
 import qualified Gmsh.Line as Line
 import qualified Geometry.Vertex as V
 import qualified Geometry.Polar as Polar
-
-
+import qualified Utils.List as L
 
 -- Base function that can run the various RIO fxs that does the geometry work
 designLoader :: RIO Env.Environment () -> IO ()
@@ -34,12 +34,11 @@ designLoader createDesign = do
       handleRef <- newIORef handle_
       runRIO (env {Env.env_geoFileHandle = handleRef}) createDesign
         `catch`
-        -- this is not catchint the SafeList3MinError
-        (\(Hex.SafeList3MinError msg) -> do
+        
+        (\(Hex.NonUniqueVertex msg) -> do
             runSimpleApp $ logInfo $ "t1.hs err: " <> displayShow (Hex.SafeList3MinError msg)-- msg
             throwIO $ Hex.SafeList3MinError msg 
         )
-        
         `catch`
         (\(SomeException e) -> do
             handle' <- readIORef handleRef
@@ -54,10 +53,10 @@ designLoader createDesign = do
 
 
 {- |
-['Geo.Vertex.Vertex'] -> 'Gmsh.PointIdList' -> 'Gmsh.LineIdList'
-Create the vertex, then the points, then the lines
+Create the .geo shape from a ['Geometry.Vertex.Vertex']
 -}
-t1_linesFromPoints = do
+fromVertex :: IO ()
+fromVertex = do
   let
         createDesign :: (Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env, Env.HasScriptWriter env) => RIO env ()
         
@@ -72,38 +71,18 @@ t1_linesFromPoints = do
                        Geo.newVertex 0.1 0.3 0, 
                        Geo.newVertex 0 0.3 0    
                       ]
-          points <- runRIO env $ Pnt.toPoints vertexs >>= HexR.runEitherRIO "points" 
-          _ <- runRIO env $ Line.createLinesFromPoints points 
+          safeVertexs <- HexR.runEitherRIO "safeVertexs" $ L.toSafeList3 vertexs
+          points <- runRIO env $ Pnt.toPoints safeVertexs
+          
+          _ <- runRIO env $ Line.toLines points 
           
           return ()
   designLoader createDesign
 
 
-
--- | Create the lines directly from the vertex.
-t1_linesFromVertex = do
-  let
-        createDesign :: (Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env, Env.HasScriptWriter env) => RIO env ()
-        
-        
-        createDesign = do
-          env <- ask
-          geoFileHandleIORef <- view Env.geoFileHandleL
-          geoFileHandle <- readIORef geoFileHandleIORef
-          B.hPut geoFileHandle ScrB.writeLC2
-
-          let
-            vertexs = [Geo.newVertex  0 0 0,   
-                       Geo.newVertex  0.1 0 0, 
-                       Geo.newVertex 0.1 0.3 0,
-                       Geo.newVertex 0 0.3 0  
-                      ]
-          _ <- runRIO env $ Line.createLinesFromVertex "lines" vertexs
-          return ()
-  designLoader createDesign
-
--- | Generate the vertex using polar coordinates. Then create the lines directly from the vertex.
-t1_linesFromPolarTuples = do
+-- | Create the .geo shape using ' Polar.newVertexFromPolarCoordinatesTuples'
+fromPolarVertex :: IO ()
+fromPolarVertex = do
   let
     createDesign :: (Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env, Env.HasScriptWriter env) => RIO env ()
     
@@ -111,9 +90,7 @@ t1_linesFromPolarTuples = do
         env <- ask
         geoFileHandleIORef <- view Env.geoFileHandleL
         geoFileHandle <- readIORef geoFileHandleIORef
-        --writing the lc2 before the let statement causes it to be eval'd.
         a <- B.hPut geoFileHandle ScrB.writeLC2
-        --evaluate a :maybe this would force it to evaluate
         let
           radius = 50
           height = 0
@@ -124,30 +101,9 @@ t1_linesFromPolarTuples = do
                (240, radius, height),
                (300, radius, height)
               ]
-        _ <- runRIO env $ Line.createLinesFromVertex "lines" vertexs
+        safeVertexs <- HexR.runEitherRIO "safeVertexs" $ L.toSafeList3 vertexs
+        _ <- runRIO env $ Pnt.toPoints safeVertexs >>= Line.toLines
         return ()
-        
   designLoader createDesign
 
-{-
-t1d = do
-  let
-        createDesign :: (Enviro.HasIdSupply env, Enviro.HasPointIdMap env, Enviro.HasGeoFileHandle env, Enviro.HasDesignName env) => RIO env ()
-        createDesign = do
-          env <- ask
-          geoFileHandleIORef <- view Enviro.geoFileHandleL
-          geoFileHandle <- readIORef geoFileHandleIORef
-          B.hPut geoFileHandle $ ScrB.writeLC2
 
-          let
-            vertexs = [Geo.newVertex  0 0 0,   
-                       Geo.newVertex  0.1 0 0, 
-                       Geo.newVertex 0.1 0.3 0,
-                       Geo.newVertex 0 0.3 0  
-                      ]
-          lines <- runRIO env $ Line.createLinesFromVertex "lines" vertexs 
-          
-          return ()
-  designLoader createDesign
-
--}

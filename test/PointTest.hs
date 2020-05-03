@@ -48,9 +48,6 @@ runTests = do
    )
  runTestTT pointsAreEqualFromEnviro
   
-
- 
-
  let
   pointsAreNotEqual = TestCase
    (do
@@ -65,10 +62,9 @@ runTests = do
   safe3ListsFromSameVectorsAreEq = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
-      let
-        vertexs1 = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
-      points1 <- runRIO env $ Pnt.toPoints vertexs1 >>= HexR.runEitherRIO "points"
-      points2 <- runRIO env $ Pnt.toPoints vertexs1 >>= HexR.runEitherRIO "points"
+      safeVertex <- HexR.runEitherIO "safeVertex" $ L.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
+      points1 <- runRIO env $ Pnt.toPoints safeVertex
+      points2 <- runRIO env $ Pnt.toPoints safeVertex
       assertEqual
        "2 safe lists created from same vertex are eq"
        points1 points2
@@ -79,11 +75,10 @@ runTests = do
   safe3ListsFromDiffVectorsAreNotEq = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
-      let
-        vertexs1 = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
-        vertexs2 = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  33 33 33]
-      points1 <- runRIO env $ Pnt.toPoints vertexs1 >>= HexR.runEitherRIO "points"
-      points2 <- runRIO env $ Pnt.toPoints vertexs2 >>= HexR.runEitherRIO "points"
+      safeVertexs1 <- HexR.runEitherIO "safeVertex1" $ L.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
+      safeVertexs2 <- HexR.runEitherIO "safeVertex2" $ L.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  33 33 33]
+      points1 <- runRIO env $ Pnt.toPoints safeVertexs1 
+      points2 <- runRIO env $ Pnt.toPoints safeVertexs2
       assertEqual
        "2 safe lists created from different vertex are not Eq"
        False (points1 ==  points2)
@@ -95,36 +90,15 @@ runTests = do
 -------------------------------------------------------------------------------------------------
 ------------ create points from [vertex] with length 2 - 5 ----------------------------------
 
-
---Pnt.toPoints will return an exception if the length [vertex] < 3
---toDo: create a PointsTest and move this there. Then create tests for [0 vertex] [1 vertex]
- let
-  toPointsFailsWith2Vertex = TestCase
-   (do
-      
-      
-      env <- EnvLdr.loadTestEnvironment
-      let
-        vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6]
-      points <- runRIO env $ Pnt.toPoints vertexs
-      assertEqual "get the vector id from an ioref" (Left (Hex.SafeList3MinError "length == 2")) points -- result 
-   )
- _ <- runTestTT toPointsFailsWith2Vertex
-
-
  let
   create3PointsFrom3Vertex = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
-      let
-        vertexs = [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6, Geo.newVertex  7 8 9]
-      eitherPoints <- runRIO env $ Pnt.toPoints vertexs
-      assertEqual "get the vector id from an ioref"
-       (Right [1, 2, 3])
-       (case eitherPoints of
-          Right points -> Right $ map Env.evalPointId (L.evalSafeList3 points)
-          Left err -> Left err
-       )
+      safeVertexs <- HexR.runEitherIO "safeVertex" $ L.toSafeList3 [Geo.newVertex  1 2 3, Geo.newVertex  4 5 6, Geo.newVertex  7 8 9]
+      points <- runRIO env $ Pnt.toPoints safeVertexs
+      assertEqual "create points from safeList3 vertex length == 3"
+       [1, 2, 3]
+       (map Env.evalPointId (L.evalSafeList3 points))
    )
  _ <- runTestTT create3PointsFrom3Vertex
  
@@ -134,38 +108,14 @@ runTests = do
   create4PointsFrom4Vertex = TestCase
    (do
       env <- EnvLdr.loadTestEnvironment
-      let
-        vertexs = [Geo.newVertex 1 1 1, Geo.newVertex 2 2 2, Geo.newVertex 3 3 3, Geo.newVertex 4 4 4]
-      eitherPoints <- runRIO env $ Pnt.toPoints vertexs
+      safeVertexs <- HexR.runEitherIO "safeVertex" $ L.toSafeList3 [Geo.newVertex 1 1 1, Geo.newVertex 2 2 2, Geo.newVertex 3 3 3, Geo.newVertex 4 4 4]
+      points <- runRIO env $ Pnt.toPoints safeVertexs
       assertEqual "get the vector id from an ioref"
-       (Right [1,2,3,4])
-       (case eitherPoints of
-          Right points -> Right $  map Env.evalPointId (L.evalSafeList3 points)
-          Left err -> Left err
-          
-       )
+        [1,2,3,4]
+        (map Env.evalPointId (L.evalSafeList3 points))
    )
  _ <- runTestTT create4PointsFrom4Vertex
 
-
- ------------------------------------------ test for isOpen: so last point != head point--------------------------------------------------
-
- let
-  create3PointsFrom3ClosedVertex = TestCase
-   (do
-      env <- EnvLdr.loadTestEnvironment
-      let
-        vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  1 1 1]
-      eitherPoints <- runRIO env $ Pnt.toPoints vertexs
-      assertEqual "create points from closed vectors lenth == 3"
-       (Left $ Hex.PointIdSafe3ListIsClosed "PointIdList is closed")
-       (case eitherPoints of
-          Right points -> Right $ L.evalSafeList3 points
-          Left err -> Left err
-       )
-   )
- runTestTT create3PointsFrom3ClosedVertex
- 
 ---------------------------------------- create a [points] from a safe [vertex]-----------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
@@ -177,7 +127,7 @@ runTests = do
    (do
       env <- EnvLdr.loadTestEnvironment
       safeVertexs  <- HexR.runEitherIO "fjjf" $ ((L.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]):: Either Hex.HasMeshException L.VertexSafe3List)
-      points <- runRIO env $ Pnt.toPointsSafe safeVertexs
+      points <- runRIO env $ Pnt.toPoints safeVertexs
       assertEqual "create points from vectors safelist length == 3"
        [1,2,3]
        (map (Env.evalPointId) $ L.evalSafeList3 points)
@@ -205,7 +155,7 @@ runTests = do
    (do
       env <- EnvLdr.loadTestEnvironment
       safeVertexs  <- HexR.runEitherIO "safe vertex" $ ((L.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3, Geo.newVertex 4 4 4]):: Either Hex.HasMeshException L.VertexSafe3List)
-      points <- runRIO env $ Pnt.toPointsSafe safeVertexs
+      points <- runRIO env $ Pnt.toPoints safeVertexs
       assertEqual "create points from vectors safelist length == 3"
        [1,2,3,4]
        (map (Env.evalPointId) $ L.evalSafeList3 points)
@@ -219,7 +169,7 @@ runTests = do
       safeVertexs  <- HexR.runEitherIO "safe vertex" $ ((L.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2,  Geo.newVertex  3 3 3, 
                                                                         Geo.newVertex  11 1 1, Geo.newVertex 12 2 2, Geo.newVertex  13 3 3
                                                                        ]):: Either Hex.HasMeshException L.VertexSafe3List)
-      points <- runRIO env $ Pnt.toPointsSafe safeVertexs
+      points <- runRIO env $ Pnt.toPoints safeVertexs
       assertEqual "create points from vectors safelist length == 6"
        [1,2,3,4,5,6]
        (map (Env.evalPointId) $ L.evalSafeList3 points)
@@ -234,7 +184,7 @@ runTests = do
                                                                         Geo.newVertex  11 1 1, Geo.newVertex 12 2 2, Geo.newVertex  13 3 3,
                                                                         Geo.newVertex  21 1 1
                                                                        ]):: Either Hex.HasMeshException L.VertexSafe3List)
-      points <- runRIO env $ Pnt.toPointsSafe safeVertexs
+      points <- runRIO env $ Pnt.toPoints safeVertexs
       assertEqual "create points from vectors safelist length == 7"
        [1,2,3,4,5,6,7]
        (map (Env.evalPointId) $ L.evalSafeList3 points)
@@ -249,7 +199,7 @@ runTests = do
                                                                         Geo.newVertex  11 1 1, Geo.newVertex 12 2 2, Geo.newVertex  13 3 3,
                                                                         Geo.newVertex  21 1 1, Geo.newVertex 22 2 2
                                                                        ]):: Either Hex.HasMeshException L.VertexSafe3List)
-      points <- runRIO env $ Pnt.toPointsSafe safeVertexs
+      points <- runRIO env $ Pnt.toPoints safeVertexs
       assertEqual "create points from vectors safelist length == 8"
        [1,2,3,4,5,6,7,8]
        (map (Env.evalPointId) $ L.evalSafeList3 points)
@@ -264,7 +214,7 @@ runTests = do
                                                                         Geo.newVertex  11 1 1, Geo.newVertex 12 2 2, Geo.newVertex  13 3 3,
                                                                         Geo.newVertex  21 1 1, Geo.newVertex  22 2 2, Geo.newVertex  23 3 3
                                                                        ]):: Either Hex.HasMeshException L.VertexSafe3List)
-      points <- runRIO env $ Pnt.toPointsSafe safeVertexs
+      points <- runRIO env $ Pnt.toPoints safeVertexs
       assertEqual "create points from vectors safelist length == 9"
        [1,2,3,4,5,6,7,8,9]
        (map (Env.evalPointId) $ L.evalSafeList3 points)
@@ -281,9 +231,9 @@ runTests = do
                                                                        Geo.newVertex  11 1 1, Geo.newVertex  12 2 2, Geo.newVertex  13 3 3, Geo.newVertex 14 4 4,
                                                                        Geo.newVertex  21 1 1, Geo.newVertex  22 2 2, Geo.newVertex  23 3 3, Geo.newVertex 24 4 4
                                                                        ]):: Either Hex.HasMeshException L.VertexSafe3List)
-      points <- runRIO env $ Pnt.toPointsSafe safeVertexs
+      points <- runRIO env $ Pnt.toPoints safeVertexs
       assertEqual "create points from vectors safelist length == 12"
-       [1,2,3,4]
+       [1,2,3,4,5,6,7,8,9,10,11,12]
        (map (Env.evalPointId) $ L.evalSafeList3 points)
    )
  runTestTT unique12VertexToPoints
@@ -311,7 +261,6 @@ runTests = do
       env <- EnvLdr.loadTestEnvironment
       let 
         safeVertexs = ((L.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  2 2 2, Geo.newVertex 3 3 3, Geo.newVertex 4 4 4]):: Either Hex.HasMeshException L.VertexSafe3List)
-      
       assertEqual "create points from 5 vectors safelist fails for non unique vertex"
        (Left(Hex.NonUniqueVertex "non unique safe [Vertex]"))
        (case safeVertexs of
@@ -328,7 +277,6 @@ runTests = do
       let 
         safeVertexs = ((L.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  2 2 2,
                                        Geo.newVertex 3 3 3, Geo.newVertex 4 4 4, Geo.newVertex 5 5 5]):: Either Hex.HasMeshException L.VertexSafe3List)
-      
       assertEqual "create points from 6 vectors safelist fails for non unique vertex"
        (Left(Hex.NonUniqueVertex "non unique safe [Vertex]"))
        (case safeVertexs of
@@ -346,7 +294,6 @@ runTests = do
         safeVertexs = ((L.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  2 2 2,
                                        Geo.newVertex 3 3 3, Geo.newVertex 4 4 4, Geo.newVertex 5 5 5,
                                        Geo.newVertex 13 13 13, Geo.newVertex 14 14 14, Geo.newVertex 15 15 15, Geo.newVertex 16 16 16]):: Either Hex.HasMeshException L.VertexSafe3List)
-      
       assertEqual "create points from 10 vectors safelist fails for non unique vertex"
        (Left(Hex.NonUniqueVertex "non unique safe [Vertex]"))
        (case safeVertexs of
@@ -356,7 +303,7 @@ runTests = do
    )
  runTestTT nonUnique10VertexToPointsFails
 
-next -- replace toPoints with toPointsSafe in source, which will also require only allowing new points from safelist by getting rid of [vertex] input version.
+
 {-
 -------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------
