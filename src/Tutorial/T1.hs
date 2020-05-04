@@ -21,6 +21,7 @@ import qualified Gmsh.Line as Line
 import qualified Geometry.Vertex as V
 import qualified Geometry.Polar as Polar
 import qualified Utils.List as L
+import qualified Gmsh.CurveLoop as CL
 
 -- Base function that can run the various RIO fxs that does the geometry work
 designLoader :: RIO Env.Environment () -> IO ()
@@ -74,11 +75,36 @@ fromVertex = do
           safeVertexs <- HexR.runEitherRIO "safeVertexs" $ L.toSafeList3 vertexs
           points <- runRIO env $ Pnt.toPoints safeVertexs
           
+          lines <- runRIO env $ Line.toLines points
+          _ <- runRIO env $ CL.toCurveLoop lines
+          return ()
+  designLoader createDesign
+{-
+fromVertex :: IO ()
+fromVertex = do
+  let
+        createDesign :: (Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env, Env.HasScriptWriter env) => RIO env ()
+        
+        createDesign = do
+          env <- ask
+          geoFileHandleIORef <- view Env.geoFileHandleL
+          geoFileHandle <- readIORef geoFileHandleIORef
+          B.hPut geoFileHandle ScrB.writeLC2
+          let
+            vertexs = [Geo.newVertex  0 0 0,    
+                       Geo.newVertex  0.1 0 0,  
+                       Geo.newVertex 0.1 0.3 0, 
+                       Geo.newVertex 0 0.3 0    
+                      ]
+          safeVertexs <- HexR.runEitherRIO "safeVertexs" $ L.toSafeList3 vertexs
+          points <- runRIO env $ Pnt.toPoints safeVertexs
+          
           _ <- runRIO env $ Line.toLines points 
           
           return ()
   designLoader createDesign
 
+-}
 
 -- | Create the .geo shape using ' Polar.newVertexFromPolarCoordinatesTuples'
 fromPolarVertex :: IO ()

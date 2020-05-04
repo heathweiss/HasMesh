@@ -14,11 +14,22 @@ This includes all ID functions. Eg: 'Id': 'PointInt' and 'LineInt'.
 
 import qualified Utils.Environment as Env
 -}
-module Utils.Environment(Environment(..), PointIdStatus(..),  HasIdSupply(..), HasPointIdMap(..), HasGeoFileHandle(..), HasDesignName(..), HasScriptWriter(..),
-                         toEnvironment, getPointId, Id(..), LineInt(), pattern LineInt', Initialize(..),   PointInt(), pattern PointInt',
-                         pattern DesignNameP, loadLoader,
+module Utils.Environment(
+                         Id(..),
+                         PointInt(), pattern PointInt', getPointId, evalPointId,
+                         LineInt(), pattern LineInt', getLineId, evalLineId,
+                         CurveLoopInt(), pattern CurveLoopIntP, getCurveLoopId, evalCurveLoopId,
                          
-                         evalLineId, evalPointId, getLineId, incr, newDesignName, designFilePath 
+                         HasIdSupply(..), HasPointIdMap(..), HasGeoFileHandle(..), HasDesignName(..), HasScriptWriter(..),
+
+                         Environment(..), 
+                         toEnvironment,  
+                         
+                         Initialize(..), 
+                         
+                         pattern DesignNameP, loadLoader,
+                         PointIdStatus(..),
+                         incr, newDesignName, designFilePath 
                         ) where
 
 
@@ -61,27 +72,32 @@ loadLoader = do
 -- | Global 'Environment' for the RIO monad, which is used throughout HasMesh.
 data Environment = 
   Env { env_designName :: !Text, -- ^ The 'DesignName'. Used to build the path to the saved file.
-        env_pointIdSupply :: !(IORef (Id PointInt)), -- ^ The supply for 'Geometry.Gmsh.PointID'
+        env_pointIdSupply :: !(IORef (Id PointInt)), -- ^ The supply for 'PointID'
         env_pointIdMap :: !(IORef (Map Int (Id PointInt))), -- ^ The map containing the 'Gmsh.GPointId's associated with each 'Geometry.Vertex.Vertex'. Used to ensure a 'Geometry.Vertex.Vertex' only has a single 'Id' 'PointInt'.
         env_geoFileHandle :: !(IORef Handle), -- ^ Handle for writing gmsh script to the design file. Set to stdout for default value.
-        env_lineIdSupply :: !(IORef (Id LineInt)), -- ^ The supply for 'Geometry.Gmsh.PointID'
+        env_lineIdSupply :: !(IORef (Id LineInt)), -- ^ The supply for 'PointID'
         env_pntScriptWriter :: Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt), -- ^ Function to write the Gmsh point to file, if required to do so.
-        env_lineScriptWriter :: Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt) -- ^ Function to write the Gmsh line to file, if required to do so.
+        env_lineScriptWriter :: Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt), -- ^ Function to write the Gmsh line to file, if required to do so.
+        env_curveLoopIdSupply :: !(IORef(Id CurveLoopInt)), -- ^ The supply for 'CurveLoopId'
+        env_curveLoopScriptWriter :: Handle -> Id CurveLoopInt -> [Id LineInt] -> IO (Id CurveLoopInt)
+        
       }
   
 
 -- | Show the Environment for testing.
 instance Show Environment where
-  show (Env designName _ _ _ _ _ _) = show designName
+  show (Env designName _ _ _ _ _ _ _ _) = show designName
   
   
 
 -- | Convert the 'Loader', which loaded/decoded the Environment.yaml, into an 'Environment'
 toEnvironment :: Loader -> IORef (Id PointInt) -> IORef (Map Int (Id PointInt)) -> IORef Handle -> IORef (Id LineInt)
               -> (Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt))
-              -> (Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt))
+              -> (Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt)) -> IORef (Id CurveLoopInt)
+              -> (Handle -> Id CurveLoopInt -> [Id LineInt] -> IO (Id CurveLoopInt))
               -> Environment
 toEnvironment (Loader designName') = Env designName'
+
 
 -- | Supplies a Handle for writing gmsh script. This could be a file handle for a .geo file, or stdout.
 class HasGeoFileHandle env where
@@ -97,12 +113,16 @@ instance HasPointIdMap Environment where
   pointIdMapL = lens env_pointIdMap (\x y -> x {env_pointIdMap = y})
 
 class HasIdSupply env where
-  pointIdSupplyL :: Lens' env (IORef (Id PointInt)) -- ^ Supply of 'Gmsh.PointId'
-  lineIdSupplyL :: Lens' env (IORef (Id LineInt)) -- ^ Supply of 'Gmsh.LineId'
+  pointIdSupplyL :: Lens' env (IORef (Id PointInt)) -- ^ Supply of 'PointId'
+  lineIdSupplyL :: Lens' env (IORef (Id LineInt)) -- ^ Supply of 'LineId'
+  curveLoopIdSupplyL :: Lens' env (IORef (Id CurveLoopInt)) -- ^ Supply of 'CurveLoopId'
 
 instance HasIdSupply Environment where
   pointIdSupplyL = lens env_pointIdSupply (\x y -> x {env_pointIdSupply = y})
-  lineIdSupplyL = lens env_lineIdSupply (\x y -> x {env_lineIdSupply = y}) 
+  lineIdSupplyL = lens env_lineIdSupply (\x y -> x {env_lineIdSupply = y})
+  curveLoopIdSupplyL = lens env_curveLoopIdSupply (\x y -> x {env_curveLoopIdSupply = y})
+  
+  
 
 class HasDesignName env where
   designNameL :: Lens' env T.Text -- ^ 'DesignName'
@@ -112,13 +132,15 @@ instance HasDesignName Environment where
 
 class HasScriptWriter env where
   pntScriptWriterL :: Lens' env (Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt)) -- ^ Write the gmsh script for points.
-  lineScriptWriterL :: Lens' env (Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt)) -- ^ Write the gmsh script for points.
-  
+  lineScriptWriterL :: Lens' env (Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt)) -- ^ Write the gmsh script for lines.
+  curveLoopScriptWriterL :: Lens' env (Handle -> Id CurveLoopInt -> [Id LineInt] -> IO (Id CurveLoopInt)) -- ^ Write the gmsh script for curve loops.
   
 
 instance HasScriptWriter Environment where
   pntScriptWriterL = lens env_pntScriptWriter (\x y -> x {env_pntScriptWriter = y})
   lineScriptWriterL = lens env_lineScriptWriter (\x y -> x {env_lineScriptWriter = y})
+  curveLoopScriptWriterL = lens env_curveLoopScriptWriter (\x y -> x {env_curveLoopScriptWriter = y})
+  
   
 
 -----------------------------------------------------------------------------------------------------------------------------
@@ -164,11 +186,17 @@ newtype LineInt = LineInt Int deriving (Show,Eq)
 pattern LineInt' :: Int -> LineInt
 pattern LineInt' i <- LineInt i
 
+-- | The gmsh Curve Loop Id that connects lines into a surface
+newtype CurveLoopInt = CurveLoopInt Int deriving (Show,Eq)
+pattern CurveLoopIntP :: Int -> CurveLoopInt
+pattern CurveLoopIntP i <- CurveLoopInt i
+
 
 -- | Identifiers that correspond to the IDs used in Gmsh script and APIs.
 data Id id where
   PointId :: PointInt -> Id PointInt -- ^ An Gmsh ID for a 'Geometry.Vertex.Vertex'. Only 1 ID will exist for a given 'Geometry.Vertex.Vertex'.
-  LineId  :: LineInt -> Id LineInt   -- ^ A Gmsh ID for a line associated with 2 'Geometry.Vertex.Vertex'. Uniqueness is not enforced.
+  LineId  :: LineInt -> Id LineInt   -- ^ A Gmsh ID for a line associated with 2 'Geometry.Vertex.Vertex'. 
+  CurveLoopId :: CurveLoopInt -> Id CurveLoopInt -- ^ A Gmsh Id for a curve loop that associates lines into a surface.
   
 deriving instance Show (Id a)
 deriving instance  Eq (Id a)
@@ -180,6 +208,7 @@ deriving instance  Eq (Id a)
 incr :: Id a -> Id a
 incr (PointId (PointInt int)) = PointId $ PointInt $ int + 1
 incr (LineId  (LineInt int)) = LineId $ LineInt $ int + 1
+incr (CurveLoopId  (CurveLoopInt int)) = CurveLoopId $ CurveLoopInt $ int + 1
 
 
 -- | Extract the Int.
@@ -192,6 +221,10 @@ evalPointId (PointId pointInt) = evalPointInt pointInt
 evalPointInt :: PointInt -> Int
 evalPointInt (PointInt int) = int
 
+evalCurveLoopId :: Id CurveLoopInt -> Int
+evalCurveLoopId (CurveLoopId (CurveLoopInt int)) = int
+
+
 
 -- | Get the next available 'Env.Id Env.LineInt' that corresponds to a Gmsh line.
 getLineId :: (HasIdSupply env) =>   RIO env (Id LineInt)
@@ -200,6 +233,14 @@ getLineId = do
   lineIdSupply <- readIORef lineIdSupplyIORef
   writeIORef lineIdSupplyIORef $ incr lineIdSupply
   return lineIdSupply
+
+getCurveLoopId :: (HasIdSupply env) =>   RIO env (Id CurveLoopInt)
+getCurveLoopId = do
+  curveLoopSupplyIORef <- view curveLoopIdSupplyL
+  curveLoopIdSupply <- readIORef curveLoopSupplyIORef
+  writeIORef curveLoopSupplyIORef $ incr curveLoopIdSupply
+  return curveLoopIdSupply
+  
 
 class Initialize a where
   initialId :: Id a
@@ -210,6 +251,10 @@ instance Initialize PointInt where
   
 instance Initialize LineInt where
   initialId = LineId $ LineInt 1
+
+instance Initialize CurveLoopInt where
+  initialId = CurveLoopId $ CurveLoopInt 1
+  
   
 
 -- | Name of the 3D design, used to build filepath for saving a design .geo file.

@@ -11,12 +11,13 @@ import qualified PolarTest as PolarTest
 import qualified EnvironmentTest as EnvironmentTest
 main = do
   FileWriterTest.runTests
-  ScriptingTest.runTests
   LineTest.runTests
   ExceptionsTest.runTests
-  CurveLoopTest.runTests
   ListTest.runTests
   PolarTest.runTests
   EnvironmentTest.runTests
   VertexTest.runTests
   PointTest.runTests
+  CurveLoopTest.runTests
+  ScriptingTest.runTests
+  

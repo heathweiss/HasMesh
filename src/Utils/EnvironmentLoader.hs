@@ -30,8 +30,13 @@ loadEnvironment = do
   iorefPoints <- newIORef $ Map.fromList []
   iorefDesignFileHandle <- newIORef stdout
   iorefLineIdSupply <- newIORef Env.initialId
+  iorefCurveLoopIdSupply <- newIORef Env.initialId
+  
+  
   let
-    env_ = Env.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply ScrB.pointWriter ScrB.lineWriter
+    env_ = Env.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply ScrB.pointWriter ScrB.lineWriter iorefCurveLoopIdSupply ScrB.curveLoopWriter
+    
+    
   _ <- HexR.runEitherIO "validDesignName" $ Env.newDesignName $  view Env.designNameL env_
   return env_
 
@@ -46,8 +51,13 @@ loadTestEnvironment = do
   iorefPoints <- newIORef $ Map.fromList []    
   iorefDesignFileHandle <- newIORef stdout
   iorefLineIdSupply <- newIORef Env.initialId
+  iorefCurveLoopIdSupply <- newIORef Env.initialId
+  
   let
-    env_ = Env.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply ScrB.nullPointWriter ScrB.nullLineWriter
+    env_ = Env.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply
+           ScrB.nullPointWriter ScrB.nullLineWriter iorefCurveLoopIdSupply ScrB.nullCurveLoopWriter
+           
+           
     
   return $ env_ {Env.env_designName = "testDesignName"}
   

@@ -5,10 +5,13 @@ Supply specialized lists that guarantee minimum length of 3, an other features d
 
 import qualified Utils.List as L
 -}
-module Utils.List(SafeList3(..), NonEmptyID(), isUnique,
-                  PointIdSafe3List(), LineIdSafe3List(), VertexSafe3List(), 
-                  safeHead3, evalSafeList3, safeLast3, ToSafeList3(..), LineIdSafe3List(),  IsOpen(..),
-                  reverseSafeList3, appendSafeList3) where
+module Utils.List(SafeList3(..), NonEmptyID(), SafeList1(..),
+                  PointIdSafe3List(), LineIdSafe3List(), VertexSafe3List(),
+                  ToSafeList1(..),
+                  safeHead3, evalSafeList3, safeLast3, ToSafeList3(..),
+                  IsOpen(..),
+                  reverseSafeList3, appendSafeList3, isUnique,
+                  CurveIdSafe1List, evalSafeList1,) where
 
 import RIO
 import qualified RIO.List as L
@@ -190,4 +193,32 @@ isUnique safeList =
   in
     checkUnique $ evalSafeList3 safeList
   
-    
+-------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------ safe list with single item --------------------------------------------------------
+
+data SafeList1 a b where
+     Nil1 :: SafeList1 a Empty
+     Cons1:: a -> [a] -> SafeList1 a b -> SafeList1 a NonEmptyID
+     
+-- Provide show instance for testing.
+instance Show (SafeList1 (Env.Id Env.PointInt) NonEmptyID) where
+ show ((Cons1 x zs _)) = "Cons x: " ++ show x ++ " zs: " ++ show zs
+ 
+type CurveIdSafe1List = SafeList1 (Env.Id Env.CurveLoopInt) NonEmptyID
+
+
+-- | Extract the 'SafeList3' as a regular list.
+evalSafeList1 :: SafeList1 a NonEmptyID -> [a]
+evalSafeList1 (Cons1 x zs _) = x:zs
+
+-- | For creating lists with guaranteed length >= 3, and other qualities depending on the contained type.
+class ToSafeList1 a b | b -> a where
+  toSafeList1 :: a -> Either Hex.HasMeshException b
+
+
+instance ToSafeList1 [Env.Id Env.CurveLoopInt] CurveIdSafe1List where
+  toSafeList1 [] = Left $ Hex.SafeList1MinError "length == 0"
+  toSafeList1 [x] = Right $ Cons1 x [] Nil1
+  
+  
+  

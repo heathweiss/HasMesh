@@ -10,7 +10,11 @@ import qualified Gmsh.ToScript.BuiltIn as ScrB
 or as part of the Gmsh import module
 import qualified Gmsh.Gmsh as Gmsh
 -}
-module Gmsh.ToScript.BuiltIn(genPointScript, lineWriter, nullLineWriter, genLineScript, writeLC1, writeLC2, writeLC3, nullPointWriter, pointWriter) where
+module Gmsh.ToScript.BuiltIn(genPointScript, genCurveLoopScript, genLineScript,
+                             writeLC1, writeLC2, writeLC3,
+                             lineWriter, nullLineWriter,  
+                             nullPointWriter, pointWriter,
+                             nullCurveLoopWriter, curveLoopWriter) where
 
 
 
@@ -21,8 +25,8 @@ import qualified RIO.Text as T
 import Data.String.Interpolate ( i )
 import qualified Geometry.Vertex as V
 import qualified Geometry.Geometry as Geo
-
 import qualified Utils.Environment as Env
+import qualified Utils.List as L
 
 -- | Output a gmsh point.
 genPointScript :: Geo.Vertex -> Env.Id Env.PointInt -> B.ByteString
@@ -49,10 +53,26 @@ writeLC2 = "lc = 1e-2;"
 writeLC3 :: B.ByteString
 writeLC3 = "lc = 1e-3;"
 
-
+-- | Generate gmsh script for a line.
 genLineScript :: Env.Id Env.LineInt -> Env.Id Env.PointInt -> Env.Id Env.PointInt -> B.ByteString
 genLineScript (Env.LineId (Env.LineInt' lineId)) (Env.PointId (Env.PointInt' pointId1)) (Env.PointId (Env.PointInt' pointId2)) =
   [i|\nLine(#{lineId}) = {#{pointId1},#{pointId2}};|] :: B.ByteString
+
+-- | Generate gmsh script for a curve loop.
+genCurveLoopScript :: Env.Id Env.CurveLoopInt -> [Env.Id Env.LineInt] -> B.ByteString
+genCurveLoopScript (Env.CurveLoopId (Env.CurveLoopIntP curveLoopId)) lines = 
+  let
+    showLineIds innerLines =
+      showLineIdsRecur ( map Env.evalLineId  innerLines) []
+    showLineIdsRecur [] workingList = reverse workingList
+    showLineIdsRecur [x] workingList = reverse $ (show x) : workingList
+    showLineIdsRecur (x:xs) workingList = showLineIdsRecur xs $ ((show x) ++ ","):workingList
+  in
+  [i|\nCurve Loop(#{curveLoopId}) = {#{unwords $ showLineIds lines} };|] :: B.ByteString
+
+  
+  
+  
 
 -- | Write the gmsh line script to handle, which should be .geo file.
 lineWriter :: Handle -> Env.Id Env.LineInt -> Env.Id Env.PointInt -> Env.Id Env.PointInt -> IO (Env.Id Env.LineInt)
@@ -77,4 +97,10 @@ pointWriter handle' (Env.PointIdDidNotExist pointId) vertex = do
 pointWriter _ (Env.PointIdAlreadyExisted pointId) _ = return pointId
 
   
-  
+nullCurveLoopWriter :: Handle -> Env.Id Env.CurveLoopInt -> [Env.Id Env.LineInt] -> IO (Env.Id Env.CurveLoopInt)
+nullCurveLoopWriter _ curveLoopId _ = return curveLoopId
+
+curveLoopWriter :: Handle -> Env.Id Env.CurveLoopInt -> [Env.Id Env.LineInt] -> IO (Env.Id Env.CurveLoopInt)
+curveLoopWriter handle' curveLoopId lineIds = do
+  B.hPut handle' $ genCurveLoopScript curveLoopId  lineIds
+  return curveLoopId

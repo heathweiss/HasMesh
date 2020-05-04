@@ -9,8 +9,9 @@ import qualified Gmsh.ToScript.BuiltIn as ScrB
 import qualified Gmsh.ToScript.Common as SCom
 import qualified RIO.Text as T
 import qualified Geometry.Geometry as Geo
---import qualified Gmsh.Gmsh as Gmsh
 import qualified Utils.Environment as Env
+import qualified Utils.List as L
+import qualified Utils.Exceptions as Hex
 
 runTests = do
  putStrLn $ "=============== Scripting Tests ====================="
@@ -63,7 +64,7 @@ runTests = do
  
 
 
--- ============================ LINE tests =============================================
+-- ============================ Line tests =============================================
 
  let
   testLine = TestCase $ assertEqual
@@ -71,5 +72,37 @@ runTests = do
    "\nLine(1) = {1,2};"
    (ScrB.genLineScript (Env.initialId :: Env.Id Env.LineInt) (Env.initialId::Env.Id Env.PointInt) (Env.incr Env.initialId::Env.Id Env.PointInt))
  runTestTT testLine
- 
 
+-- ============================ curve loop tests =============================================
+ let
+  writeCurveLoopText = TestCase $ assertEqual
+   "write a curve loop"
+   ("\nCurve Loop(1) = {1, 2, 3 };")
+   --(ScrB.genCurveLoopScript (Env.initialId :: Env.Id Env.CurveLoopInt) [Env.initialId::Env.Id Env.LineInt] )
+   
+   (--let
+      -- eitherLineIds = L.toSafeList3 [Env.initialId::Env.Id Env.LineInt, Env.incr Env.initialId, Env.incr $ Env.incr Env.initialId]
+    --in
+      --case eitherLineIds of
+        ScrB.genCurveLoopScript (Env.initialId :: Env.Id Env.CurveLoopInt) [Env.initialId::Env.Id Env.LineInt, Env.incr Env.initialId, Env.incr $ Env.incr Env.initialId]
+        --(Left (Hex.SafeList3MinError msg)) -> (Left (Hex.SafeList3MinError msg))
+   )
+ runTestTT writeCurveLoopText
+ 
+{-
+ let
+  writeCurveLoopText = TestCase $ assertEqual
+   "write a curve loop"
+   (Right "\nCurve Loop(1) = {1, 2, 3 };")
+   --(ScrB.genCurveLoopScript (Env.initialId :: Env.Id Env.CurveLoopInt) [Env.initialId::Env.Id Env.LineInt] )
+   
+   (let
+       eitherLineIds = L.toSafeList3 [Env.initialId::Env.Id Env.LineInt, Env.incr Env.initialId, Env.incr $ Env.incr Env.initialId]
+    in
+      case eitherLineIds of
+        Right lineIds -> Right $ ScrB.genCurveLoopScript (Env.initialId :: Env.Id Env.CurveLoopInt) lineIds
+        (Left (Hex.SafeList3MinError msg)) -> (Left (Hex.SafeList3MinError msg))
+   )
+ runTestTT writeCurveLoopText
+
+-}
