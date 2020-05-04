@@ -8,9 +8,9 @@
 {-# LANGUAGE PatternSynonyms #-}
 
 {- |
-Supplies a global Environment, as per FPComplete RIO recommendations.
+Supplies a global Environment, as per FP Complete RIO(ReaderT IO) recommendations.
 
-This includes all ID functions. Eg: 'Id': 'PointInt' and 'LineInt'.
+This includes all ID functions for generating Gmsh identifiers. Eg: 'Id': 'PointInt' and 'LineInt'.
 
 import qualified Utils.Environment as Env
 -}
@@ -149,9 +149,14 @@ instance HasScriptWriter Environment where
 -----------------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------- ID-----------------------------------------------------------------
--- | Wraps a point id with a status indicating if it is a new id, or if the vertex and id already existed.
--- This is used in decision to print the point gmsh script.
-data PointIdStatus = PointIdAlreadyExisted (Id PointInt) |  PointIdDidNotExist (Id PointInt) deriving (Show,Eq)
+-- | Wraps a 'Id PointInt' with a status indicating if it is a new 'Id PointInt', or if the vertex had been previously processed into an 'Id PointInt'.
+-- Used in the decision to print the 'Id PointInt' .geo script.
+data PointIdStatus =
+                      -- | The point already exists.
+                      PointIdAlreadyExisted (Id PointInt)
+                      -- | Is a newly created point.
+                   |  PointIdDidNotExist (Id PointInt) 
+                   deriving (Show,Eq)
 
 -- | Get a Gmsh Id for a 'V.Vertex'. The 'PointIdStatus' is set according to if the point/vertex already exists.
 getPointId :: (HasIdSupply env, HasPointIdMap env) =>  V.Vertex -> RIO env  PointIdStatus
@@ -202,9 +207,9 @@ deriving instance Show (Id a)
 deriving instance  Eq (Id a)
 
 
--- | Increment an 'ID' < 'PointId' 'LineId' > by 1.
+-- | Increment an 'ID' such as a 'PointId' or  'LineId' by 1.
 --
---  Used for supplying Gmsh ids for 'Geo.Vector' and and line ids for ['Geo.Vector']
+--  Only used internally, but is exported for testing.
 incr :: Id a -> Id a
 incr (PointId (PointInt int)) = PointId $ PointInt $ int + 1
 incr (LineId  (LineInt int)) = LineId $ LineInt $ int + 1
@@ -266,11 +271,7 @@ pattern DesignNameP name  <- DesignName name
 
 
 
-{- |
-Create a new 'DesignName'
-Throws an IO ('ZeroLengthName') exception if zero length, and so has to be used in the IO monad, which is where Env will usually be loaded.
-Should look at using Control.Monad.Catch.MonadThrow as per M. Snoyman suggestion. See https://www.fpcomplete.com/blog/2017/07/the-rio-monad
--}
+-- | Create a new 'DesignName' which is guaranteed not to be zero length.
 newDesignName  :: Text -> Either Hex.HasMeshException DesignName
 newDesignName designName =
  case T.length designName == 0 of
@@ -278,7 +279,7 @@ newDesignName designName =
    False -> pure $ DesignName designName
 
 
-
+-- | Uses the 'DesignName' to create a .geo filepath to src/Data/geoFiles/<name>.geo
 designFilePath :: DesignName ->  FilePath
 designFilePath ( DesignName designName) = 
   T.unpack $ "src/Data/GeoFiles/" <> designName <> ".geo"

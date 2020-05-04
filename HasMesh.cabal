@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: be9d0ff801be4253e771642c6c85c30fbfe31461bc1ec3899fa5792c843d030a
+-- hash: 2872887c4934dadebdf7bae7cafefa3b1f36f8f53fee0f16fdbc53a5f5057899
 
 name:           HasMesh
 version:        0.1.0.0
@@ -42,7 +42,6 @@ library
       Run
       Tutorial.T1
       Types
-      Util
       Utils.Environment
       Utils.EnvironmentLoader
       Utils.Exceptions
@@ -95,7 +94,6 @@ test-suite HasMesh-test
       PointTest
       PolarTest
       ScriptingTest
-      UtilSpec
       VertexTest
       Paths_HasMesh
   hs-source-dirs:
