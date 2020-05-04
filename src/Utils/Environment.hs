@@ -44,7 +44,7 @@ import qualified Utils.Exceptions as Hex
 import qualified RIO.Text as T
 import qualified RIO.Map as Map
 import qualified Data.Hashable as H
---import qualified Geometry.Geometry as Geo
+import qualified Utils.Exceptions as Hex
 
 import qualified Geometry.Vertex as V
 --import qualified Utils.Design as Design
@@ -65,13 +65,12 @@ loadLoader = do
     let parsedContent = Y.decode content :: Maybe Loader 
     case parsedContent of
         Nothing -> error "Could not parse config file."
-        
-        (Just (Loader designName)) -> do
-          return $ Loader designName
+        (Just (Loader designName')) -> return $ Loader designName'
 
 -- | Global 'Environment' for the RIO monad, which is used throughout HasMesh.
 data Environment = 
-  Env { env_designName :: !Text, -- ^ The 'DesignName'. Used to build the path to the saved file.
+  Env { env_designName :: !DesignName, -- ^ The 'DesignName'. Used to build the path to the saved file.
+        
         env_pointIdSupply :: !(IORef (Id PointInt)), -- ^ The supply for 'PointID'
         env_pointIdMap :: !(IORef (Map Int (Id PointInt))), -- ^ The map containing the 'Gmsh.GPointId's associated with each 'Geometry.Vertex.Vertex'. Used to ensure a 'Geometry.Vertex.Vertex' only has a single 'Id' 'PointInt'.
         env_geoFileHandle :: !(IORef Handle), -- ^ Handle for writing gmsh script to the design file. Set to stdout for default value.
@@ -81,12 +80,14 @@ data Environment =
         env_curveLoopIdSupply :: !(IORef(Id CurveLoopInt)), -- ^ The supply for 'CurveLoopId'
         env_curveLoopScriptWriter :: Handle -> Id CurveLoopInt -> [Id LineInt] -> IO (Id CurveLoopInt)
         
+        
       }
   
 
 -- | Show the Environment for testing.
 instance Show Environment where
-  show (Env designName _ _ _ _ _ _ _ _) = show designName
+  show (Env designName' _ _ _ _ _ _ _ _) = show designName'
+  
   
   
 
@@ -95,10 +96,17 @@ toEnvironment :: Loader -> IORef (Id PointInt) -> IORef (Map Int (Id PointInt)) 
               -> (Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt))
               -> (Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt)) -> IORef (Id CurveLoopInt)
               -> (Handle -> Id CurveLoopInt -> [Id LineInt] -> IO (Id CurveLoopInt))
-              -> Environment
-toEnvironment (Loader designName') = Env designName'
-
-
+              -> Either Hex.HasMeshException Environment
+              
+toEnvironment (Loader designName' ) a b c d e f g h =
+  let
+    eitherDesignName = newDesignName designName'
+  in
+  case eitherDesignName of
+    Right (DesignName name) -> Right $ Env (DesignName name) a b c d e f g h
+    Left (Hex.ZeroLengthName msg) -> Left $ Hex.ZeroLengthName msg
+    Left err -> Left err
+    
 -- | Supplies a Handle for writing gmsh script. This could be a file handle for a .geo file, or stdout.
 class HasGeoFileHandle env where
   geoFileHandleL :: Lens' env (IORef Handle) -- ^ The Handle to the .geo design file.
@@ -125,7 +133,7 @@ instance HasIdSupply Environment where
   
 
 class HasDesignName env where
-  designNameL :: Lens' env T.Text -- ^ 'DesignName'
+  designNameL :: Lens' env DesignName -- ^ 'DesignName'
 
 instance HasDesignName Environment where
   designNameL = lens env_designName (\x y -> x {env_designName = y})
