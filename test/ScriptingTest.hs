@@ -78,31 +78,15 @@ runTests = do
   writeCurveLoopText = TestCase $ assertEqual
    "write a curve loop"
    ("\nCurve Loop(1) = {1, 2, 3 };")
-   --(ScrB.genCurveLoopScript (Env.initialId :: Env.Id Env.CurveLoopInt) [Env.initialId::Env.Id Env.LineInt] )
-   
-   (--let
-      -- eitherLineIds = L.toSafeList3 [Env.initialId::Env.Id Env.LineInt, Env.incr Env.initialId, Env.incr $ Env.incr Env.initialId]
-    --in
-      --case eitherLineIds of
-        ScrB.genCurveLoopScript (Env.initialId :: Env.Id Env.CurveLoopInt) [Env.initialId::Env.Id Env.LineInt, Env.incr Env.initialId, Env.incr $ Env.incr Env.initialId]
-        --(Left (Hex.SafeList3MinError msg)) -> (Left (Hex.SafeList3MinError msg))
-   )
+   (ScrB.genCurveLoopScript (Env.initialId :: Env.Id Env.CurveLoopInt) [Env.initialId::Env.Id Env.LineInt, Env.incr Env.initialId, Env.incr $ Env.incr Env.initialId])
  runTestTT writeCurveLoopText
  
-{-
- let
-  writeCurveLoopText = TestCase $ assertEqual
-   "write a curve loop"
-   (Right "\nCurve Loop(1) = {1, 2, 3 };")
-   --(ScrB.genCurveLoopScript (Env.initialId :: Env.Id Env.CurveLoopInt) [Env.initialId::Env.Id Env.LineInt] )
-   
-   (let
-       eitherLineIds = L.toSafeList3 [Env.initialId::Env.Id Env.LineInt, Env.incr Env.initialId, Env.incr $ Env.incr Env.initialId]
-    in
-      case eitherLineIds of
-        Right lineIds -> Right $ ScrB.genCurveLoopScript (Env.initialId :: Env.Id Env.CurveLoopInt) lineIds
-        (Left (Hex.SafeList3MinError msg)) -> (Left (Hex.SafeList3MinError msg))
-   )
- runTestTT writeCurveLoopText
+-- ============================ plane surface =============================================
 
--}
+ let
+  writePlaneSurfaceText = TestCase $ assertEqual
+   "write a plane surface"
+   ("\nPlane Surface(1) = {1, 2, 3 };")
+   (ScrB.genPlaneSurfaceScript (Env.initialId :: Env.Id Env.PlaneSurfaceInt) [Env.initialId::Env.Id Env.CurveLoopInt, Env.incr Env.initialId, Env.incr $ Env.incr Env.initialId])
+ runTestTT writePlaneSurfaceText
+

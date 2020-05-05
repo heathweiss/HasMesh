@@ -10,11 +10,12 @@ import qualified Gmsh.ToScript.BuiltIn as ScrB
 or as part of the Gmsh import module
 import qualified Gmsh.Gmsh as Gmsh
 -}
-module Gmsh.ToScript.BuiltIn(genPointScript, genCurveLoopScript, genLineScript,
+module Gmsh.ToScript.BuiltIn(genPointScript, genCurveLoopScript, genLineScript, genPlaneSurfaceScript,
                              writeLC1, writeLC2, writeLC3,
                              lineWriter, nullLineWriter,  
                              nullPointWriter, pointWriter,
-                             nullCurveLoopWriter, curveLoopWriter) where
+                             nullCurveLoopWriter, curveLoopWriter,
+                             nullPlaneSurfaceWriter, planeSurfaceWriter) where
 
 
 
@@ -61,16 +62,22 @@ genLineScript (Env.LineId (Env.LineInt' lineId)) (Env.PointId (Env.PointInt' poi
 -- | Generate gmsh script for a curve loop.
 genCurveLoopScript :: Env.Id Env.CurveLoopInt -> [Env.Id Env.LineInt] -> B.ByteString
 genCurveLoopScript (Env.CurveLoopId (Env.CurveLoopIntP curveLoopId)) lines = 
-  let
-    showLineIds innerLines =
-      showLineIdsRecur ( map Env.evalLineId  innerLines) []
-    showLineIdsRecur [] workingList = reverse workingList
-    showLineIdsRecur [x] workingList = reverse $ (show x) : workingList
-    showLineIdsRecur (x:xs) workingList = showLineIdsRecur xs $ ((show x) ++ ","):workingList
-  in
-  [i|\nCurve Loop(#{curveLoopId}) = {#{unwords $ showLineIds lines} };|] :: B.ByteString
+  [i|\nCurve Loop(#{curveLoopId}) = {#{unwords $ (showIds Env.evalLineId) lines} };|] :: B.ByteString
 
-  
+
+-- | Generate the gmsh script Bytestring for a Plane Surface
+genPlaneSurfaceScript :: Env.Id Env.PlaneSurfaceInt -> [Env.Id Env.CurveLoopInt] -> B.ByteString
+genPlaneSurfaceScript  (Env.PlaneSurfaceId (Env.PlaneSurfaceIntP  planeSurfaceId)) curveLoopIds = do
+  [i|\nPlane Surface(#{planeSurfaceId}) = {#{unwords $ (showIds Env.evalCurveLoopId) curveLoopIds} };|] :: B.ByteString
+    
+-- Break a list of Ids, such as LineInt or CurveLoopInt, into strings that can be printed by Interpolate as the arg list to a gmsh fx.    
+showIds :: (a -> Int) -> [a] -> [String]
+showIds evaluator innerLines =
+    showIdsRecur ( map evaluator  innerLines) []
+    where
+    showIdsRecur [] workingList = reverse workingList
+    showIdsRecur [x] workingList = reverse $ show x : workingList
+    showIdsRecur (x:xs) workingList = showIdsRecur xs $ (show x ++ ","):workingList
   
   
 
@@ -104,3 +111,14 @@ curveLoopWriter :: Handle -> Env.Id Env.CurveLoopInt -> [Env.Id Env.LineInt] -> 
 curveLoopWriter handle' curveLoopId lineIds = do
   B.hPut handle' $ genCurveLoopScript curveLoopId  lineIds
   return curveLoopId
+
+nullPlaneSurfaceWriter :: Handle -> Env.Id Env.PlaneSurfaceInt -> [Env.Id Env.CurveLoopInt] -> IO (Env.Id Env.PlaneSurfaceInt)
+nullPlaneSurfaceWriter _ planeSurfaceId _ = return planeSurfaceId
+
+planeSurfaceWriter :: Handle -> Env.Id Env.PlaneSurfaceInt -> [Env.Id Env.CurveLoopInt] -> IO (Env.Id Env.PlaneSurfaceInt)
+planeSurfaceWriter handle' planeSurfaceId curveLoopIds = do
+  B.hPut handle' $ genPlaneSurfaceScript planeSurfaceId  curveLoopIds
+  return planeSurfaceId
+
+
+  

@@ -11,7 +11,7 @@ module Utils.List(SafeList3(..), NonEmptyID(), SafeList1(..),
                   safeHead3, evalSafeList3, safeLast3, ToSafeList3(..),
                   IsOpen(..),
                   reverseSafeList3, appendSafeList3, isUnique,
-                  CurveIdSafe1List, evalSafeList1,) where
+                  CurveIdSafe1List, PlaneSurfaceSafe1List, evalSafeList1,) where
 
 import RIO
 import qualified RIO.List as L
@@ -205,6 +205,7 @@ instance Show (SafeList1 (Env.Id Env.PointInt) NonEmptyID) where
  show ((Cons1 x zs _)) = "Cons x: " ++ show x ++ " zs: " ++ show zs
  
 type CurveIdSafe1List = SafeList1 (Env.Id Env.CurveLoopInt) NonEmptyID
+type PlaneSurfaceSafe1List = SafeList1 (Env.Id Env.PlaneSurfaceInt) NonEmptyID
 
 
 -- | Extract the 'SafeList3' as a regular list.
@@ -214,11 +215,17 @@ evalSafeList1 (Cons1 x zs _) = x:zs
 -- | For creating lists with guaranteed length >= 3, and other qualities depending on the contained type.
 class ToSafeList1 a b | b -> a where
   toSafeList1 :: a -> Either Hex.HasMeshException b
+  
 
 
 instance ToSafeList1 [Env.Id Env.CurveLoopInt] CurveIdSafe1List where
   toSafeList1 [] = Left $ Hex.SafeList1MinError "length == 0"
   toSafeList1 [x] = Right $ Cons1 x [] Nil1
-  
+  toSafeList1 (x:xs) = Right $ Cons1 x xs Nil1
+
+instance ToSafeList1 [Env.Id Env.PlaneSurfaceInt] PlaneSurfaceSafe1List where
+  toSafeList1 [] = Left $ Hex.SafeList1MinError "length == 0"
+  toSafeList1 [x] = Right $ Cons1 x [] Nil1
+  toSafeList1 (x:xs) = Right $ Cons1 x xs Nil1
   
   

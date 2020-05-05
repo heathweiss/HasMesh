@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE ConstrainedClassMethods #-}
@@ -19,6 +18,7 @@ module Utils.Environment(
                          PointInt(), pattern PointInt', getPointId, evalPointId,
                          LineInt(), pattern LineInt', getLineId, evalLineId,
                          CurveLoopInt(), pattern CurveLoopIntP, getCurveLoopId, evalCurveLoopId,
+                         PlaneSurfaceInt(), pattern PlaneSurfaceIntP, getPlaneSurfaceId,
                          
                          HasIdSupply(..), HasPointIdMap(..), HasGeoFileHandle(..), HasDesignName(..), HasScriptWriter(..),
 
@@ -78,7 +78,9 @@ data Environment =
         env_pntScriptWriter :: Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt), -- ^ Function to write the Gmsh point to file, if required to do so.
         env_lineScriptWriter :: Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt), -- ^ Function to write the Gmsh line to file, if required to do so.
         env_curveLoopIdSupply :: !(IORef(Id CurveLoopInt)), -- ^ The supply for 'CurveLoopId'
-        env_curveLoopScriptWriter :: Handle -> Id CurveLoopInt -> [Id LineInt] -> IO (Id CurveLoopInt)
+        env_curveLoopScriptWriter :: Handle -> Id CurveLoopInt -> [Id LineInt] -> IO (Id CurveLoopInt), -- ^ Function to write the Gmsh curve loop to file, if required to do so.
+        env_planeSurfaceIdSupply :: IORef(Id PlaneSurfaceInt), -- ^ The Id supply for plane surface
+        env_planeSurfaceScriptWriter :: Handle -> Id PlaneSurfaceInt -> [Id CurveLoopInt] -> IO (Id PlaneSurfaceInt)
         
         
       }
@@ -86,7 +88,7 @@ data Environment =
 
 -- | Show the Environment for testing.
 instance Show Environment where
-  show (Env designName' _ _ _ _ _ _ _ _) = show designName'
+  show (Env designName' _ _ _ _ _ _ _ _ _ _) = show designName'
   
   
   
@@ -95,15 +97,16 @@ instance Show Environment where
 toEnvironment :: Loader -> IORef (Id PointInt) -> IORef (Map Int (Id PointInt)) -> IORef Handle -> IORef (Id LineInt)
               -> (Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt))
               -> (Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt)) -> IORef (Id CurveLoopInt)
-              -> (Handle -> Id CurveLoopInt -> [Id LineInt] -> IO (Id CurveLoopInt))
+              -> (Handle -> Id CurveLoopInt -> [Id LineInt] -> IO (Id CurveLoopInt)) -> IORef(Id PlaneSurfaceInt)
+              -> (Handle -> Id PlaneSurfaceInt -> [Id CurveLoopInt] -> IO (Id PlaneSurfaceInt))
               -> Either Hex.HasMeshException Environment
               
-toEnvironment (Loader designName' ) a b c d e f g h =
+toEnvironment (Loader designName' ) a b c d e f g h i j =
   let
     eitherDesignName = newDesignName designName'
   in
   case eitherDesignName of
-    Right (DesignName name) -> Right $ Env (DesignName name) a b c d e f g h
+    Right (DesignName name) -> Right $ Env (DesignName name) a b c d e f g h i j
     Left (Hex.ZeroLengthName msg) -> Left $ Hex.ZeroLengthName msg
     Left err -> Left err
     
@@ -124,11 +127,13 @@ class HasIdSupply env where
   pointIdSupplyL :: Lens' env (IORef (Id PointInt)) -- ^ Supply of 'PointId'
   lineIdSupplyL :: Lens' env (IORef (Id LineInt)) -- ^ Supply of 'LineId'
   curveLoopIdSupplyL :: Lens' env (IORef (Id CurveLoopInt)) -- ^ Supply of 'CurveLoopId'
+  planeSurfaceIdSupplyL :: Lens' env (IORef (Id PlaneSurfaceInt)) -- ^ Supply of 'PlaneSurfaceId'
 
 instance HasIdSupply Environment where
   pointIdSupplyL = lens env_pointIdSupply (\x y -> x {env_pointIdSupply = y})
   lineIdSupplyL = lens env_lineIdSupply (\x y -> x {env_lineIdSupply = y})
   curveLoopIdSupplyL = lens env_curveLoopIdSupply (\x y -> x {env_curveLoopIdSupply = y})
+  planeSurfaceIdSupplyL = lens env_planeSurfaceIdSupply (\x y -> x {env_planeSurfaceIdSupply = y})
   
   
 
@@ -139,15 +144,16 @@ instance HasDesignName Environment where
   designNameL = lens env_designName (\x y -> x {env_designName = y})
 
 class HasScriptWriter env where
-  pntScriptWriterL :: Lens' env (Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt)) -- ^ Write the gmsh script for points.
-  lineScriptWriterL :: Lens' env (Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt)) -- ^ Write the gmsh script for lines.
-  curveLoopScriptWriterL :: Lens' env (Handle -> Id CurveLoopInt -> [Id LineInt] -> IO (Id CurveLoopInt)) -- ^ Write the gmsh script for curve loops.
-  
+  pntScriptWriterL :: Lens' env (Handle -> PointIdStatus -> V.Vertex -> IO (Id PointInt)) -- ^ Write the gmsh script writer for points.
+  lineScriptWriterL :: Lens' env (Handle -> Id LineInt -> Id PointInt -> Id PointInt -> IO (Id LineInt)) -- ^ Write the gmsh script writer for lines.
+  curveLoopScriptWriterL :: Lens' env (Handle -> Id CurveLoopInt -> [Id LineInt] -> IO (Id CurveLoopInt)) -- ^ Write the gmsh script writer for curve loops.
+  planeSurfaceScriptWriterL :: Lens' env (Handle -> Id PlaneSurfaceInt -> [Id CurveLoopInt] -> IO (Id PlaneSurfaceInt)) -- ^ Write the gmsh script writer for plane surfaces.
 
 instance HasScriptWriter Environment where
   pntScriptWriterL = lens env_pntScriptWriter (\x y -> x {env_pntScriptWriter = y})
   lineScriptWriterL = lens env_lineScriptWriter (\x y -> x {env_lineScriptWriter = y})
   curveLoopScriptWriterL = lens env_curveLoopScriptWriter (\x y -> x {env_curveLoopScriptWriter = y})
+  planeSurfaceScriptWriterL = lens env_planeSurfaceScriptWriter (\x y -> x {env_planeSurfaceScriptWriter = y})
   
   
 
@@ -204,12 +210,18 @@ newtype CurveLoopInt = CurveLoopInt Int deriving (Show,Eq)
 pattern CurveLoopIntP :: Int -> CurveLoopInt
 pattern CurveLoopIntP i <- CurveLoopInt i
 
+-- | The gmsh Plane Surface Id that groups Curve Loops into a Surface.
+newtype PlaneSurfaceInt = PlaneSurfaceInt Int deriving (Show,Eq)
+pattern PlaneSurfaceIntP :: Int -> PlaneSurfaceInt
+pattern PlaneSurfaceIntP i <- PlaneSurfaceInt i
+
 
 -- | Identifiers that correspond to the IDs used in Gmsh script and APIs.
 data Id id where
   PointId :: PointInt -> Id PointInt -- ^ An Gmsh ID for a 'Geometry.Vertex.Vertex'. Only 1 ID will exist for a given 'Geometry.Vertex.Vertex'.
   LineId  :: LineInt -> Id LineInt   -- ^ A Gmsh ID for a line associated with 2 'Geometry.Vertex.Vertex'. 
   CurveLoopId :: CurveLoopInt -> Id CurveLoopInt -- ^ A Gmsh Id for a curve loop that associates lines into a surface.
+  PlaneSurfaceId :: PlaneSurfaceInt -> Id PlaneSurfaceInt -- ^ A Gmsh Id for a plane surface.
   
 deriving instance Show (Id a)
 deriving instance  Eq (Id a)
@@ -253,6 +265,13 @@ getCurveLoopId = do
   curveLoopIdSupply <- readIORef curveLoopSupplyIORef
   writeIORef curveLoopSupplyIORef $ incr curveLoopIdSupply
   return curveLoopIdSupply
+
+getPlaneSurfaceId :: (HasIdSupply env) =>   RIO env (Id PlaneSurfaceInt)
+getPlaneSurfaceId = do
+  planeSurfaceSupplyIORef <- view planeSurfaceIdSupplyL
+  planeSurfaceIdSupply <- readIORef planeSurfaceSupplyIORef 
+  writeIORef planeSurfaceSupplyIORef $ incr planeSurfaceIdSupply
+  return  planeSurfaceIdSupply
   
 
 class Initialize a where
@@ -268,7 +287,8 @@ instance Initialize LineInt where
 instance Initialize CurveLoopInt where
   initialId = CurveLoopId $ CurveLoopInt 1
   
-  
+instance Initialize PlaneSurfaceInt where
+  initialId = PlaneSurfaceId $ PlaneSurfaceInt 1
 
 -- | Name of the 3D design, used to build filepath for saving a design .geo file.
 newtype DesignName = DesignName {validDesignName :: Text} deriving (Eq,Show)

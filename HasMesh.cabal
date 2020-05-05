@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2872887c4934dadebdf7bae7cafefa3b1f36f8f53fee0f16fdbc53a5f5057899
+-- hash: 22d8d385649420b69191f9cb18b4519b78cfef48c907a33968c7f4dc4d64f66e
 
 name:           HasMesh
 version:        0.1.0.0
@@ -34,6 +34,7 @@ library
       Gmsh.CurveLoop
       Gmsh.Gmsh
       Gmsh.Line
+      Gmsh.PlaneSurface
       Gmsh.Point
       Gmsh.Status
       Gmsh.ToScript.BuiltIn
@@ -91,6 +92,7 @@ test-suite HasMesh-test
       FileWriterTest
       LineTest
       ListTest
+      PlaneSurfaceTest
       PointTest
       PolarTest
       ScriptingTest

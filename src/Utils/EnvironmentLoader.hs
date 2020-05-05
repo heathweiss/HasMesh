@@ -31,10 +31,13 @@ loadEnvironment = do
   iorefDesignFileHandle <- newIORef stdout
   iorefLineIdSupply <- newIORef Env.initialId
   iorefCurveLoopIdSupply <- newIORef Env.initialId
-  
+  iorefPlaneSurfaceIdSupply <- newIORef Env.initialId
   HexR.runEitherIO
     "validDesignName"
-    $ Env.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply ScrB.pointWriter ScrB.lineWriter iorefCurveLoopIdSupply ScrB.curveLoopWriter
+    $ Env.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply
+                       ScrB.pointWriter ScrB.lineWriter iorefCurveLoopIdSupply ScrB.curveLoopWriter iorefPlaneSurfaceIdSupply
+                       ScrB.planeSurfaceWriter
+                       
   
 -- | Load a global RIO 'Environment.Environment' for testing. Set values to default values that will not change.
 -- Handle is set to stdout. The points, lines, etc do not get printed out as script.
@@ -47,10 +50,14 @@ loadTestEnvironment = do
   iorefDesignFileHandle <- newIORef stdout
   iorefLineIdSupply <- newIORef Env.initialId
   iorefCurveLoopIdSupply <- newIORef Env.initialId
-  
+  iorefPlaneSurfaceIdSupply <- newIORef Env.initialId
   HexR.runEitherIO
     "validDesignName" 
-    $ Env.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply ScrB.nullPointWriter ScrB.nullLineWriter iorefCurveLoopIdSupply ScrB.nullCurveLoopWriter
+    $ Env.toEnvironment loaded iorefPointIdSupply iorefPoints iorefDesignFileHandle iorefLineIdSupply
+                        ScrB.nullPointWriter ScrB.nullLineWriter iorefCurveLoopIdSupply ScrB.nullCurveLoopWriter iorefPlaneSurfaceIdSupply
+                        ScrB.nullPlaneSurfaceWriter
+                        
+                        
     
     
 

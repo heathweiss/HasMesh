@@ -14,7 +14,6 @@ import Test.HUnit
 import qualified System.IO as SIO
 
 import qualified Geometry.Vertex as V
---import qualified Gmsh.Gmsh as Gmsh
 import qualified Utils.Environment as Env
 import qualified Geometry.Geometry as Geo
 import qualified Gmsh.Point as Pts  

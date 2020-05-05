@@ -9,6 +9,7 @@ import qualified PointTest as PointTest
 import qualified ListTest as ListTest
 import qualified PolarTest as PolarTest
 import qualified EnvironmentTest as EnvironmentTest
+import qualified PlaneSurfaceTest as PlaneSurfaceTest
 main = do
   FileWriterTest.runTests
   LineTest.runTests
@@ -20,4 +21,4 @@ main = do
   PointTest.runTests
   CurveLoopTest.runTests
   ScriptingTest.runTests
-  
+  PlaneSurfaceTest.runTests
