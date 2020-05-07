@@ -23,6 +23,9 @@ import qualified Geometry.Polar as Polar
 import qualified Utils.List as L
 import qualified Gmsh.CurveLoop as CL
 import qualified Gmsh.PlaneSurface as PS
+import qualified Geometry.Axis as Axis
+import qualified Data.Bifunctor as Bif
+
 
 
 
@@ -47,30 +50,31 @@ fromPolarVertex :: IO ()
 fromPolarVertex = do
   let
     radius = 1
-    height = 0
     vertexs =
-      Polar.newVertexFromPolarCoordinatesTuples
-        [(60, radius, height),
-         (120, radius, height),
-         (240, radius, height),
-         (300, radius, height)
-        ]
+      Polar.newVertexes (Axis.XAxis 0) (Axis.YAxis 0)(Axis.ZAxis 0)
+           [( 60, radius),
+            (120, radius),
+            (240, radius),
+            (300, radius)
+           ]
   runVertexToShapeBldr vertexs
 
---rotated so see if mesh faster, but no, still 41k nodes
-fromPolarVertexRotated :: IO ()
-fromPolarVertexRotated = do
+{-
+fromPolarVertex :: IO ()
+fromPolarVertex = do
   let
     radius = 1
-    height = 0
     vertexs =
-      Polar.newVertexFromPolarCoordinatesTuples
-        [ (120, radius, height),
-          (240, radius, height),
-          (300, radius, height),
-          (60, radius, height)
-        ]
+      Polar.newVertexes (Polar.Origin (Axis.XAxis 0) (Axis.YAxis 0)(Axis.ZAxis 0) )
+        $ map (Bif.bimap Polar.Degree  Polar.Radius )
+           [( 60, radius),
+            (120, radius),
+            (240, radius),
+            (300, radius)
+           ]
   runVertexToShapeBldr vertexs
+
+-}
 
 
 -- Generates a gmsh shape and file from an input of ['Geometry.Vertex.Vertex']
@@ -83,7 +87,7 @@ runVertexToShapeBldr vertexs = do
           env <- ask
           geoFileHandleIORef <- view Env.geoFileHandleL
           geoFileHandle <- readIORef geoFileHandleIORef
-          B.hPut geoFileHandle ScrB.writeLC2
+          B.hPut geoFileHandle ScrB.writeLC1
           safeVertexs <- HexR.runEitherRIO "safeVertexs" $ L.toSafeList3 vertexs 
           _ <- runRIO env $ Pnt.toPoints safeVertexs >>= Line.toLines  >>= CL.toCurveLoop  >>= PS.toPlaneSurface
           return ()
@@ -98,10 +102,16 @@ designLoader createDesign = do
       handle_ <- SIO.openFile (Env.designFilePath designName) WriteMode
       handleRef <- newIORef handle_
       runRIO (env {Env.env_geoFileHandle = handleRef}) createDesign
+      
+        `catch`
+        (\(Hex.SafeList3MinError msg) -> do
+            runSimpleApp $ logInfo $ "t1.hs err: " <> displayShow (Hex.SafeList3MinError msg)-- msg
+            throwIO $ SomeException $ Hex.SafeList3MinError msg
+        )
         `catch`
         (\(Hex.NonUniqueVertex msg) -> do
             runSimpleApp $ logInfo $ "t1.hs err: " <> displayShow (Hex.SafeList3MinError msg)-- msg
-            throwIO $ Hex.SafeList3MinError msg 
+            throwIO $ SomeException $ Hex.NonUniqueVertex msg
         )
         `catch`
         (\(SomeException e) -> do
@@ -111,6 +121,7 @@ designLoader createDesign = do
             runSimpleApp $ logInfo $ "handle is open: " <> displayShow isOpen
             runSimpleApp $ logInfo $ displayShow e
         )
+        
       handle' <- readIORef handleRef
       SIO.hClose handle'
       

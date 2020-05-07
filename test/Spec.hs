@@ -15,10 +15,11 @@ main = do
   LineTest.runTests
   ExceptionsTest.runTests
   ListTest.runTests
-  PolarTest.runTests
   EnvironmentTest.runTests
   VertexTest.runTests
   PointTest.runTests
   CurveLoopTest.runTests
   ScriptingTest.runTests
   PlaneSurfaceTest.runTests
+  PolarTest.runTests
+  
