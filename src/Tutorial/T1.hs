@@ -25,6 +25,7 @@ import qualified Gmsh.CurveLoop as CL
 import qualified Gmsh.PlaneSurface as PS
 import qualified Geometry.Axis as Axis
 import qualified Data.Bifunctor as Bif
+import qualified List.Safe3 as L3
 import Utils.Add((+++))
 
 
@@ -104,8 +105,8 @@ put1holeInIt = do
           geoFileHandleIORef <- view Env.geoFileHandleL
           geoFileHandle <- readIORef geoFileHandleIORef
           B.hPut geoFileHandle ScrB.writeLC1
-          safeVertexesInner <- HexR.runEitherRIO "safeVertexsInner" $ L.toSafeList3 innerVertexes
-          safeVertexesOuter <- HexR.runEitherRIO "safeVertexsOuter" $ L.toSafeList3 outerVertexes 
+          safeVertexesInner <- HexR.runEitherRIO "safeVertexsInner" $ L3.toSafeList3 innerVertexes
+          safeVertexesOuter <- HexR.runEitherRIO "safeVertexsOuter" $ L3.toSafeList3 outerVertexes 
           curveLoopInner <- runRIO env $ Pnt.toPoints safeVertexesInner >>= Line.toLines  >>= CL.toCurveLoop  --  >>= PS.toPlaneSurface
           curveLoopOuter <- runRIO env $ Pnt.toPoints safeVertexesOuter >>= Line.toLines  >>= CL.toCurveLoop  --  >>= PS.toPlaneSurface
           _ <- runRIO env $ PS.toPlaneSurface $ curveLoopOuter +++ curveLoopInner
@@ -177,10 +178,10 @@ put3holesInARectangle = do
           geoFileHandleIORef <- view Env.geoFileHandleL
           geoFileHandle <- readIORef geoFileHandleIORef
           B.hPut geoFileHandle ScrB.writeLC
-          safeVertexesTop <- HexR.runEitherRIO "safeVertexsTop" $ L.toSafeList3 topHoleVertexes
-          safeVertexesCenter <- HexR.runEitherRIO "safeVertexsCenter" $ L.toSafeList3 centerHoleVertexes 
-          safeVertexesBottom <- HexR.runEitherRIO "safeVertexsBottom" $ L.toSafeList3 bottomHoleVertexes 
-          safeVertexesOuter <- HexR.runEitherRIO "safeVertexsOuter" $ L.toSafeList3 outerVertexes 
+          safeVertexesTop <- HexR.runEitherRIO "safeVertexsTop" $ L3.toSafeList3 topHoleVertexes
+          safeVertexesCenter <- HexR.runEitherRIO "safeVertexsCenter" $ L3.toSafeList3 centerHoleVertexes 
+          safeVertexesBottom <- HexR.runEitherRIO "safeVertexsBottom" $ L3.toSafeList3 bottomHoleVertexes 
+          safeVertexesOuter <- HexR.runEitherRIO "safeVertexsOuter" $ L3.toSafeList3 outerVertexes 
           curveLoopTop      <- runRIO env $ Pnt.toPoints safeVertexesTop    >>= Line.toLines  >>= CL.toCurveLoop
           curveLoopCenter   <- runRIO env $ Pnt.toPoints safeVertexesCenter >>= Line.toLines  >>= CL.toCurveLoop  
           curveLoopBottom   <- runRIO env $ Pnt.toPoints safeVertexesBottom >>= Line.toLines  >>= CL.toCurveLoop 
@@ -206,7 +207,7 @@ runVertexToShapeBldr vertexs = do
           geoFileHandleIORef <- view Env.geoFileHandleL
           geoFileHandle <- readIORef geoFileHandleIORef
           B.hPut geoFileHandle ScrB.writeLC1
-          safeVertexs <- HexR.runEitherRIO "safeVertexs" $ L.toSafeList3 vertexs 
+          safeVertexs <- HexR.runEitherRIO "safeVertexs" $ L3.toSafeList3 vertexs 
           _ <- runRIO env $ Pnt.toPoints safeVertexs >>= Line.toLines  >>= CL.toCurveLoop  >>= PS.toPlaneSurface
           return ()
           

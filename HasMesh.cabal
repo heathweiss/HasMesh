@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 175c585316ec1dae56039b6dddf1fc9df76245adeeed0a2ad2b4fd48ed425975
+-- hash: e24420ef1484ec180cc27c87bf9aaff0fa9762cc56091593f7c1181c7c20a49d
 
 name:           HasMesh
 version:        0.1.0.0
@@ -40,6 +40,9 @@ library
       Gmsh.ToScript.BuiltIn
       Gmsh.ToScript.Common
       Import
+      List.Base
+      List.Safe1
+      List.Safe3
       Run
       Tutorial.T1
       Types
