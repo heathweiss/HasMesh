@@ -5,19 +5,22 @@ Supply specialized lists that guarantee minimum length of 3, an other features d
 
 import qualified Utils.List as L
 -}
-module Utils.List(SafeList3(..), NonEmptyID(), SafeList1(..),
+module Utils.List(SafeList3(..), NonEmptyID(), 
                   PointIdSafe3List(), LineIdSafe3List(), VertexSafe3List(),
                   ToSafeList1(..),
                   safeHead3, evalSafeList3, safeLast3, ToSafeList3(..),
                   IsOpen(..),
                   reverseSafeList3, appendSafeList3, isUnique,
-                  CurveIdSafe1List, PlaneSurfaceSafe1List, evalSafeList1,) where
+                  -- SafeList1
+                  SafeList1(..), IntSafe1List,
+                  CurveIdSafe1List, PlaneSurfaceSafe1List, evalSafeList1, appendSafeList1) where
 
 import RIO
 import qualified RIO.List as L
 import qualified Utils.Environment as Env
 import qualified Utils.Exceptions as Hex
 import qualified Geometry.Vertex as V
+import Utils.Add
 
 data Empty
 data NonEmptyID
@@ -58,7 +61,9 @@ instance Eq (SafeList3 (Env.Id Env.LineInt) NonEmptyID) where
 
 -- Provide show instance of 'SafeList3' ('Env.Id' 'Env.LineInt') for testing.
 instance Eq (SafeList3 (V.Vertex) NonEmptyID) where
-  ((Cons x y z zs _)) == ((Cons x' y' z' zs' _)) = (x == x') && (y == y') && (z == z') && (zs == zs') 
+  ((Cons x y z zs _)) == ((Cons x' y' z' zs' _)) = (x == x') && (y == y') && (z == z') && (zs == zs')
+
+
 
 
 -- | Get the head of a 'SafeList3'
@@ -163,8 +168,7 @@ instance ToSafeList3 [V.Vertex] VertexSafe3List where
     else
       Left $ Hex.NonUniqueVertex "non unique safe [Vertex]"
       
-  
-  
+ 
 
 
 -- This needs to be moved into the Gmsh.Status module.
@@ -206,6 +210,8 @@ instance Show (SafeList1 (Env.Id Env.PointInt) NonEmptyID) where
  
 type CurveIdSafe1List = SafeList1 (Env.Id Env.CurveLoopInt) NonEmptyID
 type PlaneSurfaceSafe1List = SafeList1 (Env.Id Env.PlaneSurfaceInt) NonEmptyID
+type IntSafe1List = SafeList1 Int NonEmptyID
+
 
 
 -- | Extract the 'SafeList3' as a regular list.
@@ -227,5 +233,26 @@ instance ToSafeList1 [Env.Id Env.PlaneSurfaceInt] PlaneSurfaceSafe1List where
   toSafeList1 [] = Left $ Hex.SafeList1MinError "length == 0"
   toSafeList1 [x] = Right $ Cons1 x [] Nil1
   toSafeList1 (x:xs) = Right $ Cons1 x xs Nil1
+
+instance ToSafeList1 [Int] IntSafe1List where
+  toSafeList1 [] = Left $ Hex.SafeList1MinError "length == 0"
+  toSafeList1 [x] = Right $ Cons1 x [] Nil1
+  toSafeList1 (x:xs) = Right $ Cons1 x xs Nil1
+
   
-  
+instance Add CurveIdSafe1List where
+  (Cons1 x [] Nil1) +++ (Cons1 x' [] Nil1) = Cons1 x [x'] Nil1
+  (Cons1 x [] Nil1) +++ (Cons1 x' xs' Nil1) = Cons1 x (x':xs') Nil1
+  (Cons1 x xs Nil1) +++ (Cons1 x' [] Nil1) = Cons1 x (xs ++ [x']) Nil1
+  (Cons1 x xs Nil1) +++ (Cons1 x' xs' Nil1) = Cons1 x (xs ++ (x':xs')) Nil1
+
+instance Add IntSafe1List where
+  (Cons1 x [] Nil1) +++ (Cons1 x' [] Nil1) = Cons1 x [x'] Nil1
+  (Cons1 x [] Nil1) +++ (Cons1 x' xs' Nil1) = Cons1 x (x':xs') Nil1
+  (Cons1 x xs Nil1) +++ (Cons1 x' [] Nil1) = Cons1 x (xs ++ [x']) Nil1
+  (Cons1 x xs Nil1) +++ (Cons1 x' xs' Nil1) = Cons1 x (xs ++ (x':xs')) Nil1 
+
+
+-- | Append a value to a 'SafeList1'
+appendSafeList1 :: a -> SafeList1 a NonEmptyID -> SafeList1 a NonEmptyID
+appendSafeList1 appendMe (Cons1 x xs _) = Cons1 appendMe  (x:xs) Nil1  

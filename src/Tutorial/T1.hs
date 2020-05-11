@@ -4,7 +4,7 @@
 {- |
 
 -}
-module Tutorial.T1(fromVertex, fromPolarVertex) where
+module Tutorial.T1(fromVertex, fromPolarVertex, put1holeInIt, put3holesInARectangle, fromPolarVertex10Sided) where
 
 
 import RIO
@@ -25,6 +25,7 @@ import qualified Gmsh.CurveLoop as CL
 import qualified Gmsh.PlaneSurface as PS
 import qualified Geometry.Axis as Axis
 import qualified Data.Bifunctor as Bif
+import Utils.Add((+++))
 
 
 
@@ -43,9 +44,7 @@ fromVertex =
 
 
 
--- | Create the .geo shape from a ['Geometry.Vertex.Vertex'] which are generated using 'Polar.newVertexFromPolarCoordinatesTuples'
--- Had to reduce it in size, as meshing is causing 50x more nodes to be created than 'fromVertex' when they are same size.
--- At originl radius of 50, had to kill gmsh binary
+-- | Create the rectangle using polar coordinates
 fromPolarVertex :: IO ()
 fromPolarVertex = do
   let
@@ -59,22 +58,141 @@ fromPolarVertex = do
            ]
   runVertexToShapeBldr vertexs
 
-{-
-fromPolarVertex :: IO ()
-fromPolarVertex = do
+-- | Create a 10 sided polygon using polar coordinates
+fromPolarVertex10Sided :: IO ()
+fromPolarVertex10Sided = do 
   let
     radius = 1
     vertexs =
-      Polar.newVertexes (Polar.Origin (Axis.XAxis 0) (Axis.YAxis 0)(Axis.ZAxis 0) )
-        $ map (Bif.bimap Polar.Degree  Polar.Radius )
-           [( 60, radius),
-            (120, radius),
-            (240, radius),
-            (300, radius)
+      Polar.newVertexes (Axis.XAxis 0) (Axis.YAxis 0)(Axis.ZAxis 0)
+           [( 36, radius),
+            ( 72, radius),
+            (108, radius),
+            (144, radius),
+            (180, radius),
+            (216, radius),
+            (252, radius),
+            (288, radius),
+            (324, radius)
            ]
   runVertexToShapeBldr vertexs
 
--}
+
+-- | Create a polygon with a hole in the center
+put1holeInIt :: IO ()
+put1holeInIt = do
+  let
+    innerRadius = 1
+    innerVertexes =
+      Polar.newVertexes (Axis.XAxis 0) (Axis.YAxis 0)(Axis.ZAxis 0)
+           [( 60, innerRadius),
+            (120, innerRadius),
+            (240, innerRadius),
+            (300, innerRadius)
+           ]
+    outerRadius = innerRadius + 1  
+    outerVertexes =
+      Polar.newVertexes (Axis.XAxis 0) (Axis.YAxis 0)(Axis.ZAxis 0)
+           [( 60, outerRadius),
+            (120, outerRadius),
+            (240, outerRadius),
+            (300, outerRadius)
+           ]
+    createDesign :: (Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env, Env.HasScriptWriter env) => RIO env ()
+    createDesign = do
+          env <- ask
+          geoFileHandleIORef <- view Env.geoFileHandleL
+          geoFileHandle <- readIORef geoFileHandleIORef
+          B.hPut geoFileHandle ScrB.writeLC1
+          safeVertexesInner <- HexR.runEitherRIO "safeVertexsInner" $ L.toSafeList3 innerVertexes
+          safeVertexesOuter <- HexR.runEitherRIO "safeVertexsOuter" $ L.toSafeList3 outerVertexes 
+          curveLoopInner <- runRIO env $ Pnt.toPoints safeVertexesInner >>= Line.toLines  >>= CL.toCurveLoop  --  >>= PS.toPlaneSurface
+          curveLoopOuter <- runRIO env $ Pnt.toPoints safeVertexesOuter >>= Line.toLines  >>= CL.toCurveLoop  --  >>= PS.toPlaneSurface
+          _ <- runRIO env $ PS.toPlaneSurface $ curveLoopOuter +++ curveLoopInner
+          return ()
+      
+  env <- EnvLdr.loadEnvironment
+  designName <-  HexR.runEitherIO "designName" $ Env.newDesignName "t1"
+  handle_ <- SIO.openFile (Env.designFilePath designName) WriteMode
+  handleRef <- newIORef handle_
+  runRIO (env {Env.env_geoFileHandle = handleRef}) createDesign
+
+-- | Create a rectangle with 3 holes in it.
+put3holesInARectangle :: IO ()
+put3holesInARectangle = do
+  let
+    innerRadius = 1
+    topHoleVertexes =
+      Polar.newVertexes (Axis.XAxis 0) (Axis.YAxis 5)(Axis.ZAxis 0)
+           [( 60, innerRadius),
+            (120, innerRadius),
+            (240, innerRadius),
+            (300, innerRadius)
+           ]
+    bottomHoleVertexes =
+      Polar.newVertexes (Axis.XAxis 0) (Axis.YAxis (-5))(Axis.ZAxis 0)
+           [( 60, innerRadius),
+            (120, innerRadius),
+            (240, innerRadius),
+            (300, innerRadius)
+           ]
+    centerHoleVertexes =
+      Polar.newVertexes (Axis.XAxis 0) (Axis.YAxis 0)(Axis.ZAxis 0)
+           [( 20, innerRadius),
+            ( 40, innerRadius),
+            ( 30, innerRadius),
+            ( 60, innerRadius),
+            (120, innerRadius),
+            (240, innerRadius)
+            --(300, innerRadius)
+           ]
+                        --[(degree,innerRadius) | degree <- [0,10,20,30,40,50,60]]
+     {-      [(  0, innerRadius),
+            ( 10, innerRadius),
+            ( 20, innerRadius),
+            ( 30, innerRadius),
+            ( 40, innerRadius),
+            ( 50, innerRadius),
+            ( 60, innerRadius),
+            ( 70, innerRadius),
+            ( 80, innerRadius),
+            ( 90, innerRadius),
+            ( 1000, innerRadius),
+            (120, innerRadius),
+            (240, innerRadius),
+            (300, innerRadius)
+      
+  ]-}
+    outerRadius = innerRadius + 10  
+    outerVertexes =
+      Polar.newVertexes (Axis.XAxis 0) (Axis.YAxis 0)(Axis.ZAxis 0)
+           [( 60, outerRadius),
+            (120, outerRadius),
+            (240, outerRadius),
+            (300, outerRadius)
+           ]
+    createDesign :: (Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env, Env.HasScriptWriter env) => RIO env ()
+    createDesign = do
+          env <- ask
+          geoFileHandleIORef <- view Env.geoFileHandleL
+          geoFileHandle <- readIORef geoFileHandleIORef
+          B.hPut geoFileHandle ScrB.writeLC
+          safeVertexesTop <- HexR.runEitherRIO "safeVertexsTop" $ L.toSafeList3 topHoleVertexes
+          safeVertexesCenter <- HexR.runEitherRIO "safeVertexsCenter" $ L.toSafeList3 centerHoleVertexes 
+          safeVertexesBottom <- HexR.runEitherRIO "safeVertexsBottom" $ L.toSafeList3 bottomHoleVertexes 
+          safeVertexesOuter <- HexR.runEitherRIO "safeVertexsOuter" $ L.toSafeList3 outerVertexes 
+          curveLoopTop      <- runRIO env $ Pnt.toPoints safeVertexesTop    >>= Line.toLines  >>= CL.toCurveLoop
+          curveLoopCenter   <- runRIO env $ Pnt.toPoints safeVertexesCenter >>= Line.toLines  >>= CL.toCurveLoop  
+          curveLoopBottom   <- runRIO env $ Pnt.toPoints safeVertexesBottom >>= Line.toLines  >>= CL.toCurveLoop 
+          curveLoopOuter    <- runRIO env $ Pnt.toPoints safeVertexesOuter  >>= Line.toLines  >>= CL.toCurveLoop 
+          _ <- runRIO env $ PS.toPlaneSurface $ curveLoopOuter +++ curveLoopTop +++ curveLoopCenter +++ curveLoopBottom 
+          return ()
+      
+  env <- EnvLdr.loadEnvironment
+  designName <-  HexR.runEitherIO "designName" $ Env.newDesignName "t1"
+  handle_ <- SIO.openFile (Env.designFilePath designName) WriteMode
+  handleRef <- newIORef handle_
+  runRIO (env {Env.env_geoFileHandle = handleRef}) createDesign
 
 
 -- Generates a gmsh shape and file from an input of ['Geometry.Vertex.Vertex']

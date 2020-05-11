@@ -14,7 +14,6 @@ main = do
   FileWriterTest.runTests
   LineTest.runTests
   ExceptionsTest.runTests
-  ListTest.runTests
   EnvironmentTest.runTests
   VertexTest.runTests
   PointTest.runTests
@@ -22,4 +21,5 @@ main = do
   ScriptingTest.runTests
   PlaneSurfaceTest.runTests
   PolarTest.runTests
+  ListTest.runTests
   

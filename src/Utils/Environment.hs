@@ -18,7 +18,7 @@ module Utils.Environment(
                          PointInt(), pattern PointInt', getPointId, evalPointId,
                          LineInt(), pattern LineInt', getLineId, evalLineId,
                          CurveLoopInt(), pattern CurveLoopIntP, getCurveLoopId, evalCurveLoopId,
-                         PlaneSurfaceInt(), pattern PlaneSurfaceIntP, getPlaneSurfaceId,
+                         PlaneSurfaceInt(), pattern PlaneSurfaceIntP, getPlaneSurfaceId, evalPlaneSurfaceId,
                          
                          HasIdSupply(..), HasPointIdMap(..), HasGeoFileHandle(..), HasDesignName(..), HasScriptWriter(..),
 
@@ -249,7 +249,8 @@ evalPointInt (PointInt int) = int
 evalCurveLoopId :: Id CurveLoopInt -> Int
 evalCurveLoopId (CurveLoopId (CurveLoopInt int)) = int
 
-
+evalPlaneSurfaceId :: Id PlaneSurfaceInt -> Int
+evalPlaneSurfaceId (PlaneSurfaceId (PlaneSurfaceInt int)) = int
 
 -- | Get the next available 'Env.Id Env.LineInt' that corresponds to a Gmsh line.
 getLineId :: (HasIdSupply env) =>   RIO env (Id LineInt)

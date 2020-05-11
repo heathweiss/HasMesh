@@ -11,7 +11,7 @@ or as part of the Gmsh import module
 import qualified Gmsh.Gmsh as Gmsh
 -}
 module Gmsh.ToScript.BuiltIn(genPointScript, genCurveLoopScript, genLineScript, genPlaneSurfaceScript,
-                             writeLC1, writeLC2, writeLC3,
+                             writeLC, writeLC1, writeLC2, writeLC3,
                              lineWriter, nullLineWriter,  
                              nullPointWriter, pointWriter,
                              nullCurveLoopWriter, curveLoopWriter,
@@ -47,6 +47,8 @@ writePoint (Geo.Vertex' x y z) (Gmsh.PointId id) =
 -- | Write the lc var that Gmsh tutorials use to set the mesh size near a 'Geometry.Vertex'.
 -- This .geo variable is the 4th parameter to all Points in Gmsh script. Eg: Point(1) = {0, 0, 0, lc};
 -- Needs to be output at the start of the .geo file.
+writeLC :: B.ByteString
+writeLC = "lc = 1e-0;"
 writeLC1 :: B.ByteString
 writeLC1 = "lc = 1e-1;"
 writeLC2 :: B.ByteString

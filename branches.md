@@ -1,9 +1,9 @@
 working:
-has extensive effort to add a function to Uilts/Environment that will not compile.
-This fx has constraint on it, that are the same as all the enviro classes for Environment.
+Add the Utils.Add module.
+creating polar vertexes from > 7 fails.
+Could be doing it in Utils.List. Need to break it up and make it more testable.
 
-Will leave it there, and re-try in working 2
+working:working2
+Do the break up of Utils.List into List.< Base Safe3 Safe1 >
 
 
-working2:
-try to add the fx to Environment that using a newtype instead.
