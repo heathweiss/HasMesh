@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e24420ef1484ec180cc27c87bf9aaff0fa9762cc56091593f7c1181c7c20a49d
+-- hash: 10527e6a9e996489682a4fb666bdebc0d5a798e5920231fa32b8b97881a35469
 
 name:           HasMesh
 version:        0.1.0.0
@@ -95,7 +95,8 @@ test-suite HasMesh-test
       ExceptionsTest
       FileWriterTest
       LineTest
-      ListTest
+      List1Test
+      List3Test
       PlaneSurfaceTest
       PointTest
       PolarTest

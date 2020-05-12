@@ -19,7 +19,8 @@ import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Utils.Environment as Env
 import qualified Gmsh.Line as Line
 import qualified Gmsh.Point as Pnt
-import qualified Utils.List as L
+import qualified List.Safe1 as L1
+import qualified List.Safe3 as L3
 import Utils.Add((+++))
 import qualified Utils.RunExceptions as HexR
 import qualified Gmsh.CurveLoop as CL
@@ -32,7 +33,7 @@ runTests = do
    (do
       env <- EnvLdr.loadTestEnvironment
       let vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
-      safeVertex <-  HexR.runEitherIO "safeVertex" $ L.toSafeList3 vertexs 
+      safeVertex <-  HexR.runEitherIO "safeVertex" $ L3.toSafeList3 vertexs 
       points <- runRIO env $ Pnt.toPoints safeVertex
       lines <- runRIO env $ Line.toLines points
       curveLoop <- runRIO env $ CL.toCurveLoop lines
@@ -40,7 +41,7 @@ runTests = do
       assertEqual
         "create plane surface from 3 vertex"
         ([1],[1])
-        (map Env.evalPlaneSurfaceId (L.evalSafeList1 planeSurface)  ,map Env.evalCurveLoopId (L.evalSafeList1 curveLoop))
+        (map Env.evalPlaneSurfaceId (L1.evalSafeList1 planeSurface)  ,map Env.evalCurveLoopId (L1.evalSafeList1 curveLoop))
       
    )
  _ <- runTestTT createPlaneSurfaceFrom3Vertexs
@@ -50,10 +51,10 @@ runTests = do
    (do
       env <- EnvLdr.loadTestEnvironment
       let vertexs1 = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
-      safeVertex1 <-  HexR.runEitherIO "safeVertex" $ L.toSafeList3 vertexs1 
+      safeVertex1 <-  HexR.runEitherIO "safeVertex" $ L3.toSafeList3 vertexs1 
       curveLoop1 <- runRIO env $ Pnt.toPoints safeVertex1 >>= Line.toLines >>= CL.toCurveLoop
       let vertexs2 = [Geo.newVertex  11 11 11, Geo.newVertex  22 22 22, Geo.newVertex  33 33 33]
-      safeVertex2 <-  HexR.runEitherIO "safeVertex" $ L.toSafeList3 vertexs2 
+      safeVertex2 <-  HexR.runEitherIO "safeVertex" $ L3.toSafeList3 vertexs2 
       curveLoop2 <- runRIO env $ Pnt.toPoints safeVertex2 >>= Line.toLines >>= CL.toCurveLoop
       let
         curveLoops = curveLoop1 +++ curveLoop2
@@ -62,8 +63,8 @@ runTests = do
         "create plane surface from 2 curve loops" 
         ([1],[1,2])
         (
-          map Env.evalPlaneSurfaceId (L.evalSafeList1 planeSurface),
-          map Env.evalCurveLoopId (L.evalSafeList1 curveLoops)
+          map Env.evalPlaneSurfaceId (L1.evalSafeList1 planeSurface),
+          map Env.evalCurveLoopId (L1.evalSafeList1 curveLoops)
         )
       
    )
@@ -74,13 +75,13 @@ runTests = do
    (do
       env <- EnvLdr.loadTestEnvironment
       let vertexs1 = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
-      safeVertex1 <-  HexR.runEitherIO "safeVertex1" $ L.toSafeList3 vertexs1 
+      safeVertex1 <-  HexR.runEitherIO "safeVertex1" $ L3.toSafeList3 vertexs1 
       curveLoop1 <- runRIO env $ Pnt.toPoints safeVertex1 >>= Line.toLines >>= CL.toCurveLoop
       let vertexs2 = [Geo.newVertex  11 11 11, Geo.newVertex  22 22 22, Geo.newVertex  33 33 33]
-      safeVertex2 <-  HexR.runEitherIO "safeVertex2" $ L.toSafeList3 vertexs2 
+      safeVertex2 <-  HexR.runEitherIO "safeVertex2" $ L3.toSafeList3 vertexs2 
       curveLoop2 <- runRIO env $ Pnt.toPoints safeVertex2 >>= Line.toLines >>= CL.toCurveLoop
       let vertexs3 = [Geo.newVertex  111 111 111, Geo.newVertex  222 222 222, Geo.newVertex  333 333 333]
-      safeVertex3 <-  HexR.runEitherIO "safeVertex3" $ L.toSafeList3 vertexs3 
+      safeVertex3 <-  HexR.runEitherIO "safeVertex3" $ L3.toSafeList3 vertexs3 
       curveLoop3 <- runRIO env $ Pnt.toPoints safeVertex3 >>= Line.toLines >>= CL.toCurveLoop
       let
         curveLoops = curveLoop1 +++ curveLoop2 +++ curveLoop3
@@ -89,8 +90,8 @@ runTests = do
         "create plane surface from 3 curve loops" 
         ([1],[1,2,3])
         (
-          map Env.evalPlaneSurfaceId (L.evalSafeList1 planeSurface),
-          map Env.evalCurveLoopId (L.evalSafeList1 curveLoops)
+          map Env.evalPlaneSurfaceId (L1.evalSafeList1 planeSurface),
+          map Env.evalCurveLoopId (L1.evalSafeList1 curveLoops)
         )
       
    )

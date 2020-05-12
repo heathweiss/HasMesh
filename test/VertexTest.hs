@@ -14,7 +14,8 @@ import qualified Geometry.Axis as Axis
 import qualified Utils.Environment as Env
 import qualified Utils.EnvironmentLoader as EnvLdr 
 import qualified Geometry.Geometry as Geo
-import qualified Utils.List as L
+import qualified List.Base as LB
+import qualified List.Safe3 as L3
 import qualified Utils.Exceptions as Hex
 import qualified Utils.RunExceptions as HexR
 
@@ -146,10 +147,10 @@ runTests = do
      "isOpen SafeList3 length == 3"
      (Right True)
      (let
-        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 3 3 3] :: Either  Hex.HasMeshException  L.VertexSafe3List
+        eitherSafeList = L3.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 3 3 3] :: Either  Hex.HasMeshException  L3.VertexSafe3List
       in
         case eitherSafeList of
-          Right safeList -> Right $ L.isOpen safeList
+          Right safeList -> Right $ LB.isOpen safeList
           Left err -> Left err
      )
  _ <- runTestTT isOpenSafeList3Test
@@ -160,10 +161,10 @@ runTests = do
      "not isOpen SafeList3 length == 3"
      (Right False)
      (let
-        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 1 1 1] :: Either  Hex.HasMeshException  L.VertexSafe3List
+        eitherSafeList = L3.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 1 1 1] :: Either  Hex.HasMeshException  L3.VertexSafe3List
       in
         case eitherSafeList of
-          Right safeList -> Right $ L.isOpen safeList
+          Right safeList -> Right $ LB.isOpen safeList
           Left err -> Left err
      )
  _ <- runTestTT isNotOpenSafeList3Test
@@ -175,10 +176,10 @@ runTests = do
      "isOpen SafeList3 length == 4"
      (Right True)
      (let                                                   
-        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 3 3 3, V.newVertex 4 4 4] :: Either  Hex.HasMeshException  L.VertexSafe3List
+        eitherSafeList = L3.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 3 3 3, V.newVertex 4 4 4] :: Either  Hex.HasMeshException  L3.VertexSafe3List
       in
         case eitherSafeList of
-          Right safeList -> Right $ L.isOpen safeList
+          Right safeList -> Right $ LB.isOpen safeList
           Left err -> Left err
      )
  _ <- runTestTT isOpenSafeList4Test
@@ -188,10 +189,10 @@ runTests = do
      "not isOpen SafeList3 length == 4"
      (Right False)
      (let                               
-        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 3 3 3, V.newVertex 1 1 1] :: Either  Hex.HasMeshException  L.VertexSafe3List
+        eitherSafeList = L3.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 3 3 3, V.newVertex 1 1 1] :: Either  Hex.HasMeshException  L3.VertexSafe3List
       in
         case eitherSafeList of
-          Right safeList -> Right $ L.isOpen safeList
+          Right safeList -> Right $ LB.isOpen safeList
           Left err -> Left err
      )
  runTestTT isNotOpenSafeList4Test
@@ -207,10 +208,10 @@ runTests = do
      "isUnique SafeList3 length == 3"
      (Right True)
      (let                               
-        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 3 3 3] :: Either  Hex.HasMeshException  L.VertexSafe3List
+        eitherSafeList = L3.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 3 3 3] :: Either  Hex.HasMeshException  L3.VertexSafe3List
       in
         case eitherSafeList of
-          Right safeList -> Right $ L.isUnique safeList
+          Right safeList -> Right $ L3.isUnique safeList
           Left err -> Left err
      )
  runTestTT isUniqueSafeList
@@ -221,10 +222,10 @@ runTests = do
      "not isUnique SafeList3 length == 3"
      (Right False)
      (let                               
-        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 1 1 1] :: Either  Hex.HasMeshException  L.VertexSafe3List
+        eitherSafeList = L3.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 1 1 1] :: Either  Hex.HasMeshException  L3.VertexSafe3List
       in
         case eitherSafeList of
-          Right safeList -> Right $ L.isUnique safeList
+          Right safeList -> Right $ L3.isUnique safeList
           Left err -> Left err
      )
  runTestTT isNotUniqueSafeList
@@ -234,10 +235,10 @@ runTests = do
      "not isUnique SafeList3 length == 4"
      (Left (Hex.NonUniqueVertex "non unique safe [Vertex]"))
      (let                               
-        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 1 1 1, V.newVertex 4 4 4] :: Either  Hex.HasMeshException  L.VertexSafe3List
+        eitherSafeList = L3.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 1 1 1, V.newVertex 4 4 4] :: Either  Hex.HasMeshException  L3.VertexSafe3List
       in
         case eitherSafeList of
-          Right safeList -> Right $ L.isUnique safeList
+          Right safeList -> Right $ L3.isUnique safeList
           Left (Hex.SafeList3MinError msg) -> Left $ Hex.SafeList3MinError msg
           Left (Hex.NonUniqueVertex msg) -> Left $ Hex.NonUniqueVertex msg
           Left err -> Left err
@@ -251,10 +252,10 @@ runTests = do
      "not isUnique SafeList3 returns an exception"
      (Left (Hex.NonUniqueVertex "non unique safe [Vertex]"))
      (let                               
-        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 2 2 2] :: Either  Hex.HasMeshException  L.VertexSafe3List
+        eitherSafeList = L3.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 2 2 2] :: Either  Hex.HasMeshException  L3.VertexSafe3List
       in
         case eitherSafeList of
-          Right safeList -> Right $ L.isUnique safeList
+          Right safeList -> Right $ L3.isUnique safeList
           Left (Hex.SafeList3MinError msg) -> Left $ Hex.SafeList3MinError msg
           Left (Hex.NonUniqueVertex msg) -> Left $ Hex.NonUniqueVertex msg
           Left err -> Left err
@@ -266,10 +267,10 @@ runTests = do
      "not isUnique SafeList3 returns an exception"
      (Left (Hex.NonUniqueVertex "non unique safe [Vertex]"))
      (let                               
-        eitherSafeList = L.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 3 3 3, V.newVertex 2 2 2] :: Either  Hex.HasMeshException  L.VertexSafe3List
+        eitherSafeList = L3.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 3 3 3, V.newVertex 2 2 2] :: Either  Hex.HasMeshException  L3.VertexSafe3List
       in
         case eitherSafeList of
-          Right safeList -> Right $ L.isUnique safeList
+          Right safeList -> Right $ L3.isUnique safeList
           Left (Hex.SafeList3MinError msg) -> Left $ Hex.SafeList3MinError msg
           Left (Hex.NonUniqueVertex msg) -> Left $ Hex.NonUniqueVertex msg
           Left err -> Left err

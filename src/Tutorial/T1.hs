@@ -43,6 +43,21 @@ fromVertex =
     ]
   
 
+-- like fromPolarVertex10Sided, it fails as has > 6 vertice
+-- Will use fromPolarVertex10Sided to track down this bug
+fromVertexWithGT6Vertex :: IO ()
+fromVertexWithGT6Vertex = 
+  runVertexToShapeBldr
+    [Geo.newVertex  0 0 0,    
+     Geo.newVertex  0.1 0 0,  
+     Geo.newVertex 0.1 0.3 0, 
+     Geo.newVertex 0 0.3 0,
+     Geo.newVertex 0 0.4 0,
+     Geo.newVertex 0 0.5 0,
+     Geo.newVertex 0 0.6 0
+     
+    ]
+
 
 
 -- | Create the rectangle using polar coordinates
@@ -66,7 +81,8 @@ fromPolarVertex10Sided = do
     radius = 1
     vertexs =
       Polar.newVertexes (Axis.XAxis 0) (Axis.YAxis 0)(Axis.ZAxis 0)
-           [( 36, radius),
+           [(  0, radius),
+            ( 36, radius),
             ( 72, radius),
             (108, radius),
             (144, radius),
@@ -139,31 +155,9 @@ put3holesInARectangle = do
            ]
     centerHoleVertexes =
       Polar.newVertexes (Axis.XAxis 0) (Axis.YAxis 0)(Axis.ZAxis 0)
-           [( 20, innerRadius),
-            ( 40, innerRadius),
-            ( 30, innerRadius),
-            ( 60, innerRadius),
-            (120, innerRadius),
-            (240, innerRadius)
-            --(300, innerRadius)
-           ]
-                        --[(degree,innerRadius) | degree <- [0,10,20,30,40,50,60]]
-     {-      [(  0, innerRadius),
-            ( 10, innerRadius),
-            ( 20, innerRadius),
-            ( 30, innerRadius),
-            ( 40, innerRadius),
-            ( 50, innerRadius),
-            ( 60, innerRadius),
-            ( 70, innerRadius),
-            ( 80, innerRadius),
-            ( 90, innerRadius),
-            ( 1000, innerRadius),
-            (120, innerRadius),
-            (240, innerRadius),
-            (300, innerRadius)
-      
-  ]-}
+           [(degree,innerRadius) | degree <- [0,10..350]]
+     
+    
     outerRadius = innerRadius + 10  
     outerVertexes =
       Polar.newVertexes (Axis.XAxis 0) (Axis.YAxis 0)(Axis.ZAxis 0)

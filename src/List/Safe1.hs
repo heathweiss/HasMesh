@@ -22,6 +22,7 @@ data SafeList1 a b where
 -- Provide show instance for testing.
 instance Show (SafeList1 (Env.Id Env.PointInt) LB.NonEmptyID) where
  show ((Cons x zs _)) = "Cons x: " ++ show x ++ " zs: " ++ show zs
+
  
 type CurveIdSafe1List = SafeList1 (Env.Id Env.CurveLoopInt) LB.NonEmptyID
 type PlaneSurfaceSafe1List = SafeList1 (Env.Id Env.PlaneSurfaceInt) LB.NonEmptyID

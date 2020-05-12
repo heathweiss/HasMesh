@@ -21,7 +21,8 @@ import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Utils.Environment as Env
 import qualified Gmsh.Line as Line
 import qualified Gmsh.Point as Pnt
-import qualified Utils.List as L
+import qualified List.Safe3 as L3
+import qualified List.Safe1 as L1
 import qualified Utils.RunExceptions as HexR
 
 import qualified Gmsh.CurveLoop as CL
@@ -35,11 +36,11 @@ runTests = do
    (do
       env <- EnvLdr.loadTestEnvironment
       let vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
-      safeVertex <-  HexR.runEitherIO "safeVertex" $ L.toSafeList3 vertexs 
+      safeVertex <-  HexR.runEitherIO "safeVertex" $ L3.toSafeList3 vertexs 
       points <- runRIO env $ Pnt.toPoints safeVertex
       lines <- runRIO env $ Line.toLines points
       curveLoop <- runRIO env $ CL.toCurveLoop lines
-      assertEqual "create curve loop from 3 vertex" [1] (map Env.evalCurveLoopId (L.evalSafeList1 curveLoop))
+      assertEqual "create curve loop from 3 vertex" [1] (map Env.evalCurveLoopId (L1.evalSafeList1 curveLoop))
       
    )
  _ <- runTestTT createCurveLoopFrom3Vertexs
@@ -49,12 +50,12 @@ runTests = do
    (do
       env <- EnvLdr.loadTestEnvironment
       let vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3]
-      safeVertex <-  HexR.runEitherIO "safeVertex" $ L.toSafeList3 vertexs 
+      safeVertex <-  HexR.runEitherIO "safeVertex" $ L3.toSafeList3 vertexs 
       points <- runRIO env $ Pnt.toPoints safeVertex
       lines <- runRIO env $ Line.toLines points
       curveLoop1 <- runRIO env $ CL.toCurveLoop lines
       curveLoop2 <- runRIO env $ CL.toCurveLoop lines
-      assertEqual "create curve loop from 3 vertex" [2] (map Env.evalCurveLoopId (L.evalSafeList1 curveLoop2))
+      assertEqual "create curve loop from 3 vertex" [2] (map Env.evalCurveLoopId (L1.evalSafeList1 curveLoop2))
       
    )
  _ <- runTestTT create2CurveLoopsFrom3Vertexs
@@ -65,11 +66,11 @@ runTests = do
    (do
       env <- EnvLdr.loadTestEnvironment
       let vertexs = [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  3 3 3, Geo.newVertex 4 4 4]
-      safeVertex <-  HexR.runEitherIO "safeVertex" $ L.toSafeList3 vertexs 
+      safeVertex <-  HexR.runEitherIO "safeVertex" $ L3.toSafeList3 vertexs 
       points <- runRIO env $ Pnt.toPoints safeVertex
       lines <- runRIO env $ Line.toLines points
       curveLoop <- runRIO env $ CL.toCurveLoop lines
-      assertEqual "create curve loop from 3 vertex" [1] (map Env.evalCurveLoopId (L.evalSafeList1 curveLoop))
+      assertEqual "create curve loop from 3 vertex" [1] (map Env.evalCurveLoopId (L1.evalSafeList1 curveLoop))
       
    )
  _ <- runTestTT createCurveLoopFrom4Vertexs

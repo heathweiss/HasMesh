@@ -15,7 +15,6 @@ module Gmsh.Line(toLines) where
 import RIO
 import qualified Utils.Environment as Env
 import qualified Utils.Environment as Enviro
-import qualified Utils.List as L
 import qualified Gmsh.Point as Pnt
 import qualified List.Base as LB
 import qualified List.Safe3 as L3
@@ -35,21 +34,13 @@ createLineFromPoints pointId1 pointId2 = do
   
 -- | Generate a 'Gmsh.Env.LineIdSafe3List' from a 'Pnt.PointIdList' 
 toLines :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env, Env.HasScriptWriter env) => Pnt.PointIdSafe3List ->  RIO env LineIdSafe3List
-
-toLines (L3.Cons x y z (x':y':z':z'':zs) _) = do
+toLines (L3.Cons x y z (x':y':z':zs) _) = do
   env <- ask
-  linexyId <- runRIO env $ createLineFromPoints y z
-  lineyzId <- runRIO env $ createLineFromPoints z x'
-  linezx'Id <- runRIO env $ createLineFromPoints x y
-  toLinesRecur x (L3.Cons x' y' z' (z'':zs) L3.Nil) (L3.Cons linezx'Id lineyzId linexyId  [] L3.Nil)
+  linexyId <- runRIO env $ createLineFromPoints x y 
+  lineyzId <- runRIO env $ createLineFromPoints y z 
+  linezx'Id <- runRIO env $ createLineFromPoints z x'
+  toLinesRecur x (L3.Cons x' y' z' zs L3.Nil) (L3.Cons linezx'Id lineyzId linexyId  [] L3.Nil)
 
-toLines (L3.Cons x y z [x', y',z'] _)  = do
-  env <- ask
-  linexyId <- runRIO env $ createLineFromPoints x y
-  lineyzId <- runRIO env $ createLineFromPoints y z
-  linezx'Id <- runRIO env $ createLineFromPoints z x' 
-  toLinesRecur x (L3.Cons x' y' z' [] L3.Nil)  (L3.Cons linezx'Id  lineyzId  linexyId [] L3.Nil)
-  
   
 toLines (L3.Cons x y z [y',z'] _)  = do
   env <- ask
@@ -67,7 +58,6 @@ toLines (L3.Cons x y z [y'] _) = do
   linezy'Id <- runRIO env $ createLineFromPoints z y'
   lineClose <- runRIO env $ createLineFromPoints y' x
   return (L3.Cons linexyId lineyzId linezy'Id [lineClose] L3.Nil)
-  
 
 toLines (L3.Cons x y z [] _) = do
   env <- ask
@@ -76,27 +66,19 @@ toLines (L3.Cons x y z [] _) = do
   lineClose <- runRIO env $ createLineFromPoints z x
   return (L3.Cons linexyId lineyzId lineClose [] L3.Nil)
   
-  
 
+  
+--Recursive call to handle lists > 6.
 toLinesRecur :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env, Env.HasScriptWriter env) => Env.Id Env.PointInt ->  Pnt.PointIdSafe3List -> LineIdSafe3List ->  RIO env LineIdSafe3List
-
-toLinesRecur initialPnt (L3.Cons x y z (x':y':z':zs) _) safeWorkingList = do
-  env <- ask
-  linexyId <- runRIO env $ createLineFromPoints x y
-  toLinesRecur initialPnt (L3.Cons y z x' (y':z':zs) L3.Nil) (L3.appendSafeList3 linexyId safeWorkingList)
-  
-  
 toLinesRecur initialPnt (L3.Cons x y z [y',z'] _) safeWorkingList = do
   env <- ask
   linexyId <- runRIO env $ createLineFromPoints x y
   toLinesRecur initialPnt (L3.Cons y z y' [z'] L3.Nil) (L3.appendSafeList3 linexyId safeWorkingList)
-  
 
 toLinesRecur initialPnt (L3.Cons x y z [y'] _) safeWorkingList = do
   env <- ask
   linexyId <- runRIO env $ createLineFromPoints x y
-  toLinesRecur initialPnt (L3.Cons x y z [y'] L3.Nil) (L3.appendSafeList3 linexyId safeWorkingList)
-  
+  toLinesRecur initialPnt (L3.Cons y z y' [] L3.Nil) (L3.appendSafeList3 linexyId safeWorkingList)
 
 toLinesRecur initialPnt (L3.Cons x y z [] _) safeWorkingList = do
   env <- ask
@@ -105,7 +87,9 @@ toLinesRecur initialPnt (L3.Cons x y z [] _) safeWorkingList = do
   lineClose <- runRIO env $ createLineFromPoints z initialPnt
   return $ L3.reverseSafeList3 $ L3.appendSafeList3 lineClose $ L3.appendSafeList3 lineyzId $  L3.appendSafeList3 linexyId safeWorkingList
   
-  
-  
+toLinesRecur initialPnt (L3.Cons x y z (x':y':zs) _) safeWorkingList = do
+  env <- ask
+  linexyId <- runRIO env $ createLineFromPoints x y
+  toLinesRecur initialPnt (L3.Cons y z x' (y':zs) L3.Nil) (L3.appendSafeList3 linexyId safeWorkingList)
 
 

@@ -5,7 +5,7 @@ Supply specialized lists that guaranteed minimum length of 3
 
 import qualified List.Safe3 as L3
 -}
-module List.Safe3(SafeList3(..), PointIdSafe3List(), LineIdSafe3List(), VertexSafe3List(),
+module List.Safe3(SafeList3(..), PointIdSafe3List(), LineIdSafe3List(), VertexSafe3List(), isUnique,
                  safeHead3, evalSafeList3, safeLast3, ToSafeList3(..), reverseSafeList3, appendSafeList3,) where
 import RIO
 import qualified RIO.List as L
