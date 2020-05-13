@@ -233,14 +233,14 @@ runTests = do
  let
    isNotUniqueSafeList4 = TestCase $ assertEqual
      "not isUnique SafeList3 length == 4"
-     (Left (Hex.NonUniqueVertex "non unique safe [Vertex]"))
+     (Left (Hex.NonUnique "non unique safe [Vertex]"))
      (let                               
         eitherSafeList = L3.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 1 1 1, V.newVertex 4 4 4] :: Either  Hex.HasMeshException  L3.VertexSafe3List
       in
         case eitherSafeList of
           Right safeList -> Right $ L3.isUnique safeList
           Left (Hex.SafeList3MinError msg) -> Left $ Hex.SafeList3MinError msg
-          Left (Hex.NonUniqueVertex msg) -> Left $ Hex.NonUniqueVertex msg
+          Left (Hex.NonUnique msg) -> Left $ Hex.NonUnique msg
           Left err -> Left err
      )
  runTestTT isNotUniqueSafeList4
@@ -250,14 +250,14 @@ runTests = do
  let
    nonUniqueSafeListOf3ReturnsEx = TestCase $ assertEqual
      "not isUnique SafeList3 returns an exception"
-     (Left (Hex.NonUniqueVertex "non unique safe [Vertex]"))
+     (Left (Hex.NonUnique "non unique safe [Vertex]"))
      (let                               
         eitherSafeList = L3.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 2 2 2] :: Either  Hex.HasMeshException  L3.VertexSafe3List
       in
         case eitherSafeList of
           Right safeList -> Right $ L3.isUnique safeList
           Left (Hex.SafeList3MinError msg) -> Left $ Hex.SafeList3MinError msg
-          Left (Hex.NonUniqueVertex msg) -> Left $ Hex.NonUniqueVertex msg
+          Left (Hex.NonUnique msg) -> Left $ Hex.NonUnique msg
           Left err -> Left err
      )
  runTestTT nonUniqueSafeListOf3ReturnsEx
@@ -265,14 +265,14 @@ runTests = do
  let
    nonUniqueSafeListOf4ReturnsEx = TestCase $ assertEqual
      "not isUnique SafeList3 returns an exception"
-     (Left (Hex.NonUniqueVertex "non unique safe [Vertex]"))
+     (Left (Hex.NonUnique "non unique safe [Vertex]"))
      (let                               
         eitherSafeList = L3.toSafeList3 [V.newVertex 1 1 1, V.newVertex 2 2 2, V.newVertex 3 3 3, V.newVertex 2 2 2] :: Either  Hex.HasMeshException  L3.VertexSafe3List
       in
         case eitherSafeList of
           Right safeList -> Right $ L3.isUnique safeList
           Left (Hex.SafeList3MinError msg) -> Left $ Hex.SafeList3MinError msg
-          Left (Hex.NonUniqueVertex msg) -> Left $ Hex.NonUniqueVertex msg
+          Left (Hex.NonUnique msg) -> Left $ Hex.NonUnique msg
           Left err -> Left err
      )
  runTestTT nonUniqueSafeListOf4ReturnsEx

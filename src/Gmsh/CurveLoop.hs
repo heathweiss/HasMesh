@@ -20,6 +20,7 @@ import qualified Utils.Environment as Env
 import qualified List.Safe3 as L3
 import qualified List.Safe1 as L1
 
+-- | Create a sgmh Curve Loop from a list of Gmsh lines.
 toCurveLoop :: (Env.HasIdSupply env, Env.HasGeoFileHandle env, Env.HasScriptWriter env) => L3.LineIdSafe3List -> RIO env L1.CurveIdSafe1List
 toCurveLoop lineIds = do
   env <- ask

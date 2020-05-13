@@ -26,7 +26,7 @@ import qualified Gmsh.PlaneSurface as PS
 import qualified Geometry.Axis as Axis
 import qualified Data.Bifunctor as Bif
 import qualified List.Safe3 as L3
-import Utils.Add((+++))
+import List.Base((>>+))
 
 
 
@@ -123,9 +123,10 @@ put1holeInIt = do
           B.hPut geoFileHandle ScrB.writeLC1
           safeVertexesInner <- HexR.runEitherRIO "safeVertexsInner" $ L3.toSafeList3 innerVertexes
           safeVertexesOuter <- HexR.runEitherRIO "safeVertexsOuter" $ L3.toSafeList3 outerVertexes 
-          curveLoopInner <- runRIO env $ Pnt.toPoints safeVertexesInner >>= Line.toLines  >>= CL.toCurveLoop  --  >>= PS.toPlaneSurface
-          curveLoopOuter <- runRIO env $ Pnt.toPoints safeVertexesOuter >>= Line.toLines  >>= CL.toCurveLoop  --  >>= PS.toPlaneSurface
-          _ <- runRIO env $ PS.toPlaneSurface $ curveLoopOuter +++ curveLoopInner
+          curveLoopInner <- runRIO env $ Pnt.toPoints safeVertexesInner >>= Line.toLines  >>= CL.toCurveLoop
+          curveLoopOuter <- runRIO env $ Pnt.toPoints safeVertexesOuter >>= Line.toLines  >>= CL.toCurveLoop
+          curveLoopsAdded <- HexR.runEitherRIO "curveLoopsAdded" (Right curveLoopOuter >>+ curveLoopInner) 
+          _ <- runRIO env $ PS.toPlaneSurface curveLoopsAdded
           return ()
       
   env <- EnvLdr.loadEnvironment
@@ -179,8 +180,9 @@ put3holesInARectangle = do
           curveLoopTop      <- runRIO env $ Pnt.toPoints safeVertexesTop    >>= Line.toLines  >>= CL.toCurveLoop
           curveLoopCenter   <- runRIO env $ Pnt.toPoints safeVertexesCenter >>= Line.toLines  >>= CL.toCurveLoop  
           curveLoopBottom   <- runRIO env $ Pnt.toPoints safeVertexesBottom >>= Line.toLines  >>= CL.toCurveLoop 
-          curveLoopOuter    <- runRIO env $ Pnt.toPoints safeVertexesOuter  >>= Line.toLines  >>= CL.toCurveLoop 
-          _ <- runRIO env $ PS.toPlaneSurface $ curveLoopOuter +++ curveLoopTop +++ curveLoopCenter +++ curveLoopBottom 
+          curveLoopOuter    <- runRIO env $ Pnt.toPoints safeVertexesOuter  >>= Line.toLines  >>= CL.toCurveLoop
+          curveLoopsAdded <- HexR.runEitherRIO "curveLoopsAdded" $ Right curveLoopOuter >>+ curveLoopTop >>+ curveLoopCenter >>+ curveLoopBottom
+          _ <- runRIO env $ PS.toPlaneSurface curveLoopsAdded
           return ()
       
   env <- EnvLdr.loadEnvironment
@@ -222,9 +224,9 @@ designLoader createDesign = do
             throwIO $ SomeException $ Hex.SafeList3MinError msg
         )
         `catch`
-        (\(Hex.NonUniqueVertex msg) -> do
+        (\(Hex.NonUnique msg) -> do
             runSimpleApp $ logInfo $ "t1.hs err: " <> displayShow (Hex.SafeList3MinError msg)-- msg
-            throwIO $ SomeException $ Hex.NonUniqueVertex msg
+            throwIO $ SomeException $ Hex.NonUnique msg
         )
         `catch`
         (\(SomeException e) -> do

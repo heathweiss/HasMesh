@@ -21,7 +21,7 @@ import qualified Gmsh.Line as Line
 import qualified Gmsh.Point as Pnt
 import qualified List.Safe1 as L1
 import qualified List.Safe3 as L3
-import Utils.Add((+++))
+import List.Base((>>+))
 import qualified Utils.RunExceptions as HexR
 import qualified Gmsh.CurveLoop as CL
 import qualified Gmsh.PlaneSurface as PS
@@ -56,8 +56,7 @@ runTests = do
       let vertexs2 = [Geo.newVertex  11 11 11, Geo.newVertex  22 22 22, Geo.newVertex  33 33 33]
       safeVertex2 <-  HexR.runEitherIO "safeVertex" $ L3.toSafeList3 vertexs2 
       curveLoop2 <- runRIO env $ Pnt.toPoints safeVertex2 >>= Line.toLines >>= CL.toCurveLoop
-      let
-        curveLoops = curveLoop1 +++ curveLoop2
+      curveLoops <- HexR.runEitherIO "curveloops" $ Right curveLoop1 >>+ curveLoop2
       planeSurface <- runRIO env $ PS.toPlaneSurface curveLoops 
       assertEqual
         "create plane surface from 2 curve loops" 
@@ -69,6 +68,7 @@ runTests = do
       
    )
  _ <- runTestTT createPlaneSurfaceFrom2CurveLoops
+
 
  let
   createPlaneSurfaceFrom3CurveLoops = TestCase
@@ -83,8 +83,7 @@ runTests = do
       let vertexs3 = [Geo.newVertex  111 111 111, Geo.newVertex  222 222 222, Geo.newVertex  333 333 333]
       safeVertex3 <-  HexR.runEitherIO "safeVertex3" $ L3.toSafeList3 vertexs3 
       curveLoop3 <- runRIO env $ Pnt.toPoints safeVertex3 >>= Line.toLines >>= CL.toCurveLoop
-      let
-        curveLoops = curveLoop1 +++ curveLoop2 +++ curveLoop3
+      curveLoops <- HexR.runEitherIO "curveLoops" $ Right curveLoop1 >>+ curveLoop2 >>+ curveLoop3
       planeSurface <- runRIO env $ PS.toPlaneSurface curveLoops 
       assertEqual
         "create plane surface from 3 curve loops" 

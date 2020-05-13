@@ -19,7 +19,6 @@ import qualified List.Safe1 as L1
 import qualified List.Safe3 as L3
 import qualified Utils.Exceptions as Hex
 import qualified Utils.RunExceptions as HexR
---import qualified Gmsh.ID as ID
 import qualified Utils.Environment as Env
 import qualified Utils.EnvironmentLoader as EnvLdr 
 
@@ -143,10 +142,10 @@ runTests = do
         safeVertexs = ((L3.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  2 2 2]):: Either Hex.HasMeshException L3.VertexSafe3List)
       
       assertEqual "create points from vectors safelist fails for non unique vertex"
-       (Left(Hex.NonUniqueVertex "non unique safe [Vertex]"))
+       (Left(Hex.NonUnique "non unique safe [Vertex]"))
        (case safeVertexs of
           Right vertexs -> Right $ L3.evalSafeList3 vertexs
-          Left (Hex.NonUniqueVertex msg) -> Left (Hex.NonUniqueVertex msg)
+          Left (Hex.NonUnique msg) -> Left (Hex.NonUnique msg)
        )
    )
  runTestTT nonUnique3VertexToPointsFails
@@ -248,10 +247,10 @@ runTests = do
         safeVertexs = ((L3.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  2 2 2, Geo.newVertex 3 3 3]):: Either Hex.HasMeshException L3.VertexSafe3List)
       
       assertEqual "create points from 4 vectors safelist fails for non unique vertex"
-       (Left(Hex.NonUniqueVertex "non unique safe [Vertex]"))
+       (Left(Hex.NonUnique "non unique safe [Vertex]"))
        (case safeVertexs of
           Right vertexs -> Right $ L3.evalSafeList3 vertexs
-          Left (Hex.NonUniqueVertex msg) -> Left (Hex.NonUniqueVertex msg)
+          Left (Hex.NonUnique msg) -> Left (Hex.NonUnique msg)
        )
    )
  runTestTT nonUnique4VertexToPointsFails
@@ -263,10 +262,10 @@ runTests = do
       let 
         safeVertexs = ((L3.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  2 2 2, Geo.newVertex 3 3 3, Geo.newVertex 4 4 4]):: Either Hex.HasMeshException L3.VertexSafe3List)
       assertEqual "create points from 5 vectors safelist fails for non unique vertex"
-       (Left(Hex.NonUniqueVertex "non unique safe [Vertex]"))
+       (Left(Hex.NonUnique "non unique safe [Vertex]"))
        (case safeVertexs of
           Right vertexs -> Right $ L3.evalSafeList3 vertexs
-          Left (Hex.NonUniqueVertex msg) -> Left (Hex.NonUniqueVertex msg)
+          Left (Hex.NonUnique msg) -> Left (Hex.NonUnique msg)
        )
    )
  runTestTT nonUnique5VertexToPointsFails
@@ -279,10 +278,10 @@ runTests = do
         safeVertexs = ((L3.toSafeList3 [Geo.newVertex  1 1 1, Geo.newVertex  2 2 2, Geo.newVertex  2 2 2,
                                        Geo.newVertex 3 3 3, Geo.newVertex 4 4 4, Geo.newVertex 5 5 5]):: Either Hex.HasMeshException L3.VertexSafe3List)
       assertEqual "create points from 6 vectors safelist fails for non unique vertex"
-       (Left(Hex.NonUniqueVertex "non unique safe [Vertex]"))
+       (Left(Hex.NonUnique "non unique safe [Vertex]"))
        (case safeVertexs of
           Right vertexs -> Right $ L3.evalSafeList3 vertexs
-          Left (Hex.NonUniqueVertex msg) -> Left (Hex.NonUniqueVertex msg)
+          Left (Hex.NonUnique msg) -> Left (Hex.NonUnique msg)
        )
    )
  runTestTT nonUnique6VertexToPointsFails
@@ -296,10 +295,10 @@ runTests = do
                                        Geo.newVertex 3 3 3, Geo.newVertex 4 4 4, Geo.newVertex 5 5 5,
                                        Geo.newVertex 13 13 13, Geo.newVertex 14 14 14, Geo.newVertex 15 15 15, Geo.newVertex 16 16 16]):: Either Hex.HasMeshException L3.VertexSafe3List)
       assertEqual "create points from 10 vectors safelist fails for non unique vertex"
-       (Left(Hex.NonUniqueVertex "non unique safe [Vertex]"))
+       (Left(Hex.NonUnique "non unique safe [Vertex]"))
        (case safeVertexs of
           Right vertexs -> Right $ L3.evalSafeList3 vertexs
-          Left (Hex.NonUniqueVertex msg) -> Left (Hex.NonUniqueVertex msg)
+          Left (Hex.NonUnique msg) -> Left (Hex.NonUnique msg)
        )
    )
  runTestTT nonUnique10VertexToPointsFails

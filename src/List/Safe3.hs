@@ -12,8 +12,8 @@ import qualified RIO.List as L
 import qualified Utils.Environment as Env
 import qualified Utils.Exceptions as Hex
 import qualified Geometry.Vertex as V
-import Utils.Add
 import qualified List.Base as LB
+import List.Base
 
 -- | Supply a list that has a minumum of 3 elements.
 --
@@ -58,6 +58,7 @@ instance Eq (SafeList3 (V.Vertex) LB.NonEmptyID) where
 safeHead3 :: SafeList3 a LB.NonEmptyID -> a
 safeHead3 (Cons x _ _ _ _) = x
 
+-- | Get the last item in a safelist
 safeLast3 :: SafeList3 a LB.NonEmptyID -> a
 safeLast3 (Cons x y z (z':zs) _) =
   safeLast3 $ Cons y z z' zs Nil
@@ -115,6 +116,16 @@ type VertexSafe3List = SafeList3 V.Vertex LB.NonEmptyID
 class ToSafeList3 a b | b -> a where
   toSafeList3 :: a -> Either Hex.HasMeshException b
 
+instance LB.IsUnique VertexSafe3List where
+  isUnique vertexSafe3List = 
+   let
+    checkUnique :: [V.Vertex] -> Bool
+    checkUnique [] = True
+    checkUnique [_] = True
+    checkUnique (v:vs) =
+      not (L.elem v vs) && checkUnique vs
+   in
+    checkUnique $ evalSafeList3 vertexSafe3List
   
 instance ToSafeList3 [Env.Id Env.LineInt] LineIdSafe3List where
   toSafeList3 [] = Left $ Hex.SafeList3MinError "length == 0"
@@ -144,7 +155,7 @@ instance ToSafeList3 [V.Vertex] VertexSafe3List where
     if isUnique theList then
       Right theList
     else
-      Left $ Hex.NonUniqueVertex "non unique safe [Vertex]"
+      Left $ Hex.NonUnique "non unique safe [Vertex]"
     
   --toSafeList3 (x:y:z:zs) = Right $ Cons x y z zs Nil
   toSafeList3 (x:y:z:zs) =
@@ -154,14 +165,16 @@ instance ToSafeList3 [V.Vertex] VertexSafe3List where
     if isUnique theList then
       Right theList
     else
-      Left $ Hex.NonUniqueVertex "non unique safe [Vertex]"
+      Left $ Hex.NonUnique "non unique safe [Vertex]"
       
 instance LB.IsOpen PointIdSafe3List where
   isOpen pointIdSafe3List = safeHead3 pointIdSafe3List /= safeLast3 pointIdSafe3List
   
 instance LB.IsOpen VertexSafe3List where
   isOpen vertexSafe3List = safeHead3 vertexSafe3List /= safeLast3 vertexSafe3List
-  
+
+
+{-  
 -- | Ensure that the 'VertexSafe3List' has no duplicate values
 -- Should stop exporting it, as is now implemented by the toSafeList fx. Is handy for testing though.
 isUnique ::  VertexSafe3List -> Bool
@@ -174,3 +187,4 @@ isUnique safeList =
       not (L.elem v vs) && checkUnique vs
   in
     checkUnique $ evalSafeList3 safeList
+-}

@@ -21,7 +21,8 @@ data HasMeshException = ZeroLengthName Text -- ^ For any Text or ByteString, for
                      | SafeList1MinError Text -- ^ 'Utils.List.SafeList1' must have length >= 1
                      | SafeList3MinError Text -- ^ 'Utils.List.SafeList3' must have length >= 3
                      | PointIdSafe3ListIsClosed Text -- ^ 'Gmsh.PointIdList' head and last must not be equal
-                     | NonUniqueVertex Text -- ^ 'Utils.List.VertexSafe3List' must be a ['Geometry.Vertex.Vertex'] without duplicate entries.
+                     | NonUnique Text -- ^ For lists that must contain unique values.
+                     -- | NonUniqueVertex Text -- ^ 'Utils.List.VertexSafe3List' must be a ['Geometry.Vertex.Vertex'] without duplicate entries.
   deriving (Typeable, Show, Eq)
 
 
@@ -31,5 +32,7 @@ instance Exception HasMeshException where
   displayException (SafeList3MinError msg) = "SafeList3MinError with length < 3"
   displayException (SafeList1MinError msg) = "SafeList1MinError with length < 1"
   displayException (PointIdSafe3ListIsClosed msg) = "Gmsh.PointIdList is not open. head and last must not be equal"
-  displayException (NonUniqueVertex msg) = "'Utils.List.VertexSafe3List' must be a ['Geometry.Vertex.Vertex'] without duplicate entries."
+  displayException (NonUnique  msg) = "List must contain unique values: "
 
+
+-- toDo: Create a general exception handler that can pattern match on all types of HasMesh exceptions, so will never fail due to missing pattern matches.

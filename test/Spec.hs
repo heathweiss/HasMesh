@@ -11,6 +11,7 @@ import qualified PolarTest as PolarTest
 import qualified EnvironmentTest as EnvironmentTest
 import qualified PlaneSurfaceTest as PlaneSurfaceTest
 import qualified List3Test as List3Test
+
 main = do
   
   FileWriterTest.runTests
@@ -19,10 +20,11 @@ main = do
   EnvironmentTest.runTests
   VertexTest.runTests
   PointTest.runTests
-  CurveLoopTest.runTests
   ScriptingTest.runTests
   PlaneSurfaceTest.runTests
   PolarTest.runTests
   List1Test.runTests
   List3Test.runTests
   LineTest.runTests
+  CurveLoopTest.runTests
+  
