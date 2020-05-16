@@ -16,12 +16,11 @@ module Gmsh.Point(toPoint, toPoints, L3.PointIdSafe3List()) where
 import RIO
 import qualified Geometry.Geometry as Geo
 import qualified Utils.Environment as Env
-import qualified Utils.List as L
 import qualified List.Safe3 as L3
 
 -- | A 'Utils.List.SafeList3' containing [Env.Id Env.PointInt] for containing a min length of 3 list of Gmsh point Ids.
 --This one gets deleted in favor of the following 1.
---type PointIdList = L.SafeList3 (Env.Id Env.PointInt) L.NonEmptyID
+--type PointIdList = L3.SafeList3 (Env.Id Env.PointInt) L3.NonEmptyID
 --This is the one that should be used.
 --type PointIdSafe3List = SafeList3 (Env.Id Env.PointInt) LB.NonEmptyID
 
@@ -40,7 +39,7 @@ toPoint vertex  = do
   writePointScript <- view Env.pntScriptWriterL
   liftIO $ writePointScript geoFileHandle possiblyNewPointId vertex
   
--- | Generates a 'L.PointIdSafe3List'.
+-- | Generates a 'L3.PointIdSafe3List'.
 -- It is guaranteed to have minumum 3 points, with no duplicates.
 toPoints ::(Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env, Env.HasScriptWriter env) =>  L3.VertexSafe3List -> RIO env L3.PointIdSafe3List
 toPoints (L3.Cons a b c [] _) = do

@@ -20,7 +20,6 @@ import qualified Gmsh.Point as Pnt
 import qualified Gmsh.Line as Line
 import qualified Geometry.Vertex as V
 import qualified Geometry.Polar as Polar
-import qualified Utils.List as L
 import qualified Gmsh.CurveLoop as CL
 import qualified Gmsh.PlaneSurface as PS
 import qualified Geometry.Axis as Axis

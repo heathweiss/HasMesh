@@ -27,7 +27,7 @@ import Data.String.Interpolate ( i )
 import qualified Geometry.Vertex as V
 import qualified Geometry.Geometry as Geo
 import qualified Utils.Environment as Env
-import qualified Utils.List as L
+
 
 -- | Output a gmsh point.
 genPointScript :: Geo.Vertex -> Env.Id Env.PointInt -> B.ByteString

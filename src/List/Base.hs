@@ -18,7 +18,7 @@ data NonEmptyID
 deriving instance Show NonEmptyID
 
 
--- | Should be able to delete this, as it has been replaced by 
+-- | Should be able to delete this, as it has been replaced by IsUnique
 class IsOpen a where
   isOpen :: (Eq a) =>  a -> Bool
 
@@ -27,6 +27,8 @@ class IsUnique a where
   isUnique ::  a -> Bool
 
 -- | Add types where the addition can result in an exception. Is like >>= specialized to addition.
+--
+-- So far, only used for adding safe lists.
 class Add a where
   
   (>>+) :: (IsUnique a) =>  Either Hex.HasMeshException a -> a -> Either Hex.HasMeshException a

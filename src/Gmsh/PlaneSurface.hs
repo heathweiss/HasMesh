@@ -11,9 +11,9 @@ module Gmsh.PlaneSurface(toPlaneSurface) where
 
 import RIO
 --import RIO.Text as T
-import qualified Utils.List as L
-import qualified Utils.Environment as Env
 import qualified List.Safe1 as L1
+import qualified Utils.Environment as Env
+
 
 -- Create gmsh plane surface from [curve loops]
 toPlaneSurface ::  (Env.HasIdSupply env, Env.HasGeoFileHandle env, Env.HasScriptWriter env) => L1.CurveIdSafe1List -> RIO env L1.PlaneSurfaceSafe1List

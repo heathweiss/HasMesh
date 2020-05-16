@@ -15,7 +15,6 @@ module Gmsh.CurveLoop(toCurveLoop) where
 
 import RIO
 import RIO.Text as T
-import qualified Utils.List as L
 import qualified Utils.Environment as Env
 import qualified List.Safe3 as L3
 import qualified List.Safe1 as L1
