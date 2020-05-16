@@ -9,7 +9,7 @@ import qualified List.Safe3 as L3
 import qualified Utils.Exceptions as Hex
 import qualified Utils.RunExceptions as HexR
 import qualified Geometry.Vertex as V
-import Utils.Add
+
 
 runTests = do
  P.putStrLn $ "=============== List3 Tests ====================="  

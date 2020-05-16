@@ -13,7 +13,6 @@ import qualified Geometry.Axis as Axis
 import qualified Data.Hashable as H
 import qualified Utils.EnvironmentLoader as EnvLdr
 import qualified Utils.RunExceptions as HexR
-import qualified Utils.List as L
 import qualified Gmsh.Gmsh as Gmsh
 import qualified Utils.Environment as Env
 import qualified Data.Bifunctor as Bif

@@ -10,7 +10,6 @@ import qualified Gmsh.ToScript.Common as SCom
 import qualified RIO.Text as T
 import qualified Geometry.Geometry as Geo
 import qualified Utils.Environment as Env
-import qualified Utils.List as L
 import qualified Utils.Exceptions as Hex
 
 runTests = do
