@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e4e426010b91d187f7b6615c91492c987456ded84a71737588fd2e5f3a9de47e
+-- hash: 0b6b626843b1563fa10d8a446bcfbba334668744a31f0e85f74c000722b5403b
 
 name:           HasMesh
 version:        0.1.0.0
@@ -35,6 +35,7 @@ library
       Gmsh.Gmsh
       Gmsh.Line
       Gmsh.LineZip
+      Gmsh.LineZipTest
       Gmsh.PlaneSurface
       Gmsh.Point
       Gmsh.Status

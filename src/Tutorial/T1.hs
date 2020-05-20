@@ -4,10 +4,8 @@
 {- |
 
 -}
-module Tutorial.T1(rectangle2DFromVertex, rectangle2DFromFromPolarVertex, tenSidedShapeFromPolarVertex, rectangleWithSingleHole, rectangleWithSingleRaisedHole, put3holesInARectangle, ) where
-
-
-
+module Tutorial.T1(rectangle2DFromVertex, rectangle2DFromFromPolarVertex, tenSidedShapeFromPolarVertex, rectangleWithSingleHole,
+                   rectangleWithSingleRaisedHole, rectangleWithSingleRaisedHoleSmoothed, put3holesInARectangle, ) where
 
 import RIO
 import qualified System.IO as SIO
@@ -28,7 +26,7 @@ import qualified Geometry.Axis as Axis
 import qualified Data.Bifunctor as Bif
 import qualified List.Safe3 as L3
 import List.Base((>>+))
-
+import qualified Gmsh.LineZip as LZ
 
 
 
@@ -166,7 +164,42 @@ rectangleWithSingleRaisedHole = do
   runRIO (env {Env.env_geoFileHandle = handleRef}) createDesign
 
 
-
+-- | Rectangle with a raised inner rectangle. Uses Gmsh.ZipList to smooth the meshes.
+-- Which is to say, join the 2 shapes by creating retangular surfaces between each of the lines.
+rectangleWithSingleRaisedHoleSmoothed :: IO ()
+rectangleWithSingleRaisedHoleSmoothed = do
+  let
+    createDesign :: (Env.HasIdSupply env, Env.HasPointIdMap env, Env.HasGeoFileHandle env, Env.HasScriptWriter env) => RIO env ()
+    createDesign = do
+          env <- ask
+          geoFileHandleIORef <- view Env.geoFileHandleL
+          geoFileHandle <- readIORef geoFileHandleIORef
+          B.hPut geoFileHandle ScrB.writeLC1
+          let
+            innerRadius = 1
+          innerPoints <- runRIO env (HexR.runEither "innerPoints"
+                                     ( Pnt.toPoints
+                                        <$> L3.toSafeList3
+                                             (Polar.newVertexes (Axis.XAxis 0) (Axis.YAxis 0)(Axis.ZAxis 0.5)
+                                             [( 60, innerRadius), (120, innerRadius), (240, innerRadius), (300, innerRadius)]
+                                     )))
+          let
+            outerRadius = innerRadius + 2
+          outerPoints <- runRIO env (HexR.runEither "outerPoints" 
+                                     ( Pnt.toPoints
+                                        <$> L3.toSafeList3
+                                             (Polar.newVertexes (Axis.XAxis 0) (Axis.YAxis 0)(Axis.ZAxis 0)
+                                             [( 60, outerRadius), (120, outerRadius), (240, outerRadius), (300, outerRadius)]
+                                     )))
+          _ <- runRIO env (LZ.zipPoints innerPoints outerPoints) >>= LZ.zipLines >>= LZ.zipCurves >>= LZ.zipPlanes
+          return ()
+      
+  env <- EnvLdr.loadEnvironment
+  designName <-  HexR.runEitherIO "designName" $ Env.newDesignName "t1"
+  handle_ <- SIO.openFile (Env.designFilePath designName) WriteMode
+  handleRef <- newIORef handle_
+  runRIO (env {Env.env_geoFileHandle = handleRef}) createDesign
+  
 
 
 -- | Create a rectangle with 3 holes in it.
