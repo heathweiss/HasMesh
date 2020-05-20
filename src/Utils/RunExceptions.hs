@@ -6,13 +6,14 @@
 {- |
 import qualified Utils.RunExceptions as HexR
 -}
-module Utils.RunExceptions(runEitherIO, runEitherRIO) where
+module Utils.RunExceptions(runEither, runEitherIO, runEitherRIO) where
 
 import RIO
 import qualified RIO.Text as T
 import qualified Utils.Exceptions as Hex
 --import qualified Utils.Environment as Enviro
 --import qualified Utils.Designs as Design
+import qualified Control.Exception as Ex
 
 -- | Used to check the status of an Either while in the IO monad. Eliminates the use of EitherT as recommended by RIO monad.
 --
@@ -43,4 +44,10 @@ runEitherRIO location (Left(Hex.SafeList3MinError msg)) = do
   throwM $ Hex.SafeList3MinError $ location <> ": " <> msg 
 runEitherRIO location _ = do
   throwIO $ Hex.GeneralException $ location <> ": " <> "had an unhandled RIO HasMeshException"
+
+-- | If Left, throw an exception in pure code, otherwise just return the value.
+runEither :: T.Text -> Either Hex.HasMeshException a -> a
+runEither _ (Right a) = a
+runEither location (Left (Hex.SafeList3MinError msg)) = Ex.throw $ Hex.SafeList3MinError $ location <> ": " <> msg
+
 
