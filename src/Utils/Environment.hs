@@ -234,6 +234,9 @@ incr :: Id a -> Id a
 incr (PointId (PointInt int)) = PointId $ PointInt $ int + 1
 incr (LineId  (LineInt int)) = LineId $ LineInt $ int + 1
 incr (CurveLoopId  (CurveLoopInt int)) = CurveLoopId $ CurveLoopInt $ int + 1
+incr (PlaneSurfaceId  (PlaneSurfaceInt int)) = PlaneSurfaceId $ PlaneSurfaceInt $ int + 1
+
+
 
 
 -- | Extract the Int.
