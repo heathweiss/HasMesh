@@ -20,7 +20,7 @@ import qualified List.Base as LB
 import qualified List.Safe3 as L3
 
 -- | A 'Utils.List.SafeList3' containing [Env.Id Env.PointInt].
-type LineIdSafe3List = L3.SafeList3 (Env.Id Env.LineInt) LB.NonEmptyID
+--type LineIdSafe3List = L3.SafeList3 (Env.Id Env.LineInt) LB.NonEmptyID
 
 -- Create a new Line from 2 gmsh point ids. Called by toLines to create each line in the [line] that it is creating.
 createLineFromPoints :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env, Env.HasScriptWriter env) => Env.Id Env.PointInt -> Env.Id Env.PointInt -> RIO env (Env.Id Env.LineInt)
@@ -33,7 +33,7 @@ createLineFromPoints pointId1 pointId2 = do
   liftIO $ lineWriter handle_ lineId pointId1 pointId2
   
 -- | Generate a 'Gmsh.Env.LineIdSafe3List' from a 'Pnt.PointIdList' 
-toLines :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env, Env.HasScriptWriter env) => Pnt.PointIdSafe3List ->  RIO env LineIdSafe3List
+toLines :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env, Env.HasScriptWriter env) => Pnt.PointIdSafe3List ->  RIO env L3.LineIdSafe3List
 toLines (L3.Cons x y z (x':y':z':zs) _) = do
   env <- ask
   linexyId <- runRIO env $ createLineFromPoints x y 
@@ -69,7 +69,7 @@ toLines (L3.Cons x y z [] _) = do
 
   
 --Recursive call to handle lists > 6.
-toLinesRecur :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env, Env.HasScriptWriter env) => Env.Id Env.PointInt ->  Pnt.PointIdSafe3List -> LineIdSafe3List ->  RIO env LineIdSafe3List
+toLinesRecur :: (Enviro.HasIdSupply env, Enviro.HasGeoFileHandle env, Env.HasScriptWriter env) => Env.Id Env.PointInt ->  Pnt.PointIdSafe3List -> L3.LineIdSafe3List ->  RIO env L3.LineIdSafe3List
 toLinesRecur initialPnt (L3.Cons x y z [y',z'] _) safeWorkingList = do
   env <- ask
   linexyId <- runRIO env $ createLineFromPoints x y
