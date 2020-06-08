@@ -69,3 +69,6 @@ extra-deps:
 nix:
   enable: true
   packages: [glpk, pcre]
+
+#so stack will build the test and hie server will see tests
+#test: true
