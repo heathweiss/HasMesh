@@ -23,7 +23,7 @@ import qualified List.Safe1 as L1
 import qualified List.Safe3 as L3
 import qualified Utils.RunExceptions as HexR
 import qualified Utils.Exceptions as Hex
-import qualified Gmsh.LineZip as LZ
+import qualified Gmsh.PlaneMesh.LineZip as LZ
 import qualified Geometry.Axis as Axis
 import qualified Geometry.Polar as Polar
 

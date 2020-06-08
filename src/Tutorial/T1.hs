@@ -26,7 +26,7 @@ import qualified Geometry.Axis as Axis
 import qualified Data.Bifunctor as Bif
 import qualified List.Safe3 as L3
 import List.Base((>>+))
-import qualified Gmsh.LineZip as LZ
+import qualified Gmsh.PlaneMesh.LineZip as LZ
 
 
 

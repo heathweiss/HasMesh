@@ -12,11 +12,11 @@ import qualified EnvironmentTest as EnvironmentTest
 import qualified PlaneSurfaceTest as PlaneSurfaceTest
 import qualified List3Test as List3Test
 import qualified LineZipTest as LineZipTest
+import qualified PlaneMeshMeshTest as PlaneMeshMeshTest
 
 main = do
   
   FileWriterTest.runTests
-  
   ExceptionsTest.runTests
   EnvironmentTest.runTests
   VertexTest.runTests
@@ -29,3 +29,4 @@ main = do
   LineTest.runTests
   CurveLoopTest.runTests
   LineZipTest.runTests
+  PlaneMeshMeshTest.runTests

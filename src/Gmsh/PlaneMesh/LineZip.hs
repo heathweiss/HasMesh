@@ -1,11 +1,18 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE GADTs #-}
 {- |
-import qualified Gmsh.LineZip as LZ
+For zipping together [gmsh points] into: [gmsh lines] -> [gmsh curve loop] -> [gmsh plane surface]
+in order to have better control of the meshing that gmsh does.
+
+Eg:
+For a rectangel embedded in a rectangle, create a plane surface by joining the corresponding lines from the 2 rectangles.
+This allows a smooth mesh if the height of the rectangles are not equal, which is not what gmsh will do.
+
+import qualified Gmsh.PlaneMesh.LineZip as LZ
 -}
-module Gmsh.LineZip(zipPoints, zipLines, zipCurves, zipPlanes) where
---module Gmsh.Planes.Rectangles which is only take1_1_1 or take 1 1 
---module Gmsh.Planes.Flex
+module Gmsh.PlaneMesh.LineZip(zipPoints, zipLines, zipCurves, zipPlanes,
+                              
+                             ) where
 import RIO
 import qualified RIO.Text as T
 import qualified RIO.Map as Map
@@ -17,11 +24,9 @@ import qualified System.IO as SIO
 import qualified Geometry.Vertex as V
 import qualified Utils.Environment as Env
 import qualified Geometry.Geometry as Geo
---import qualified Gmsh.Point as Pts  
 import qualified Utils.EnvironmentLoader as EnvLdr 
 import qualified Utils.Environment as Env
 import qualified Gmsh.Line as Line
---import qualified Gmsh.Point as Pnt
 import qualified Gmsh.PlaneSurface as PS
 import qualified List.Safe1 as L1
 import qualified List.Safe3 as L3
@@ -114,3 +119,5 @@ zipPlanes curves = do
       planeSurface <- runRIO env $ PS.toPlaneSurface x
       zipPlanesRecur xs (planeSurface:workingList)
       
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
